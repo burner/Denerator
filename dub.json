@@ -1,0 +1,9 @@
+{
+	"name": "dengerator",
+	"description": "A minimal D application.",
+	"copyright": "Copyright © 2016, burner",
+	"authors": ["burner"],
+	"dependencies": {
+		"dyaml": "~>0.5.2"
+	}
+}
