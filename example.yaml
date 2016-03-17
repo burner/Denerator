@@ -1,0 +1,41 @@
+User:
+    id: ulong               # by default everything is public
+    +firstname:             # a '+' sign makes it explicitly public
+        type: string        # the type can be set as a single value
+                            # it can also be explict as shown here
+    +lastname: 
+        type: string
+        key: true           # the first time the key attribute is set to true
+                            # the surounding entity additionally becomes a database
+                            # type
+
+    +yearOfBirth_: int      # a postfix underscore does make a database type as well
+
+    -age(): int             # minus makes it private () makes it a function
+
+    someFunction():
+        return: double      # explicit return type 
+        params:             # list of params
+            - a: string     # name followed by type
+            - b: int
+            - c: bool
+
+Address:
+    country_: string
+    postalcode_: string
+    city_: string
+    street_: string
+    housenumber_: int
+    unit_: string
+
+
+Aggregation:
+    User: 1
+    Address: 1..*
+
+Professor:
+    tenure: bool
+
+Generalization:
+    parent: User
+    child: Professor
