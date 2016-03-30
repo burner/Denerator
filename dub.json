@@ -4,6 +4,7 @@
 	"copyright": "Copyright © 2016, burner",
 	"authors": ["burner"],
 	"dependencies": {
-		"dyaml": "~>0.5.2"
+		"dyaml": "~>0.5.2",
+		"pegged": "~>0.3.1"
 	}
 }
