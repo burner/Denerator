@@ -26,7 +26,7 @@ UML:
 		/ "entity" Participent
 		/ "database" Participent
 
-	Comment <- "'" Text+
+	Comment <- :"'" Text+
 	Text <- identifier / blank
 
     String <~ doublequote (!doublequote Char)* doublequote
@@ -45,14 +45,18 @@ UML:
 
     Hex     <- [0-9a-fA-F]
 
-	ClassStart < Context / Class 
-	Class < ClassPrefix ClassBody?
-	ClassPrefix < "class" ClassName
+	ClassStart < Context / Class / RealNote
+	Class < ClassPrefix StereoType? ClassBody?
+	ClassPrefix < ClassType ClassName
+	ClassType < "class" / "struct" / "classDB" / "structDB" / "interface"
 	ClassName < identifier
-	ClassBody < '{' ClassDecls* '}'
+	ClassBody < :'{' ClassDecls* :'}'
 	ClassDecls < Method / Member / Seperator
 
-	Context < ClassPrefix Cardinality? Arrow Cardinality? ClassPrefix Note?
+	ArrowSign < '<' / '>'
+
+	Context < ClassPrefix Cardinality? Arrow Cardinality? ClassPrefix ContextNote?
+	ContextNote < Note? ArrowSign?
 	Cardinality < String
 	Arrow < Left? Line Right?
 	Left < ExtensionLeft / CompositionLeft / AggregationLeft
@@ -73,13 +77,21 @@ UML:
 	MethodName < identifier
 	Modifier < "const" / "in" / "out" / "ref" / "immutable" 
 	ParameterList < Parameter (',' ParameterList)?
-	Parameter < identifier ':' Type
+	Parameter < identifier :':' Type
 	Member < Parameter
 	AbstractStatic < :"{" ("abstract" / "static") :"}"
 
-	Seperator < ".." (NoteText "..")?
-		/ "==" (NoteText "==")?
-		/ "__" (NoteText "__")?
+	Seperator < ".." (NoteText :"..")?
+		/ "==" (NoteText :"==")?
+		/ "__" (NoteText :"__")?
+
+	StereoType < :"<<" Text+ :">>"
+
+	RealNote < :"note" (RealNoteAssign / RealNoteStandalone)
+	RealNoteAssign < RealNotePos? identifier Note?
+	RealNoteStandalone < String RealNoteName
+	RealNotePos < "left" "of" / "right" "of" / "bottom" "of" / "top" "of"
+	RealNoteName < :"as" identifier
 `));
 
 void main()
@@ -94,5 +106,10 @@ void main()
 	writeln(UML(`class Bar { {abstract} void fun(a : const(int)) .. args: int
 				== encrypted == }`));
 	writeln(UML("class A <|-- class B"));
-	writeln(UML("class A --|> class B"));
+	writeln(UML("class A --|> class B : does something <"));
+
+	writeln(UML("class Foo << Some StereoType >>"));
+	writeln(UML("note top of Foo : Some note"));
+	writeln(UML("note \"This is a note\" as N1"));
+	writeln(UML("interface Foo"));
 }
