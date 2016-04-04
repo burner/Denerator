@@ -46,10 +46,9 @@ UML:
     Hex     <- [0-9a-fA-F]
 
 	ClassStart < Context / Class / RealNote
-	Class < ClassPrefix StereoType? ClassBody?
+	Class < ClassPrefix StereoTypes? ClassBody?
 	ClassPrefix < ClassType ClassName
-	ClassType < "class" / "struct" / "classDB" / "structDB" / "interface" 
-		/ "enum"
+	ClassType < "class" / "struct" / "enum"
 	ClassName < identifier
 	ClassBody < :'{' ClassDecls* :'}'
 	ClassDecls < Method / Member / Seperator
@@ -88,7 +87,8 @@ UML:
 		/ "==" (NoteText :"==")?
 		/ "__" (NoteText :"__")?
 
-	StereoType < :"<<" Text+ :">>"
+	StereoTypes < :"<<" Text (:',' Text)* :">>"
+	StereoType < "DB" / "Frontend" / "Backend"
 
 	RealNote < :"note" (RealNoteAssign / RealNoteStandalone)
 	RealNoteAssign < RealNotePos? identifier Note?
@@ -111,7 +111,7 @@ void main()
 	writeln(UML("class A <|-- class B"));
 	writeln(UML("class A --|> class B : does something <"));
 
-	writeln(UML("class Foo << Some StereoType >>"));
+	writeln(UML("class Foo << Frontend,Backend,DB >>"));
 	writeln(UML("note top of Foo : Some note"));
 	writeln(UML("note \"This is a note\" as N1"));
 	writeln(UML("interface Foo"));
