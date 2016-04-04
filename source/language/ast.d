@@ -8,6 +8,11 @@ class Ast {
 	}
 }
 
+class Start : Ast {
+	Comment[] comment;
+	ClassStart[] classStart;
+}
+
 class Note : Ast {
 	NoteText[] noteText;
 }

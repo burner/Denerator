@@ -5,7 +5,7 @@ import language.helper;
 
 mixin(grammar(`
 UML:
-	Start < Comment / ClassStart
+	Start < (Comment / ClassStart)+
 
 	Note < :":" NoteText+
 	NoteText <- Text+
