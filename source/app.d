@@ -48,10 +48,13 @@ UML:
 	ClassStart < Context / Class / RealNote
 	Class < ClassPrefix StereoType? ClassBody?
 	ClassPrefix < ClassType ClassName
-	ClassType < "class" / "struct" / "classDB" / "structDB" / "interface"
+	ClassType < "class" / "struct" / "classDB" / "structDB" / "interface" 
+		/ "enum"
 	ClassName < identifier
 	ClassBody < :'{' ClassDecls* :'}'
 	ClassDecls < Method / Member / Seperator
+
+	GenericConstraint < '<' String '>'
 
 	ArrowSign < '<' / '>'
 
