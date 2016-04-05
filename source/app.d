@@ -27,7 +27,7 @@ void main()
 	auto cls = peggedToUML(UML(s));
 	writeln(cls.toString());
 
-	s = "Foo <|.. Bar : Hello <";
+	s = "Foo <|.. Bar : > Hello <";
 	auto context = peggedToUML(UML(s));
 	//writeln(UML(s));
 	writeln(context.toString());

@@ -189,8 +189,9 @@ class Context {
 	ArrowType typeLeft = ArrowType.NoArrow;
 	ArrowType typeRight = ArrowType.NoArrow;
 	LineType lineType;
-	Note[] notes;
-	ArrowDir arrowDir = ArrowDir.NoDir;
+	string[] notes;
+	ArrowDir arrowDirLeft = ArrowDir.NoDir;
+	ArrowDir arrowDirRight = ArrowDir.NoDir;
 
 	override string toString() {
 		auto app = appender!string();
@@ -229,14 +230,27 @@ class Context {
 		app.put(" ");
 		app.put(right);
 
-		foreach(it; this.notes) {
-			app.put(it.toString());
+		if(this.arrowDirLeft != ArrowDir.NoDir 
+				|| this.arrowDirLeft != ArrowDir.NoDir 
+				|| !this.notes.empty)
+		{
+			app.put(" : ");
 		}
 
-		if(this.arrowDir == ArrowDir.LeftDir) {
-			app.put("<");
-		} else if(this.arrowDir == ArrowDir.RightDir) {
-			app.put(">");
+		if(this.arrowDirLeft == ArrowDir.LeftDir) {
+			app.put(" < ");
+		} else if(this.arrowDirLeft == ArrowDir.RightDir) {
+			app.put(" > ");
+		}
+
+		foreach(it; this.notes) {
+			app.put(it);
+		}
+
+		if(this.arrowDirRight == ArrowDir.LeftDir) {
+			app.put(" <");
+		} else if(this.arrowDirRight == ArrowDir.RightDir) {
+			app.put(" >");
 		}
 
 		return app.data;
@@ -318,13 +332,26 @@ Context peggedToContext(ParseTree p) {
 			}
 		} else if(it.name == "UML.ContextNote") {
 			foreach(jt; it.children) {
-				if(jt.name == "UML.Note") {
-					ret.notes ~= peggedToNote(jt);
-				} else if(jt.name == "UML.ArrowSign") {
+				if(jt.name == "UML.NoteText") {
+					foreach(kt; jt.children) {
+						if(kt.name == "UML.Text") {
+							foreach(lm; kt.matches) {
+								ret.notes ~= lm;
+							}
+						}
+					}
+					//ret.notes ~= peggedToNote(jt);
+				} else if(jt.name == "UML.ArrowSignLeft") {
 					if(jt.matches[0] == "<") {
-						ret.arrowDir = ArrowDir.LeftDir;
+						ret.arrowDirLeft = ArrowDir.LeftDir;
 					} else if(jt.matches[0] == ">") {
-						ret.arrowDir = ArrowDir.RightDir;
+						ret.arrowDirLeft = ArrowDir.RightDir;
+					}
+				} else if(jt.name == "UML.ArrowSignRight") {
+					if(jt.matches[0] == "<") {
+						ret.arrowDirRight = ArrowDir.LeftDir;
+					} else if(jt.matches[0] == ">") {
+						ret.arrowDirRight = ArrowDir.RightDir;
 					}
 				}
 			}

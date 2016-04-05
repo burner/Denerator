@@ -20,10 +20,11 @@ UML:
 
 	GenericConstraint < '<' String '>'
 
-	ArrowSign < '<' / '>'
+	ArrowSignLeft < '<' / '>'
+	ArrowSignRight < '<' / '>'
 
 	Context < LeftIdentifier CardinalityLeft? Arrow CardinalityRight?  RightIdentifier ContextNote?
-	ContextNote < Note? ArrowSign?
+	ContextNote < :":" ArrowSignLeft? NoteText? ArrowSignRight?
 	CardinalityLeft < Cardinality
 	CardinalityRight < Cardinality
 	Cardinality < String
