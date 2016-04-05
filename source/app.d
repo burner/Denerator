@@ -31,4 +31,12 @@ void main()
 	auto context = peggedToUML(UML(s));
 	//writeln(UML(s));
 	writeln(context.toString());
+
+	s = "note left of Foo : Some Note";
+	auto note = peggedToUML(UML(s));
+	writeln(note.toString());
+
+	s = "note \"Some string note\" as Args";
+	note = peggedToUML(UML(s));
+	writeln(note.toString());
 }

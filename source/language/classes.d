@@ -61,8 +61,8 @@ UML:
 	StereoType < "DB" / "Frontend" / "Backend"
 
 	RealNote < :"note" (RealNoteAssign / RealNoteStandalone)
-	RealNoteAssign < RealNotePos? identifier Note?
+	RealNoteAssign < RealNotePos? ^identifier Note?
 	RealNoteStandalone < String RealNoteName
-	RealNotePos < "left" "of" / "right" "of" / "bottom" "of" / "top" "of"
-	RealNoteName < :"as" identifier
+	RealNotePos < "left of" / "right of" / "bottom of" / "top of"
+	RealNoteName < :"as" ^identifier
 ` ~ basic));

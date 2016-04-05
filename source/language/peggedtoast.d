@@ -257,6 +257,56 @@ class Context {
 	}
 }
 
+enum RealNoteType {
+	NoType,
+	RealNoteAssign,
+	RealNoteStandalone
+}
+
+enum RealNotePos {
+	NoPos,
+	RightOf,
+	LeftOf,
+	BottomOf,
+	TopOf
+}
+
+class RealNote {
+	RealNoteType type = RealNoteType.NoType;
+	RealNotePos pos = RealNotePos.NoPos;
+	Note note;
+	string standaloneString;
+	string posIdentifier;
+	string noteIdentifier;
+	string standaloneName;
+
+	override string toString() {
+		auto app = appender!string();
+		app.put("note ");
+		if(type == RealNoteType.RealNoteAssign) {
+			if(pos == RealNotePos.RightOf) {
+				app.put("right of ");
+			} else if(pos == RealNotePos.LeftOf) {
+				app.put("left of ");
+			} else if(pos == RealNotePos.TopOf) {
+				app.put("top of ");
+			} else if(pos == RealNotePos.BottomOf) {
+				app.put("bottom of ");
+			}
+			app.put(posIdentifier);
+			app.put(" ");
+			app.put(note.toString());
+		} else if(type == RealNoteType.RealNoteStandalone) {
+			app.put("\"");
+			app.put(standaloneString);
+			app.put("\" ");
+			app.put(standaloneName);
+		}
+
+		return app.data;
+	}
+}
+
 class UMLCls {
 	Class[] classes;
 	RealNote[] realNotes;
@@ -268,6 +318,9 @@ class UMLCls {
 			app.put(it.toString());
 		}
 		foreach(it; this.context) {
+			app.put(it.toString());
+		}
+		foreach(it; this.realNotes) {
 			app.put(it.toString());
 		}
 		return app.data;
@@ -289,6 +342,7 @@ UMLCls peggedToUML(ParseTree p) {
 						} else if(jt.name == "UML.Context") {
 							ret.context ~= peggedToContext(jt);
 						} else if(jt.name == "UML.RealNote") {
+							ret.realNotes ~= peggedToRealNote(jt);
 						} else {
 							writeln(jt.name);
 						}
@@ -299,6 +353,54 @@ UMLCls peggedToUML(ParseTree p) {
 		default:
 			assert(false, "Not implemented "  ~ p.name);
 	}
+	return ret;
+}
+
+RealNote peggedToRealNote(ParseTree p) {
+	auto ret = new RealNote;
+
+	foreach(it; p.children) {
+		if(it.name == "UML.RealNoteAssign") {
+			ret.type = RealNoteType.RealNoteAssign;
+			foreach(jt; it.children) {
+				if(jt.name == "UML.RealNotePos") {
+					switch(jt.matches[0]) {
+						case "left of":
+							ret.pos = RealNotePos.LeftOf;
+							break;
+						case "right of":
+							ret.pos = RealNotePos.RightOf;
+							break;
+						case "top of":
+							ret.pos = RealNotePos.TopOf;
+							break;
+						case "bottom of":
+							ret.pos = RealNotePos.BottomOf;
+							break;
+						default: assert(false);
+					}
+				} else if(jt.name == "identifier") {
+					ret.posIdentifier = jt.matches[0];
+				} else if(jt.name == "UML.Note") {
+					ret.note = peggedToNote(jt);
+				}
+			}
+		} else if(it.name == "UML.RealNoteStandalone") {
+			ret.type = RealNoteType.RealNoteStandalone;
+			foreach(jt; it.children) {
+				if(jt.name == "UML.String") {
+					ret.standaloneString = jt.matches[0];
+				} else if(jt.name == "UML.RealNoteName") {
+					foreach(kt; jt.children) {
+						if(kt.name == "identifier") {
+							ret.standaloneName = kt.matches[0];
+						}
+					}
+				}
+			}
+		}
+	}
+
 	return ret;
 }
 
