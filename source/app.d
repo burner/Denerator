@@ -1,6 +1,7 @@
 import std.stdio;
 
 import language.classes;
+import language.peggedtoast;
 
 void main()
 {
@@ -20,5 +21,9 @@ void main()
 	//writeln(UML("note top of Foo : Some note"));
 	//writeln(UML("note \"This is a note\" as N1"));
 	//writeln(UML("interface Foo"));
-	writeln(UML("interface Foo { args : int : helllo } "));
+	//writeln(UML("interface Foo { args : int : helllo } "));
+	string s = "class Foo << DB, Frontend, Backend >> { args : int : some note }";
+	writeln(UML(s));
+	auto cls = peggedToUML(UML(s));
+	writeln(cls.toString());
 }

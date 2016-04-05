@@ -40,11 +40,11 @@ UML:
 
 	Method < AbstractStatic? Protection? Type MethodName :'(' ParameterList?  :')' Note*
 	Protection < '-' / '#' / '~' / '+'
-	Type < Modifier ( '(' Type ')' ) / identifier
+	Type < Modifier ( '(' Type ')' ) / ^identifier
 	MethodName < identifier
 	Modifier < "const" / "in" / "out" / "ref" / "immutable" 
 	ParameterList < Parameter (',' ParameterList)?
-	Parameter < identifier :':' Type
+	Parameter < ^identifier :':' Type
 	Member < Parameter Note*
 	AbstractStatic < :"{" ("abstract" / "static") :"}"
 
