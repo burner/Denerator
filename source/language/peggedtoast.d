@@ -160,12 +160,100 @@ class Class {
 	}
 }
 
+enum ArrowType {
+	NoArrow,
+	ExtensionLeft,
+	CompositionLeft,
+	AggregationLeft,
+	ExtensionRight,
+	CompositionRight,
+	AggregationRight
+}
+
+enum LineType {
+	Dotted,
+	Dashed
+}
+
+enum ArrowDir {
+	NoDir,
+	LeftDir,
+	RightDir
+}
+
+class Context {
+	string left;
+	string right;
+	string cardinalityLeft;
+	string cardinalityRight;
+	ArrowType typeLeft = ArrowType.NoArrow;
+	ArrowType typeRight = ArrowType.NoArrow;
+	LineType lineType;
+	Note[] notes;
+	ArrowDir arrowDir = ArrowDir.NoDir;
+
+	override string toString() {
+		auto app = appender!string();
+		app.put(left);
+		app.put(" ");
+		if(typeLeft == ArrowType.ExtensionLeft) {
+			app.put("<|");
+		} else if(typeLeft == ArrowType.CompositionLeft) {
+			app.put("*");
+		} else if(typeLeft == ArrowType.AggregationLeft) {
+			app.put("o");
+		}
+
+		if(!cardinalityLeft.empty) {
+			app.put(cardinalityLeft);
+		}
+
+		if(lineType == LineType.Dotted) {
+			app.put(" .. ");
+		} else if(lineType == LineType.Dashed) {
+			app.put(" -- ");
+		}
+
+		if(!cardinalityRight.empty) {
+			app.put(cardinalityRight);
+		}
+
+		if(typeRight == ArrowType.ExtensionRight) {
+			app.put("|>");
+		} else if(typeRight == ArrowType.CompositionRight) {
+			app.put("*");
+		} else if(typeRight == ArrowType.AggregationRight) {
+			app.put("o");
+		}
+
+		app.put(" ");
+		app.put(right);
+
+		foreach(it; this.notes) {
+			app.put(it.toString());
+		}
+
+		if(this.arrowDir == ArrowDir.LeftDir) {
+			app.put("<");
+		} else if(this.arrowDir == ArrowDir.RightDir) {
+			app.put(">");
+		}
+
+		return app.data;
+	}
+}
+
 class UMLCls {
 	Class[] classes;
+	RealNote[] realNotes;
+	Context[] context;
 
 	override string toString() {
 		auto app = appender!string();
 		foreach(it; this.classes) {
+			app.put(it.toString());
+		}
+		foreach(it; this.context) {
 			app.put(it.toString());
 		}
 		return app.data;
@@ -184,6 +272,9 @@ UMLCls peggedToUML(ParseTree p) {
 						} else if(jt.name == "UML.ClassStart") {
 							auto cls = peggedToClassStart(jt);
 							ret.classes ~= cls;
+						} else if(jt.name == "UML.Context") {
+							ret.context ~= peggedToContext(jt);
+						} else if(jt.name == "UML.RealNote") {
 						} else {
 							writeln(jt.name);
 						}
@@ -197,13 +288,89 @@ UMLCls peggedToUML(ParseTree p) {
 	return ret;
 }
 
+Context peggedToContext(ParseTree p) {
+	auto ret = new Context;
+
+	foreach(it; p.children) {
+		if(it.name == "UML.CardinalityLeft") {
+			foreach(jt; it.children) {
+				if(jt.name == "String") {
+					ret.cardinalityLeft = jt.matches[0];
+				}
+			}
+		} else if(it.name == "UML.CardinalityRight") {
+			foreach(jt; it.children) {
+				if(jt.name == "String") {
+					ret.cardinalityRight = jt.matches[0];
+				}
+			}
+		} else if(it.name == "UML.LeftIdentifier") {
+			foreach(jt; it.children) {
+				if(jt.name == "identifier") {
+					ret.left = jt.matches[0];
+				}
+			}
+		} else if(it.name == "UML.RightIdentifier") {
+			foreach(jt; it.children) {
+				if(jt.name == "identifier") {
+					ret.right = jt.matches[0];
+				}
+			}
+		} else if(it.name == "UML.ContextNote") {
+			foreach(jt; it.children) {
+				if(jt.name == "UML.Note") {
+					ret.notes ~= peggedToNote(jt);
+				} else if(jt.name == "UML.ArrowSign") {
+					if(jt.matches[0] == "<") {
+						ret.arrowDir = ArrowDir.LeftDir;
+					} else if(jt.matches[0] == ">") {
+						ret.arrowDir = ArrowDir.RightDir;
+					}
+				}
+			}
+		} else if(it.name == "UML.Arrow") {
+			foreach(jt; it.children) {
+				if(jt.name == "UML.Left") {
+					foreach(kt; jt.children) {
+						if(kt.name == "UML.ExtensionLeft") {
+							ret.typeLeft = ArrowType.ExtensionLeft;
+						} else if(kt.name == "UML.CompostionLeft") {
+							ret.typeLeft = ArrowType.CompositionLeft;
+						} else if(kt.name == "UML.AggregationLeft") {
+							ret.typeLeft = ArrowType.AggregationLeft;
+						}
+					}
+				} else if(jt.name == "UML.Right") {
+					foreach(kt; jt.children) {
+						if(kt.name == "UML.ExtensionRight") {
+							ret.typeRight = ArrowType.ExtensionRight;
+						} else if(kt.name == "UML.CompostionRight") {
+							ret.typeRight = ArrowType.CompositionRight;
+						} else if(kt.name == "UML.AggregationRight") {
+							ret.typeRight = ArrowType.AggregationRight;
+						}
+					}
+				} else if(jt.name == "UML.Line") {
+					foreach(kt; jt.children) {
+						if(kt.name == "UML.Dotted") {
+							ret.lineType = LineType.Dotted;
+						} else if(kt.name == "UML.Dashed") {
+							ret.lineType = LineType.Dashed;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
 Class peggedToClassStart(ParseTree p) {
 	auto cls = new Class;
 	foreach(it; p.children) {
-		if(it.name == "UML.Context") {
-		} else if(it.name == "UML.Class") {
+		if(it.name == "UML.Class") {
 			peggedToClass(it, cls);
-		} else if(it.name == "UML.RealNote") {
 		}
 	}
 

@@ -5,12 +5,12 @@ import language.helper;
 
 mixin(grammar(`
 UML:
-	Start < (Comment / ClassStart)+
+	Start < (Comment / ClassStart / Context / RealNote)+
 
 	Note < :":" NoteText+
 	NoteText <- Text+
 
-	ClassStart < Context / Class / RealNote
+	ClassStart < Class
 	Class < ClassPrefix StereoTypes? ClassBody?
 	ClassPrefix < ClassType ClassName
 	ClassType < "class" / "struct" / "enum" / "interface"
@@ -22,12 +22,16 @@ UML:
 
 	ArrowSign < '<' / '>'
 
-	Context < ClassPrefix Cardinality? Arrow Cardinality? ClassPrefix ContextNote?
+	Context < LeftIdentifier CardinalityLeft? Arrow CardinalityRight?  RightIdentifier ContextNote?
 	ContextNote < Note? ArrowSign?
+	CardinalityLeft < Cardinality
+	CardinalityRight < Cardinality
 	Cardinality < String
 	Arrow < Left? Line Right?
 	Left < ExtensionLeft / CompositionLeft / AggregationLeft
 	Right < ExtensionRight / CompositionRight / AggregationRight
+	LeftIdentifier < ^identifier
+	RightIdentifier < ^identifier
 	ExtensionLeft < "<|"
 	ExtensionRight < "|>"
 	CompositionLeft < "*"

@@ -23,7 +23,12 @@ void main()
 	//writeln(UML("interface Foo"));
 	//writeln(UML("interface Foo { args : int : helllo } "));
 	string s = "class Foo << DB, Frontend, Backend >> { args : int : some note }";
-	writeln(UML(s));
+	//writeln(UML(s));
 	auto cls = peggedToUML(UML(s));
 	writeln(cls.toString());
+
+	s = "Foo <|.. Bar : Hello <";
+	auto context = peggedToUML(UML(s));
+	//writeln(UML(s));
+	writeln(context.toString());
 }
