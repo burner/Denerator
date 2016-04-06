@@ -12,11 +12,12 @@ UML:
 
 	ClassStart < Class
 	Class < ClassPrefix StereoTypes? ClassBody?
-	ClassPrefix < ClassType ClassName
+	ClassPrefix < ClassType ClassName ClassConstraint?
 	ClassType < "class" / "struct" / "enum" / "interface"
-	ClassName < identifier
+	ClassName <~ (identifier / '.')+
 	ClassBody < :'{' ClassDecls* :'}'
 	ClassDecls < Method / Member / Seperator
+	ClassConstraint < :"<" Text+ :">"
 
 	GenericConstraint < '<' String '>'
 
@@ -58,7 +59,7 @@ UML:
 		/ "__" (NoteText :"__")? Note*
 
 	StereoTypes < :"<<" StereoType (:',' StereoType)* :">>"
-	StereoType < "DB" / "Frontend" / "Backend"
+	StereoType < "SQL" / "Redis" / "MongoDB" / "Frontend" / "Backend"
 
 	RealNote < :"note" (RealNoteAssign / RealNoteStandalone)
 	RealNoteAssign < RealNotePos? ^identifier Note?

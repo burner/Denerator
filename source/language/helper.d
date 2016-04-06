@@ -2,7 +2,7 @@ module language.helper;
 
 public enum string basic = `
 	Comment <- :"'" Text+
-	Text <- identifier / blank
+	Text <- identifier / blank / '?' / '(' / ')' / "&&" / "||" / "!" / "=="
 
     String <~ doublequote (!doublequote Char)* doublequote
 

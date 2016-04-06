@@ -22,7 +22,12 @@ void main()
 	//writeln(UML("note \"This is a note\" as N1"));
 	//writeln(UML("interface Foo"));
 	//writeln(UML("interface Foo { args : int : helllo } "));
-	string s = "class Foo << DB, Frontend, Backend >> { args : int : some note }";
+	string s = 
+`class modA.Foo<is!(Class && args)> << SQL, Frontend, Backend >> { 
+	args : int : some note 
+	int fun() : An awesome function
+				: Another note about fun
+}`;
 	//writeln(UML(s));
 	auto cls = peggedToUML(UML(s));
 	writeln(cls.toString());

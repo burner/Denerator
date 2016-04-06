@@ -138,16 +138,22 @@ class Class {
 	Member[] members;
 	string[] stereoTypes;
 	Note[] notes;
+	string constraint;
 
 	override string toString() {
 		auto app = appender!string();
 
 		formattedWrite(app, "%s %s", this.classType, this.className);
-		app.put("<<");
-		foreach(it; this.stereoTypes) {
-			formattedWrite(app, " %s", it);
+		if(!constraint.empty) {
+			formattedWrite(app, "< %s >", constraint);
 		}
-		app.put(">>");
+		if(!stereoTypes.empty) {
+			app.put("<<");
+			foreach(it; this.stereoTypes) {
+				formattedWrite(app, " %s", it);
+			}
+			app.put(">>");
+		}
 		foreach(it; this.notes) {
 			formattedWrite(app, " %s", it.toString());
 		}
@@ -517,6 +523,10 @@ void peggedToClass(ParseTree p, Class cls) {
 				} else if(jt.name == "UML.ClassName") {
 					foreach(kt; jt.matches) {
 						cls.className ~= kt;
+					}
+				} else if(jt.name == "UML.ClassConstraint") {
+					foreach(kt; jt.matches) {
+						cls.constraint ~= kt;
 					}
 				}
 			}
