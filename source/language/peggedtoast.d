@@ -6,7 +6,6 @@ import std.array : appender, back, empty;
 import std.format : formattedWrite;
 
 import pegged.grammar;
-import language.ast;
 
 class Note {
 	string[] str;
@@ -618,9 +617,7 @@ MemberFunction peggedToMethod(ParseTree p) {
 		} else if(it.name == "UML.ParameterList") {
 			ret.parameterList = peggedToParameterList(it);
 		} else if(it.name == "UML.Note") {
-			foreach(jt; it.children) {
-				ret.notes ~= peggedToNote(jt);
-			}
+			ret.notes ~= peggedToNote(it);
 		} else {
 			assert(false, it.name);
 		}

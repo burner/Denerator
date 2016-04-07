@@ -7,7 +7,7 @@ mixin(grammar(`
 UML:
 	Start < (Comment / ClassStart / Context / RealNote)+
 
-	Note < :":" NoteText+
+	Note < :"/*" NoteText+ :"*/"
 	NoteText <- Text+
 
 	ClassStart < Class

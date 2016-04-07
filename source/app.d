@@ -2,6 +2,7 @@ import std.stdio;
 
 import language.classes;
 import language.peggedtoast;
+import language.postprocessing;
 
 void main()
 {
@@ -24,12 +25,17 @@ void main()
 	//writeln(UML("interface Foo { args : int : helllo } "));
 	string s = 
 `class modA.Foo<is!(Class && args)> << SQL, Frontend, Backend >> { 
-	args : int : some note 
-	int fun() : An awesome function
-				: Another note about fun
+	args : int /* some note */
+	int fun() /* An awesome function
+				 Another note about fun */
 }`;
 	//writeln(UML(s));
 	auto cls = peggedToUML(UML(s));
+	auto oFile = File("graphvizTest.dot", "w");
+	auto outFile = oFile.lockingTextWriter();
+	auto gen = new GraphVizClassDiagramm!(typeof(outFile))(cls, outFile);
+	gen.generate();
+	/*
 	writeln(cls.toString());
 
 	s = "Foo <|.. Bar : > Hello <";
@@ -44,4 +50,5 @@ void main()
 	s = "note \"Some string note\" as Args";
 	note = peggedToUML(UML(s));
 	writeln(note.toString());
+	*/
 }
