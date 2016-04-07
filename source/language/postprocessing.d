@@ -28,9 +28,10 @@ abstract class ClassDiagramm {
 		import std.string : lastIndexOf;
 		import std.algorithm.iteration : splitter;
 		import std.array : array;
+		import std.stdio : writeln;
 
-		Module cur = this.modules[defaultModuleName];
 		foreach(it; this.uml.classes) {
+			Module cur = this.modules[defaultModuleName];
 			foreach(jt; splitter(it.className, ".").array[0 .. $-1]) {
 				if(jt !in cur.subModules) {
 					cur.subModules[jt] = new Module(jt);
@@ -86,8 +87,6 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		this.output.put("subgraph cluster");
 		this.output.put(mod.moduleName);
 		this.output.put(" {\n");
-		this.genIndent(indent + 1);
-		this.output.put("style = \"folder\";\n");
 		this.genIndent(indent + 1);
 		this.output.formattedWrite("label = \"module %s\";\n", mod.moduleName);
 

@@ -105,7 +105,9 @@ class MemberFunction : Member {
 		}
 		formattedWrite(app, " %s", identifier);
 		formattedWrite(app, " %s", type.toString());
-		formattedWrite(app, "(%s)", parameterList.toString());
+		if(parameterList !is null) {
+			formattedWrite(app, "(%s)", parameterList.toString());
+		}
 
 		foreach(it; notes) {
 			formattedWrite(app, " %s", it);
