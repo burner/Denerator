@@ -55,6 +55,7 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 	import std.algorithm.iteration : joiner, map, filter;
 	import std.format : format;
 	import std.range : chain;
+	import std.string : translate;
 
 	Output output;
 
@@ -71,6 +72,17 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 
 		foreach(it; this.modules[defaultModuleName].classes) {
 			this.genClass(it, 1);
+		}
+
+		foreach(Context it; this.uml.context) {
+			import std.stdio : writeln;
+			writeln(it.toString());
+			this.output.formattedWrite(
+				"%s -- %s[headlabel=\"%s\", tailabel=\"%s\"%s];\n",
+				fixClassName(it.left), fixClassName(it.right),
+				it.cardinalityLeft, it.cardinalityRight,
+				(it.lineType == LineType.Dashed ? ",style=\"dashed\"" : "")
+			);
 		}
 
 		this.genFinalMatter();
@@ -103,7 +115,6 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 	}
 
 	final static string fixClassName(string clsName) {
-		import std.string : translate;
 		dchar[dchar] tr = ['.':'_'];
 		return translate(clsName, tr);
 	}
@@ -112,17 +123,19 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		this.genIndent(indent);
 		this.output.formattedWrite("%s [\n", fixClassName(cls.className));
 		this.genIndent(indent+1);
-		this.output.put("label = \"{");
-		this.output.put(cls.classType);
-		this.output.put(" ");
+		this.output.put("shape=none\n");
+		this.genIndent(indent+1);
+		this.output.put("label = < <table cellspacing=\"0\" border=\"0\">");
 		this.output.put(genClassLabel(cls));
-		this.output.put("}\";\n");
+		//this.output.put("</td></tr>\n");
+		this.output.put("\n</table> >\n");
 		this.genIndent(indent);
 		this.output.put("]\n");
 	}
 
 	final static string genClassLabel(Class cls) {
 		import std.string : lastIndexOf;
+		import std.array : array;
 
 		auto idx = cls.className.lastIndexOf('.');
 		if(idx == -1) {
@@ -132,23 +145,26 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		}
 		
 		auto app = appender!string();
-		app.put(cls.className[idx .. $]);
-		app.put("|");
+		app.formattedWrite("<tr><td border=\"1\">%s %s</td></tr>", 
+			cls.classType, cls.className[idx .. $]
+		);
+		app.put(" ");
 
 		if(!cls.constraint.empty) {
-			app.put("\\<");
-			app.put(cls.constraint);
-			app.put("\\>|\\n");
+			string[dchar] tr = ['&':"&amp;"];
+			app.put("<tr><td border=\"1\">");
+			app.put(translate(cls.constraint, tr));
+			app.put("</td></tr>\n");
 		}
 
 		if(!cls.stereoTypes.empty) {
-			app.put("\\<\\<");
+			app.put("<tr><td border=\"1\">");
 			app.put(cls.stereoTypes.joiner(", "));
-			app.put("\\>\\>|\\n");
+			app.put("</td></tr>\n");
 		}
 
 		auto ma = map!(function(Member a) { return genMember(a); })(cls.members);
-		app.put(ma.joiner("|\\n"));
+		app.put(ma.joiner("\n"));
 
 		return app.data;
 	}
@@ -177,6 +193,7 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 
 	final static string genMemberFunction(MemberFunction mem) {
 		auto app = appender!string();
+		app.put("<tr><td border=\"1\">");
 		if(mem.protection != ' ') {
 			app.formattedWrite("%s ", mem.protection);
 		}
@@ -186,27 +203,31 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		app.put("(");
 		if(mem.parameterList !is null) {
 			auto ma = map!(function(MemberVariable a) { 
-				return genMemberVariable(a); 
+				return genMemberVariable(a, true); 
 			})(mem.parameterList.parameter);
 			app.put(ma.joiner(", "));
 		}
 		app.put(")");
 		if(!mem.notes.empty) {
-			app.put(" /* ");
+			app.put("\\n/* ");
 			auto nt = mem.notes.chain().map!(function(Note n) { return n.str.joiner();});
 			app.put(nt.joiner(" ").filter!(a => (a != '\n' && a != '\t')));
 			app.put(" */");
 		}
+		app.put("</td></tr>");
 
 		return app.data;
 	}
 
-	final static string genMemberVariable(MemberVariable mem) {
-		return format("%s : %s%s%s%s", mem.identifier, genTypeStr(mem.type),
-			mem.notes !is null ? " /* " : "",
+	final static string genMemberVariable(MemberVariable mem, 
+			bool isParameter = false) 
+	{
+		return format("%s%s : %s%s%s%s%s", isParameter ? "" : "<tr><td border=\"1\">",
+			mem.identifier, genTypeStr(mem.type),
+			mem.notes !is null ? "\\n/* " : "",
 			mem.notes.chain().map!(function(Note n) { return n.str.joiner();})
 				.joiner(" ").filter!(a => (a != '\n' && a != '\t')),
-			mem.notes !is null ? " */" : ""
+			mem.notes !is null ? " */" : "", isParameter ? "" : "</td></tr>"
 		);
 	}
 

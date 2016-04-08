@@ -5,13 +5,13 @@ import language.helper;
 
 mixin(grammar(`
 UML:
-	Start < (Comment / ClassStart / Context / RealNote)+
+	Start < (Comment / Context / ClassStart / RealNote)+
 
 	Note < :"/*" NoteText+ :"*/"
 	NoteText <- Text+
 
 	ClassStart < Class
-	Class < ClassPrefix StereoTypes? ClassBody?
+	Class < ClassPrefix ((StereoTypes? ClassBody?) / ";")
 	ClassPrefix < ClassType ClassName ClassConstraint?
 	ClassType < "class" / "struct" / "enum" / "interface"
 	ClassName <~ (identifier / '.')+
@@ -32,8 +32,8 @@ UML:
 	Arrow < Left? Line Right?
 	Left < ExtensionLeft / CompositionLeft / AggregationLeft
 	Right < ExtensionRight / CompositionRight / AggregationRight
-	LeftIdentifier < ^identifier
-	RightIdentifier < ^identifier
+	LeftIdentifier <~ (identifier / '.')+
+	RightIdentifier <~ (identifier / '.')+
 	ExtensionLeft < "<|"
 	ExtensionRight < "|>"
 	CompositionLeft < "*"

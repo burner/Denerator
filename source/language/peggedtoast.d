@@ -428,17 +428,17 @@ Context peggedToContext(ParseTree p) {
 				}
 			}
 		} else if(it.name == "UML.LeftIdentifier") {
-			foreach(jt; it.children) {
-				if(jt.name == "identifier") {
-					ret.left = jt.matches[0];
+			//foreach(jt; it.children) {
+				foreach(kt; it.matches) {
+					ret.left ~= kt;
 				}
-			}
+			//}
 		} else if(it.name == "UML.RightIdentifier") {
-			foreach(jt; it.children) {
-				if(jt.name == "identifier") {
-					ret.right = jt.matches[0];
+			//foreach(jt; it.children) {
+				foreach(kt; it.matches) {
+					ret.right ~= kt;
 				}
-			}
+			//}
 		} else if(it.name == "UML.ContextNote") {
 			foreach(jt; it.children) {
 				if(jt.name == "UML.NoteText") {

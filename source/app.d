@@ -29,12 +29,13 @@ void main()
 	int fun() /* An awesome function
 				 Another note about fun */
 }
-class Bar;
-	Foo <|.. Bar
+class Bar {}
+	modA.Foo <|.. Bar
 `;
+
 	//writeln(UML(s));
 	auto cls = peggedToUML(UML(s));
-	//writeln(cls.toString());
+	writeln(cls.toString());
 	auto oFile = File("graphvizTest.dot", "w");
 	auto outFile = oFile.lockingTextWriter();
 	auto gen = new GraphVizClassDiagramm!(typeof(outFile))(cls, outFile);
