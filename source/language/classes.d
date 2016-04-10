@@ -24,7 +24,7 @@ UML:
 	ArrowSignLeft < '<' / '>'
 	ArrowSignRight < '<' / '>'
 
-	Context < LeftIdentifier CardinalityLeft? Arrow CardinalityRight?  RightIdentifier ContextNote?
+	Context < LeftIdentifier CardinalityLeft? Arrow CardinalityRight?  RightIdentifier ContextNote? :';'
 	ContextNote < :":" ArrowSignLeft? NoteText? ArrowSignRight?
 	CardinalityLeft < Cardinality
 	CardinalityRight < Cardinality
@@ -34,12 +34,12 @@ UML:
 	Right < ExtensionRight / CompositionRight / AggregationRight
 	LeftIdentifier <~ (identifier / '.')+
 	RightIdentifier <~ (identifier / '.')+
-	ExtensionLeft < "<|"
-	ExtensionRight < "|>"
-	CompositionLeft < "*"
-	CompositionRight < "*"
-	AggregationLeft < "o"
-	AggregationRight < "o"
+	ExtensionLeft < ^"e"
+	ExtensionRight < ^"e"
+	CompositionLeft < ^"c"
+	CompositionRight < ^"c"
+	AggregationLeft < ^"a"
+	AggregationRight < ^"a"
 	Line < Dotted / Dashed
 	Dotted < ".."
 	Dashed < "--"

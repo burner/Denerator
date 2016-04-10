@@ -162,7 +162,7 @@ class Class {
 		foreach(it; this.members) {
 			app.put(it.toString());
 		}
-		app.put("}");
+		app.put("}\n");
 		return app.data;
 	}
 }
@@ -205,11 +205,11 @@ class Context {
 		app.put(left);
 		app.put(" ");
 		if(typeLeft == ArrowType.ExtensionLeft) {
-			app.put("<|");
+			app.put("e");
 		} else if(typeLeft == ArrowType.CompositionLeft) {
-			app.put("*");
+			app.put("c");
 		} else if(typeLeft == ArrowType.AggregationLeft) {
-			app.put("o");
+			app.put("a");
 		}
 
 		if(!cardinalityLeft.empty) {
@@ -227,11 +227,11 @@ class Context {
 		}
 
 		if(typeRight == ArrowType.ExtensionRight) {
-			app.put("|>");
+			app.put("e");
 		} else if(typeRight == ArrowType.CompositionRight) {
-			app.put("*");
+			app.put("c");
 		} else if(typeRight == ArrowType.AggregationRight) {
-			app.put("o");
+			app.put("a");
 		}
 
 		app.put(" ");
@@ -260,6 +260,7 @@ class Context {
 			app.put(" >");
 		}
 
+		app.put("\n");
 		return app.data;
 	}
 }
@@ -470,7 +471,7 @@ Context peggedToContext(ParseTree p) {
 					foreach(kt; jt.children) {
 						if(kt.name == "UML.ExtensionLeft") {
 							ret.typeLeft = ArrowType.ExtensionLeft;
-						} else if(kt.name == "UML.CompostionLeft") {
+						} else if(kt.name == "UML.CompositionLeft") {
 							ret.typeLeft = ArrowType.CompositionLeft;
 						} else if(kt.name == "UML.AggregationLeft") {
 							ret.typeLeft = ArrowType.AggregationLeft;
@@ -480,7 +481,7 @@ Context peggedToContext(ParseTree p) {
 					foreach(kt; jt.children) {
 						if(kt.name == "UML.ExtensionRight") {
 							ret.typeRight = ArrowType.ExtensionRight;
-						} else if(kt.name == "UML.CompostionRight") {
+						} else if(kt.name == "UML.CompositionRight") {
 							ret.typeRight = ArrowType.CompositionRight;
 						} else if(kt.name == "UML.AggregationRight") {
 							ret.typeRight = ArrowType.AggregationRight;
@@ -488,6 +489,7 @@ Context peggedToContext(ParseTree p) {
 					}
 				} else if(jt.name == "UML.Line") {
 					foreach(kt; jt.children) {
+						writeln(kt);
 						if(kt.name == "UML.Dotted") {
 							ret.lineType = LineType.Dotted;
 						} else if(kt.name == "UML.Dashed") {

@@ -79,23 +79,35 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 			writeln(it.toString());
 			if(it.typeRight != ArrowType.NoArrow) {
 				this.output.formattedWrite(
-					"\t%s -> %s[arrowhead=\"%s\" %s %s %s];\n",
+					"\t%s -> %s[%s];\n",
 					fixClassName(it.left), fixClassName(it.right),
-					arrowHeadToStyle(it.typeRight),
+					[arrowHeadToStyle(it.typeRight),
 					arrowLabel!"head"(it.cardinalityLeft),
 					arrowLabel!"tail"(it.cardinalityRight),
-					(it.lineType == LineType.Dashed ? ",style=\"dashed\"" : "")
+					(it.lineType == LineType.Dashed ? "style=\"dashed\"" : "")]
+					.filter!(a => !a.empty).joiner(",")
 				);
-			}
-			if(it.typeLeft != ArrowType.NoArrow) {
+			} else if(it.typeLeft != ArrowType.NoArrow) {
 				this.output.formattedWrite(
-					"\t%s -> %s[arrowhead=\"%s\" %s %s %s];\n",
+					"\t%s -> %s[%s];\n",
 					fixClassName(it.right), fixClassName(it.left),
-					arrowHeadToStyle(it.typeLeft),
+					[arrowHeadToStyle(it.typeLeft),
 					it.cardinalityRight, it.cardinalityLeft,
-					arrowLabel!"tail"(it.cardinalityRight),
 					arrowLabel!"head"(it.cardinalityLeft),
-					(it.lineType == LineType.Dashed ? ",style=\"dashed\"" : "")
+					arrowLabel!"tail"(it.cardinalityRight),
+					(it.lineType == LineType.Dashed ? "style=\"dashed\"" : "")]
+					.filter!(a => !a.empty).joiner(",")
+				);
+			} else {
+				this.output.formattedWrite(
+					"\t%s -> %s [%s];\n",
+					fixClassName(it.right), fixClassName(it.left),
+					[arrowHeadToStyle(it.typeLeft),
+					it.cardinalityRight, it.cardinalityLeft,
+					arrowLabel!"head"(it.cardinalityLeft),
+					arrowLabel!"tail"(it.cardinalityRight),
+					(it.lineType == LineType.Dashed ? "style=\"dashed\"" : "")]
+					.filter!(a => !a.empty).joiner(",")
 				);
 			}
 		}
@@ -114,19 +126,19 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 	final static string arrowHeadToStyle(ArrowType at) {
 		final switch(at) {
 			case ArrowType.NoArrow:
-				return "";
+				return "arrowhead=empty";
 			case ArrowType.ExtensionLeft:
-				return "onormal";
+				return "arrowhead=onormal";
 			case ArrowType.CompositionLeft:
-				return "diamond";
+				return "arrowhead=diamond";
 			case ArrowType.AggregationLeft:
-				return "odiamond";
+				return "arrowhead=odiamond";
 			case ArrowType.ExtensionRight:
-				return "onormal";
+				goto case ArrowType.ExtensionLeft;
 			case ArrowType.CompositionRight:
-				return "diamond";
+				goto case ArrowType.CompositionLeft;
 			case ArrowType.AggregationRight:
-				return "odiamond";
+				goto case ArrowType.AggregationLeft;
 		}
 	}
 
@@ -169,7 +181,7 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		this.genIndent(indent+1);
 		this.output.put("label = \"{");
 		this.output.put(genClassLabel(cls));
-		this.output.put("}\"");
+		this.output.put("}\"\n");
 		this.genIndent(indent);
 		this.output.put("]\n");
 	}
