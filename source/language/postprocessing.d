@@ -116,13 +116,13 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 			case ArrowType.NoArrow:
 				return "";
 			case ArrowType.ExtensionLeft:
-				return "empty";
+				return "onormal";
 			case ArrowType.CompositionLeft:
 				return "diamond";
 			case ArrowType.AggregationLeft:
 				return "odiamond";
 			case ArrowType.ExtensionRight:
-				return "empty";
+				return "onormal";
 			case ArrowType.CompositionRight:
 				return "diamond";
 			case ArrowType.AggregationRight:
@@ -165,12 +165,11 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		this.genIndent(indent);
 		this.output.formattedWrite("%s [\n", fixClassName(cls.className));
 		this.genIndent(indent+1);
-		this.output.put("shape=none\n");
+		//this.output.put("shape=record\n");
 		this.genIndent(indent+1);
-		this.output.put("label = < <table cellspacing=\"0\" border=\"0\">");
+		this.output.put("label = \"{");
 		this.output.put(genClassLabel(cls));
-		//this.output.put("</td></tr>\n");
-		this.output.put("\n</table> >\n");
+		this.output.put("}\"");
 		this.genIndent(indent);
 		this.output.put("]\n");
 	}
@@ -187,26 +186,24 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		}
 		
 		auto app = appender!string();
-		app.formattedWrite("<tr><td border=\"1\">%s %s</td></tr>", 
+		app.formattedWrite("%s %s|", 
 			cls.classType, cls.className[idx .. $]
 		);
 		app.put(" ");
 
 		if(!cls.constraint.empty) {
 			string[dchar] tr = ['&':"&amp;"];
-			app.put("<tr><td border=\"1\">");
 			app.put(translate(cls.constraint, tr));
-			app.put("</td></tr>\n");
+			app.put("|");
 		}
 
 		if(!cls.stereoTypes.empty) {
-			app.put("<tr><td border=\"1\">");
 			app.put(cls.stereoTypes.joiner(", "));
-			app.put("</td></tr>\n");
+			app.put("|");
 		}
 
 		auto ma = map!(function(Member a) { return genMember(a); })(cls.members);
-		app.put(ma.joiner("\n"));
+		app.put(ma.joiner("|"));
 
 		return app.data;
 	}
@@ -235,7 +232,6 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 
 	final static string genMemberFunction(MemberFunction mem) {
 		auto app = appender!string();
-		app.put("<tr><td border=\"1\">");
 		if(mem.protection != ' ') {
 			app.formattedWrite("%s ", mem.protection);
 		}
@@ -251,12 +247,11 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		}
 		app.put(")");
 		if(!mem.notes.empty) {
-			app.put("\\n/* ");
+			app.put("\n\\n/* ");
 			auto nt = mem.notes.chain().map!(function(Note n) { return n.str.joiner();});
 			app.put(nt.joiner(" ").filter!(a => (a != '\n' && a != '\t')));
 			app.put(" */");
 		}
-		app.put("</td></tr>");
 
 		return app.data;
 	}
@@ -264,12 +259,12 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 	final static string genMemberVariable(MemberVariable mem, 
 			bool isParameter = false) 
 	{
-		return format("%s%s : %s%s%s%s%s", isParameter ? "" : "<tr><td border=\"1\">",
+		return format("%s : %s%s%s%s",
 			mem.identifier, genTypeStr(mem.type),
 			mem.notes !is null ? "\\n/* " : "",
 			mem.notes.chain().map!(function(Note n) { return n.str.joiner();})
 				.joiner(" ").filter!(a => (a != '\n' && a != '\t')),
-			mem.notes !is null ? " */" : "", isParameter ? "" : "</td></tr>"
+			mem.notes !is null ? " */" : ""
 		);
 	}
 
@@ -296,21 +291,16 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 
 	final void genTopMatter() {
 		this.output.put(`
-strict digraph G {
+digraph G {
 	fontname = "Bitstream Vera Sans"
 	fontsize = 8
-	concentrate = true
 
-	node [
-		fontname = "Bitstream Vera Sans"
-		fontsize = 8
-		shape = "record"
-	]
+	node[shape=record,style=filled,fillcolor=gray95]
 
 	edge [
 		fontname = "Bitstream Vera Sans"
 		fontsize = 8
-	]
+	];
 `
 		);
 	}
