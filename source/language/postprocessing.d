@@ -92,7 +92,6 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 					"\t%s -> %s[%s];\n",
 					fixClassName(it.right), fixClassName(it.left),
 					[arrowHeadToStyle(it.typeLeft),
-					it.cardinalityRight, it.cardinalityLeft,
 					arrowLabel!"head"(it.cardinalityLeft),
 					arrowLabel!"tail"(it.cardinalityRight),
 					(it.lineType == LineType.Dashed ? "style=\"dashed\"" : "")]
@@ -103,7 +102,6 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 					"\t%s -> %s [%s];\n",
 					fixClassName(it.right), fixClassName(it.left),
 					[arrowHeadToStyle(it.typeLeft),
-					it.cardinalityRight, it.cardinalityLeft,
 					arrowLabel!"head"(it.cardinalityLeft),
 					arrowLabel!"tail"(it.cardinalityRight),
 					(it.lineType == LineType.Dashed ? "style=\"dashed\"" : "")]
@@ -119,7 +117,7 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		if(label.empty) {
 			return "";
 		} else {
-			return format(",%slabel=\"%s\",", l, label);
+			return format("%slabel=%s", l, label);
 		}
 	}
 
@@ -305,13 +303,13 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		this.output.put(`
 digraph G {
 	fontname = "Bitstream Vera Sans"
-	fontsize = 8
+	fontsize = 10
 
-	node[shape=record,style=filled,fillcolor=gray95]
+	node[shape=record,style=filled,fillcolor=gray90]
 
 	edge [
 		fontname = "Bitstream Vera Sans"
-		fontsize = 8
+		fontsize = 10
 	];
 `
 		);

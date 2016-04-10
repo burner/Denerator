@@ -418,13 +418,13 @@ Context peggedToContext(ParseTree p) {
 	foreach(it; p.children) {
 		if(it.name == "UML.CardinalityLeft") {
 			foreach(jt; it.children) {
-				if(jt.name == "String") {
+				if(jt.name == "UML.Cardinality") {
 					ret.cardinalityLeft = jt.matches[0];
 				}
 			}
 		} else if(it.name == "UML.CardinalityRight") {
 			foreach(jt; it.children) {
-				if(jt.name == "String") {
+				if(jt.name == "UML.Cardinality") {
 					ret.cardinalityRight = jt.matches[0];
 				}
 			}
@@ -498,6 +498,8 @@ Context peggedToContext(ParseTree p) {
 					}
 				}
 			}
+		} else {
+			assert(false, it.name);
 		}
 	}
 

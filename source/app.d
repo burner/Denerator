@@ -15,7 +15,7 @@ class Bar {}
 class modA.Baz {}
 modA.Foo e.. Bar;
 modA.Foo ..c modA.Baz;
-Bar -- modA.Baz;
+Bar "some" c-- "1" modA.Baz;
 `;
 	writeln(UML(s));
 	auto cls = peggedToUML(UML(s));
