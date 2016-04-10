@@ -77,15 +77,57 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		foreach(Context it; this.uml.context) {
 			import std.stdio : writeln;
 			writeln(it.toString());
-			this.output.formattedWrite(
-				"%s -- %s[headlabel=\"%s\", tailabel=\"%s\"%s];\n",
-				fixClassName(it.left), fixClassName(it.right),
-				it.cardinalityLeft, it.cardinalityRight,
-				(it.lineType == LineType.Dashed ? ",style=\"dashed\"" : "")
-			);
+			if(it.typeRight != ArrowType.NoArrow) {
+				this.output.formattedWrite(
+					"\t%s -> %s[arrowhead=\"%s\" %s %s %s];\n",
+					fixClassName(it.left), fixClassName(it.right),
+					arrowHeadToStyle(it.typeRight),
+					arrowLabel!"head"(it.cardinalityLeft),
+					arrowLabel!"tail"(it.cardinalityRight),
+					(it.lineType == LineType.Dashed ? ",style=\"dashed\"" : "")
+				);
+			}
+			if(it.typeLeft != ArrowType.NoArrow) {
+				this.output.formattedWrite(
+					"\t%s -> %s[arrowhead=\"%s\" %s %s %s];\n",
+					fixClassName(it.right), fixClassName(it.left),
+					arrowHeadToStyle(it.typeLeft),
+					it.cardinalityRight, it.cardinalityLeft,
+					arrowLabel!"tail"(it.cardinalityRight),
+					arrowLabel!"head"(it.cardinalityLeft),
+					(it.lineType == LineType.Dashed ? ",style=\"dashed\"" : "")
+				);
+			}
 		}
 
 		this.genFinalMatter();
+	}
+
+	final static string arrowLabel(string l)(string label) {
+		if(label.empty) {
+			return "";
+		} else {
+			return format(",%slabel=\"%s\",", l, label);
+		}
+	}
+
+	final static string arrowHeadToStyle(ArrowType at) {
+		final switch(at) {
+			case ArrowType.NoArrow:
+				return "";
+			case ArrowType.ExtensionLeft:
+				return "empty";
+			case ArrowType.CompositionLeft:
+				return "diamond";
+			case ArrowType.AggregationLeft:
+				return "odiamond";
+			case ArrowType.ExtensionRight:
+				return "empty";
+			case ArrowType.CompositionRight:
+				return "diamond";
+			case ArrowType.AggregationRight:
+				return "odiamond";
+		}
 	}
 
 	final void genIndent(in int indent) {
@@ -254,9 +296,10 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 
 	final void genTopMatter() {
 		this.output.put(`
-graph G {
+strict digraph G {
 	fontname = "Bitstream Vera Sans"
 	fontsize = 8
+	concentrate = true
 
 	node [
 		fontname = "Bitstream Vera Sans"

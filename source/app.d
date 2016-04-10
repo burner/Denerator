@@ -30,7 +30,7 @@ void main()
 				 Another note about fun */
 }
 class Bar {}
-	modA.Foo <|.. Bar
+	modA.Foo <|..o Bar
 `;
 
 	//writeln(UML(s));
