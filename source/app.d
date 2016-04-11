@@ -13,7 +13,7 @@ void main() {
 }
 class Bar {}
 class modA.Baz {}
-modA.Foo e.. Bar;
+modA.Foo "*"(bars=foo) e.. Bar;
 modA.Foo ..c modA.Baz;
 Bar "some" c-- "1" modA.Baz;
 `;

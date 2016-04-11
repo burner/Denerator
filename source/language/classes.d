@@ -26,9 +26,11 @@ UML:
 
 	Context < LeftIdentifier CardinalityLeft? Arrow CardinalityRight?  RightIdentifier ContextNote? :';'
 	ContextNote < :":" ArrowSignLeft? NoteText? ArrowSignRight?
-	CardinalityLeft < Cardinality
+	CardinalityLeft < Cardinality 
 	CardinalityRight < Cardinality
-	Cardinality < String
+	Cardinality < String CardinalityStore?
+	CardinalityStore < :'(' Key :'=' Type :')'
+	Key < identifier
 	Arrow < Left? Line Right?
 	Left < ExtensionLeft / CompositionLeft / AggregationLeft
 	Right < ExtensionRight / CompositionRight / AggregationRight

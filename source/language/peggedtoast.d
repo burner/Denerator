@@ -3,7 +3,7 @@ module language.peggedtoast;
 import std.stdio;
 
 import std.array : appender, back, empty;
-import std.format : formattedWrite;
+import std.format : format, formattedWrite;
 
 import pegged.grammar;
 
@@ -188,11 +188,27 @@ enum ArrowDir {
 	RightDir
 }
 
+class Cardinality {
+	string cardinality;
+	string key;
+	Type type;
+
+	override string toString() {
+		if(!key.empty && type !is null) {
+			return format("%s(%s=%s)",
+				cardinality, key, type.toString()
+			);
+		} else {
+			return format("%s", cardinality);
+		}
+	}
+}
+
 class Context {
 	string left;
 	string right;
-	string cardinalityLeft;
-	string cardinalityRight;
+	Cardinality cardinalityLeft;
+	Cardinality cardinalityRight;
 	ArrowType typeLeft = ArrowType.NoArrow;
 	ArrowType typeRight = ArrowType.NoArrow;
 	LineType lineType;
@@ -212,8 +228,8 @@ class Context {
 			app.put("a");
 		}
 
-		if(!cardinalityLeft.empty) {
-			app.put(cardinalityLeft);
+		if(cardinalityLeft !is null) {
+			app.put(cardinalityLeft.toString());
 		}
 
 		if(lineType == LineType.Dotted) {
@@ -222,8 +238,8 @@ class Context {
 			app.put(" -- ");
 		}
 
-		if(!cardinalityRight.empty) {
-			app.put(cardinalityRight);
+		if(cardinalityRight !is null) {
+			app.put(cardinalityRight.toString());
 		}
 
 		if(typeRight == ArrowType.ExtensionRight) {
@@ -412,6 +428,31 @@ RealNote peggedToRealNote(ParseTree p) {
 	return ret;
 }
 
+Cardinality peggedToCardinality(ParseTree p) {
+	import std.algorithm.mutation : strip;
+	auto ret = new Cardinality();
+
+	foreach(it; p.children) {
+		if(it.name == "UML.String") {
+			ret.cardinality = it.matches[0].strip('"');
+		} else if(it.name == "UML.CardinalityStore") {
+			foreach(jt; it.children) {
+				if(jt.name == "UML.Key") {
+					ret.key = jt.matches[0];
+				} else if(jt.name == "UML.Type") {
+					ret.type = peggedToType(jt);
+				} else {
+					assert(false, jt.name);
+				}
+			}
+		} else {
+			assert(false, it.name);
+		}
+	}
+
+	return ret;
+}
+
 Context peggedToContext(ParseTree p) {
 	auto ret = new Context;
 
@@ -419,13 +460,13 @@ Context peggedToContext(ParseTree p) {
 		if(it.name == "UML.CardinalityLeft") {
 			foreach(jt; it.children) {
 				if(jt.name == "UML.Cardinality") {
-					ret.cardinalityLeft = jt.matches[0];
+					ret.cardinalityLeft = peggedToCardinality(jt);
 				}
 			}
 		} else if(it.name == "UML.CardinalityRight") {
 			foreach(jt; it.children) {
 				if(jt.name == "UML.Cardinality") {
-					ret.cardinalityRight = jt.matches[0];
+					ret.cardinalityRight = peggedToCardinality(jt);
 				}
 			}
 		} else if(it.name == "UML.LeftIdentifier") {

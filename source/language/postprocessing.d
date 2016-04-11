@@ -113,11 +113,15 @@ final class GraphVizClassDiagramm(Output) : ClassDiagramm
 		this.genFinalMatter();
 	}
 
-	final static string arrowLabel(string l)(string label) {
-		if(label.empty) {
+	final static string arrowLabel(string l)(Cardinality label) {
+		if(label is null || label.cardinality.empty) {
 			return "";
+		} else if(!label.key.empty && label.type !is null) {
+			return format("%slabel=\"%s(%s=%s)\"", l,
+				label.cardinality, label.key, label.type.toString()
+			);
 		} else {
-			return format("%slabel=%s", l, label);
+			return format("%slabel=%s", l, label.cardinality);
 		}
 	}
 
