@@ -1,6 +1,6 @@
 module language.classes;
 
-import pegged.grammar;
+/+import pegged.grammar;
 import language.helper;
 
 mixin(grammar(`
@@ -69,3 +69,4 @@ UML:
 	RealNotePos < "left of" / "right of" / "bottom of" / "top of"
 	RealNoteName < :"as" ^identifier
 ` ~ basic));
++/

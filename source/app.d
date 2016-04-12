@@ -4,7 +4,7 @@ import language.classes;
 import language.peggedtoast;
 import language.postprocessing;
 
-void main() {
+/+void main() {
 	string s = 
 `class modA.Foo<is!(Class && args)> << SQL, Frontend, Backend >> { 
 	args : int /* some note */
@@ -23,4 +23,8 @@ Bar "some" c-- "1" modA.Baz;
 	auto outFile = oFile.lockingTextWriter();
 	auto gen = new GraphVizClassDiagramm!(typeof(outFile))(cls, outFile);
 	gen.generate();
+}+/
+
+void main() {
+
 }

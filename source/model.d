@@ -1,6 +1,25 @@
 module model;
 
-enum ActorType
+import std.traits : functionAttributes, FunctionAttribute;
+import std.experimental.allocator.mallocator : Mallocator;
+import containers.hashset;
+
+private hash_t stringToHash(string str) @safe pure nothrow @nogc {
+	hash_t hash = 5381;
+	foreach(it; str) {
+		hash = ((hash << 5) + hash) + it; /* hash * 33 + it */
+	}
+	
+	return hash;
+}
+
+hash_t EntityToHash(Entity e) pure @safe nothrow @nogc {
+	return stringToHash(e.name);
+};
+
+//alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
+
+enum ActorType {
 	SoftWareSystem,
 	Person
 }
@@ -8,6 +27,15 @@ enum ActorType
 abstract class Entity {
 	string name;
 	string description;
+
+	final override hash_t toHash() @safe pure nothrow @nogc {
+		return stringToHash(this.name);
+	}
+
+	final override bool opEquals(Object other) @safe pure nothrow @nogc {
+		Entity entity = cast(Entity)other;
+		return this.name == entity.name;
+	}
 }
 
 class Actor : Entity {
@@ -15,20 +43,20 @@ class Actor : Entity {
 }
 
 class SoftwareSystem : Entity {
-	Container[] containers;
+	HashSet!(Component, Mallocator, EntityToHash) components;
 }
 
 class Container : Entity {
-	Component[] components;
+	//EntityHashSet!(Component) components;
 }
 
-class Components : Entity {
-	Class[] classes;
+class Component : Entity {
+	//EntityHashSet!(Class) classes;
 }
 
 class Class : Entity {
-	MemberVariable[] memberVariables;
-	MemberFunction[] memberFunctions;
+	//EntityHashSet!(MemberVariable) memberVariables;
+	//EntityHashSet!(MemberFunction) memberFunctions;
 }
 
 class MemberVariable : Entity {

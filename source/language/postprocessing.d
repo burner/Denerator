@@ -1,6 +1,6 @@
 module language.postprocessing;
 
-import language.peggedtoast;
+/+import language.peggedtoast;
 
 private class Module {
 	Class[] classes;
@@ -322,4 +322,4 @@ digraph G {
 	final void genFinalMatter() {
 		this.output.put("}\n");
 	}
-}
+}+/
