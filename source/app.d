@@ -1,10 +1,10 @@
 import std.stdio;
 
-import language.classes;
+/+import language.classes;
 import language.peggedtoast;
 import language.postprocessing;
 
-/+void main() {
+void main() {
 	string s = 
 `class modA.Foo<is!(Class && args)> << SQL, Frontend, Backend >> { 
 	args : int /* some note */
@@ -25,6 +25,10 @@ Bar "some" c-- "1" modA.Baz;
 	gen.generate();
 }+/
 
-void main() {
+import model;
+import std.stdio : writeln;
 
+void main() {
+	auto container = new Container;
+	writeln(Container.sizeof);
 }
