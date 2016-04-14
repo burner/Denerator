@@ -4,6 +4,7 @@ import std.array : empty, front, split;
 import std.traits : functionAttributes, FunctionAttribute;
 import std.experimental.allocator.mallocator : Mallocator;
 import containers.hashmap;
+import containers.dynamicarray;
 
 private hash_t stringToHash(string str) @safe pure nothrow @nogc {
 	hash_t hash = 5381;
@@ -20,12 +21,6 @@ hash_t EntityToHash(Entity e) pure @safe nothrow @nogc {
 
 alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
 alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
-
-enum ActorType {
-	SoftwareSystem,
-	HardwareSystem,
-	Person,
-}
 
 abstract class Entity {
 	string name;
@@ -47,7 +42,7 @@ abstract class Entity {
 }
 
 class Actor : Entity {
-	ActorType type;
+	string type;
 }
 
 class TheWorld : Entity {
@@ -55,12 +50,13 @@ class TheWorld : Entity {
 	StringEntityMap!(SoftwareSystem) softwareSystems;
 	StringEntityMap!(HardwareSystem) hardwareSystems;
 	StringEntityMap!(Connection) connections;
+	StringEntityMap!(Type[string]) typeContainerMapping;
 
 	T getSubEntity(T)(string uri) {
 		const(string[]) uriSplit = split(uri, ".");
 
 		auto toIterate = [this.actors, this.softwareSystems,
-			 this.hardwareSystems, this.connections
+			 this.hardwareSystems, this.connections, this.types
 		];
 
 		foreach(it; toIterate) {
@@ -101,6 +97,7 @@ class Container : Entity {
 
 class Component : Entity {
 	StringEntityMap!(Class) classes;
+	Component[] subComponent;
 
 	override Entity getSubEntity(const(string[]) uri) {
 		return getSubEntityImpl(this.classes, uri);
@@ -115,13 +112,33 @@ class Class : Entity {
 	}
 }
 
+class MemberModifier : Entity {
+}
+
+class Type : Entity {
+	StringEntityMap!(MemberModifier) modifier;
+}
+
+/* This class maps types from one language to other languages
+
+For instance, a D string may becomes a LONGTEXT in MySQL
+*/
+class TypeMapping {
+	StringEntityMap!(Type) equivalencies;
+}
+
 class Member : Entity {
 }
 
 class MemberVariable : Member {
+	StringEntityMap!(MemberModifier) modifier;
+	Type type;
 }
 
 class MemberFunction : Member {
+	Type returnType;
+	DynamicArray!MemberVariable parameter;
+	DynamicArray!MemberModifier modifier;
 }
 
 private Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
