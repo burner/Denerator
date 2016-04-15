@@ -1,5 +1,12 @@
 module generator;
 
+enum GenerateLevel {
+	Context,
+	Entity,
+	Container,
+	Component,
+}
+
 abstract class Generator {
 	string genFolder;
 
@@ -7,5 +14,5 @@ abstract class Generator {
 		this.genFolder = genFolder;
 	}
 
-	void generate();
+	void generate(const(GenerateLevel) from, const(GenerateLevel) to);
 }

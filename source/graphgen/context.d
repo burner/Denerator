@@ -8,7 +8,7 @@ class ContextGenerator : Generator {
 		super(genFolder);
 	}
 
-	override void generate() {
+	override void generate(const(GenerateLevel) from, const(GenerateLevel) to) {
 		assert(false);
 	}
 }
