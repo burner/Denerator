@@ -23,7 +23,7 @@ alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
 alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
 
 abstract class Entity {
-	string name;
+	immutable(string) name;
 	string description;
 	string longDescription;
 
@@ -39,10 +39,17 @@ abstract class Entity {
 	Entity getSubEntity(const(string[]) uri) {
 		return null;
 	}
+
+	this(string name) {
+		this.name = name;
+	}
 }
 
 class Actor : Entity {
 	string type;
+	this(in string name) {
+		super(name);
+	}
 }
 
 class TheWorld : Entity {
@@ -51,6 +58,10 @@ class TheWorld : Entity {
 	StringEntityMap!(HardwareSystem) hardwareSystems;
 	StringEntityMap!(Connection) connections;
 	StringEntityMap!(Type[string]) typeContainerMapping;
+
+	this(in string name) {
+		super(name);
+	}
 
 	T getSubEntity(T)(string uri) {
 		const(string[]) uriSplit = split(uri, ".");
@@ -69,18 +80,62 @@ class TheWorld : Entity {
 
 		return null;
 	}
+
+	Actor getOrNewActor(in string name) {
+		return getOrNewEntityImpl!Actor(name, this.actors);
+	}
+
+	SoftwareSystem getOrNewSoftwareSystem(in string name) {
+		return getOrNewEntityImpl!SoftwareSystem(name, this.softwareSystems);
+	}
+
+	HardwareSystem getOrNewHardwareSystem(in string name) {
+		return getOrNewEntityImpl!HardwareSystem(name, this.hardwareSystems);
+	}
+
+	Connection getOrNewConnection(in string name) {
+		return getOrNewEntityImpl!Connection(name, this.connections);
+	}
+
+	Type[string] getOrNewTypeMappings(in string name) {
+		return getOrNewEntityImpl!(Type[string])(name,
+			this.typeContainerMapping
+		);
+	}
+
+	private static T getOrNewEntityImpl(T)(in string name, ref StringEntityMap!(T) map) {
+		if(name in map) {
+			return map[name];
+		} else {
+			T act = new T(name);
+			map[name] = act;
+			return act;
+		}
+	}
 }
 
 class Connection : Entity {
 	Entity from;
 	Entity two;
+	
+	this(in string name) {
+		super(name);
+	}
 }
 
 class HardwareSystem : Entity {
+	
+	this(in string name) {
+		super(name);
+	}
 }
 
 class SoftwareSystem : Entity {
 	StringEntityMap!(Container) container;
+	
+	this(in string name) {
+		super(name);
+	}
 
 	override Entity getSubEntity(const(string[]) uri) {
 		return getSubEntityImpl(this.container, uri);
@@ -89,6 +144,10 @@ class SoftwareSystem : Entity {
 
 class Container : Entity {
 	StringEntityMap!(Component) components;
+	
+	this(in string name) {
+		super(name);
+	}
 
 	override Entity getSubEntity(const(string[]) uri) {
 		return getSubEntityImpl(this.components, uri);
@@ -98,6 +157,10 @@ class Container : Entity {
 class Component : Entity {
 	StringEntityMap!(Class) classes;
 	Component[] subComponent;
+	
+	this(in string name) {
+		super(name);
+	}
 
 	override Entity getSubEntity(const(string[]) uri) {
 		return getSubEntityImpl(this.classes, uri);
@@ -106,6 +169,10 @@ class Component : Entity {
 
 class Class : Entity {
 	StringEntityMap!(Member) members;
+	
+	this(in string name) {
+		super(name);
+	}
 
 	override Entity getSubEntity(const(string[]) uri) {
 		return getSubEntityImpl(this.members, uri);
@@ -113,10 +180,17 @@ class Class : Entity {
 }
 
 class MemberModifier : Entity {
+	this(in string name) {
+		super(name);
+	}
 }
 
 class Type : Entity {
 	StringEntityMap!(MemberModifier) modifier;
+
+	this(in string name) {
+		super(name);
+	}
 }
 
 /* This class maps types from one language to other languages
@@ -128,17 +202,29 @@ class TypeMapping {
 }
 
 class Member : Entity {
+
+	this(in string name) {
+		super(name);
+	}
 }
 
 class MemberVariable : Member {
 	StringEntityMap!(MemberModifier) modifier;
 	Type type;
+
+	this(in string name) {
+		super(name);
+	}
 }
 
 class MemberFunction : Member {
 	Type returnType;
 	DynamicArray!MemberVariable parameter;
 	DynamicArray!MemberModifier modifier;
+
+	this(in string name) {
+		super(name);
+	}
 }
 
 private Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {

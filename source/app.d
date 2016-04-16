@@ -29,6 +29,6 @@ import model;
 import std.stdio : writeln;
 
 void main() {
-	auto container = new Container;
+	auto container = new Container("someContainer");
 	writeln(Container.sizeof);
 }

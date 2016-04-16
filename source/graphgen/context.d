@@ -8,7 +8,9 @@ class ContextGenerator : Generator {
 		super(genFolder);
 	}
 
-	override void generate(const(GenerateLevel) from, const(GenerateLevel) to) {
+	override void generate(const(GenerateLevel) from, const(GenerateLevel) to,
+		ref const(StringHashSet) excludes)
+	{
 		assert(false);
 	}
 }

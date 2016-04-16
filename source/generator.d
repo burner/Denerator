@@ -1,5 +1,8 @@
 module generator;
 
+import containers.hashset;
+public alias StringHashSet = HashSet!(string);
+
 enum GenerateLevel {
 	Context,
 	Entity,
@@ -14,5 +17,7 @@ abstract class Generator {
 		this.genFolder = genFolder;
 	}
 
-	void generate(const(GenerateLevel) from, const(GenerateLevel) to);
+	void generate(const(GenerateLevel) from, const(GenerateLevel) to,
+		ref const(StringHashSet) excludes
+	);
 }
