@@ -2,6 +2,7 @@ import std.stdio;
 
 import model;
 import std.stdio : writeln;
+import std.typecons;
 
 void main() {
 	auto world = new TheWorld("TheWorld");
