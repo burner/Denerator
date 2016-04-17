@@ -97,7 +97,7 @@ class TheWorld : Entity {
 		return getOrNewEntityImpl!Connection(name, this.connections);
 	}
 
-	Type getOrNewTypeMappings(in string name) {
+	Type getOrNewType(in string name) {
 		return getOrNewEntityImpl!(Type)(name,
 			this.typeContainerMapping
 		);
@@ -113,19 +113,34 @@ class ConnectionImpl(T,S) : Entity {
 	}
 }
 
+class Dependency : ConnectionImpl!(Entity,Entity) {
+	this(in string name) {
+		super(name);
+	}
+}
+
+
 class Connection : ConnectionImpl!(Entity,Entity) {
+	string fromCnt;
+	string toCnt;
 	this(in string name) {
 		super(name);
 	}
 }
 
 class Aggregation : ConnectionImpl!(Class,Class) {
+	string fromCnt;
+	string toCnt;
+	Type toImplType;
 	this(in string name) {
 		super(name);
 	}
 }
 
 class Composition : ConnectionImpl!(Class,Class) {
+	string fromCnt;
+	string toCnt;
+	Type toImplType;
 	this(in string name) {
 		super(name);
 	}
@@ -198,16 +213,9 @@ class Component : Entity {
 	}*/
 }
 
-enum ClassType {
-	Class,
-	Interface,
-	Struct,
-	Abstract
-}
-
 class Class : Entity {
 	StringEntityMap!(Member) members;
-	ClassType type;
+	StringEntityMap!(string) containerType;
 	
 	this(in string name) {
 		super(name);
@@ -217,8 +225,8 @@ class Class : Entity {
 		return getSubEntityImpl(this.members, uri);
 	}
 
-	Member getOrNewMember(in string name) {
-		return getOrNewEntityImpl!Member(name, this.members);
+	S getOrNew(S)(in string name) {
+		return getOrNewEntityImpl!(Member,S)(name, this.members);
 	}
 }
 
@@ -253,10 +261,23 @@ class Member : Entity {
 
 class MemberVariable : Member {
 	Type type;
+	string[][string] langSpecificAttributes;
 
 	this(in string name) {
 		super(name);
 	}
+
+	void addLandSpecificAttribue(string lang, string value) {
+		this.langSpecificAttributes[lang] ~= value;
+	}
+}
+
+unittest {
+	auto mv = new MemberVariable("name");
+	mv.addLandSpecificAttribue("Foo", "Bar");
+
+	assert(mv.langSpecificAttributes["Foo"].length == 1);
+	assert(mv.langSpecificAttributes["Foo"] == ["Bar"]);
 }
 
 class MemberFunction : Member {
@@ -282,11 +303,11 @@ private Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
 	return null;
 }
 
-private T getOrNewEntityImpl(T)(in string name, ref StringEntityMap!(T) map) {
+private S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map) {
 	if(name in map) {
-		return map[name];
+		return cast(S)map[name];
 	} else {
-		T act = new T(name);
+		S act = new S(name);
 		map[name] = act;
 		return act;
 	}
@@ -296,6 +317,24 @@ private T getOrNewEntityImpl(T)(in string name, ref StringEntityMap!(T) map) {
 containers. If the Class can't be find by its name it is created and added
 to all containers.
 */
-Class getOrNewClass(in string name, Container[] containers...) {
-	return null;
+Class getOrNewClass(in string name, Component[] containers...) {
+	Class cls;
+	foreach(Component it; containers) {
+		if(name in it.classes) {
+			cls = it.classes[name];
+			break;
+		}
+	}
+
+	if(cls is null) {
+		cls = new Class(name);
+	}
+
+	foreach(it; containers) {
+		if(name !in it.classes) {
+			it.classes[name] = cls;
+			break;
+		}
+	}
+	return cls;
 }
