@@ -3,6 +3,7 @@ module model;
 import std.array : empty, front, split;
 import std.traits : functionAttributes, FunctionAttribute;
 import std.experimental.allocator.mallocator : Mallocator;
+import std.exception : enforce;
 import containers.hashmap;
 import containers.dynamicarray;
 
@@ -20,7 +21,7 @@ hash_t EntityToHash(Entity e) pure @safe nothrow @nogc {
 }
 
 alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
-alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
+public alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
 
 abstract class Entity {
 	immutable(string) name;
@@ -56,7 +57,7 @@ class TheWorld : Entity {
 	StringEntityMap!(Actor) actors;
 	StringEntityMap!(SoftwareSystem) softwareSystems;
 	StringEntityMap!(HardwareSystem) hardwareSystems;
-	StringEntityMap!(Connection) connections;
+	StringEntityMap!(Entity) connections;
 	StringEntityMap!(Type) typeContainerMapping;
 
 	this(in string name) {
@@ -82,25 +83,35 @@ class TheWorld : Entity {
 	}
 
 	Actor getOrNewActor(in string name) {
-		return getOrNewEntityImpl!Actor(name, this.actors);
+		return enforce(getOrNewEntityImpl!Actor(name, this.actors));
 	}
 
 	SoftwareSystem getOrNewSoftwareSystem(in string name) {
-		return getOrNewEntityImpl!SoftwareSystem(name, this.softwareSystems);
+		return enforce(getOrNewEntityImpl!SoftwareSystem(name,
+			this.softwareSystems)
+		);
 	}
 
 	HardwareSystem getOrNewHardwareSystem(in string name) {
-		return getOrNewEntityImpl!HardwareSystem(name, this.hardwareSystems);
+		return enforce(getOrNewEntityImpl!HardwareSystem(name,
+			this.hardwareSystems)
+		);
 	}
 
-	Connection getOrNewConnection(in string name) {
-		return getOrNewEntityImpl!Connection(name, this.connections);
+	T getOrNew(T,F,O)(in string name, F from, O to) 
+	{
+		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
+			name, this.connections
+		));
+		con.from = from;
+		con.to = to;
+		return con;
 	}
 
 	Type getOrNewType(in string name) {
-		return getOrNewEntityImpl!(Type)(name,
+		return enforce(getOrNewEntityImpl!(Type)(name,
 			this.typeContainerMapping
-		);
+		));
 	}
 }
 
@@ -176,12 +187,13 @@ class SoftwareSystem : Entity {
 	}
 
 	Container getOrNewContainer(in string name) {
-		return getOrNewEntityImpl!Container(name, this.containers);
+		return enforce(getOrNewEntityImpl!Container(name, this.containers));
 	}
 }
 
 class Container : Entity {
 	StringEntityMap!(Component) components;
+	StringEntityMap!(Class) classes;
 	
 	this(in string name) {
 		super(name);
@@ -192,7 +204,7 @@ class Container : Entity {
 	}
 
 	Component getOrNewComponent(in string name) {
-		return getOrNewEntityImpl!Component(name, this.components);
+		return enforce(getOrNewEntityImpl!Component(name, this.components));
 	}
 }
 
@@ -226,7 +238,7 @@ class Class : Entity {
 	}
 
 	S getOrNew(S)(in string name) {
-		return getOrNewEntityImpl!(Member,S)(name, this.members);
+		return enforce(getOrNewEntityImpl!(Member,S)(name, this.members));
 	}
 }
 
@@ -317,9 +329,9 @@ private S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map
 containers. If the Class can't be find by its name it is created and added
 to all containers.
 */
-Class getOrNewClass(in string name, Component[] containers...) {
+Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 	Class cls;
-	foreach(Component it; containers) {
+	foreach(it; stuffThatHoldsClasses) {
 		if(name in it.classes) {
 			cls = it.classes[name];
 			break;
@@ -330,7 +342,7 @@ Class getOrNewClass(in string name, Component[] containers...) {
 		cls = new Class(name);
 	}
 
-	foreach(it; containers) {
+	foreach(it; stuffThatHoldsClasses) {
 		if(name !in it.classes) {
 			it.classes[name] = cls;
 			break;

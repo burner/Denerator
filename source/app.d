@@ -1,11 +1,11 @@
-import std.stdio;
+import std.stdio : writeln;
 
 import model;
-import std.stdio : writeln;
+import generator.graphviz;
 
 void main() {
 	auto world = new TheWorld("TheWorld");
-	auto user = world.getOrNewActor("User");
+	auto users = world.getOrNewActor("Users");
 
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
 	auto frontend = system.getOrNewContainer("Frontend");
@@ -15,7 +15,6 @@ void main() {
 	auto serverUserCtrl = server.getOrNewComponent("serverUserCtrl");
 
 	auto database = system.getOrNewContainer("Server");
-	auto dbUserDatabase = server.getOrNewComponent("dbUserDatabase");
 
 	Type str = world.getOrNewType("String");
 	str.typeToLanguage["D"] = "string";
@@ -27,19 +26,26 @@ void main() {
 	integer.typeToLanguage["Typestrict"] = "number";
 	integer.typeToLanguage["MySQL"] = "long";
 
-	Class userClass = getOrNewClass("User", frontendUserCtrl, 
-		serverUserCtrl, dbUserDatabase
+	Class user = getOrNewClass("User", frontendUserCtrl, 
+		serverUserCtrl, database
 	);
 
-	userClass.containerType["D"] = "struct";
-	userClass.containerType["class"] = "struct";
+	user.containerType["D"] = "struct";
+	user.containerType["class"] = "struct";
 
-	MemberVariable userId = userClass.getOrNew!MemberVariable("id");
+	MemberVariable userId = user.getOrNew!MemberVariable("id");
 	userId.addLandSpecificAttribue("MySQL", "PRIMARY KEY");
-	auto userFirstname = userClass.getOrNew!MemberVariable("firstname");
-	auto userLastname = userClass.getOrNew!MemberVariable("lastname");
+	auto userFirstname = user.getOrNew!MemberVariable("firstname");
+	auto userLastname = user.getOrNew!MemberVariable("lastname");
 
-	Class employee = getOrNewClass("Employee", 
-		frontendUserCtrl, serverUserCtrl, dbUserDatabase
+	Class address = getOrNewClass("Address", 
+		frontendUserCtrl, serverUserCtrl, database
 	);
+
+	Aggregation userAddress = world.getOrNew!Aggregation("userEmployee",
+		user, address
+	);
+
+	Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	gv.generate();
 }
