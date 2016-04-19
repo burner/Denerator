@@ -1,21 +1,37 @@
-import std.stdio;
+import std.stdio : writeln;
 
 import model;
+import generator.graphviz;
 import std.stdio : writeln;
+import std.typecons;
 
 void main() {
 	auto world = new TheWorld("TheWorld");
-	auto user = world.getOrNewActor("User");
+	Actor users = world.getOrNewActor("The Users");
+	users.description = "This is a way to long description for something "
+		~ "that should be obvious.";
 
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
-	auto frontend = system.getOrNewContainer("Frontend");
+	Container frontend = system.getOrNewContainer("Frontend");
+	frontend.technology = "Angular";
 	auto frontendUserCtrl = frontend.getOrNewComponent("frontUserCtrl");
+	auto hardware = world.getOrNewHardwareSystem("SomeHardware");
+
+	auto usersFrontend = world.getOrNew!Dependency("userDepFrontend",
+		users, frontendUserCtrl
+	);
+	usersFrontend.description = "Uses the frontend to do stuff.";
+
+	auto frontendHardwareLink = world.getOrNew!Dependency("frontendUsesHardware",
+		frontendUserCtrl, hardware
+	);
 
 	Container server = system.getOrNewContainer("Server");
+	world.getOrNew!Dependency("frontendServerDep", frontend, server);
+
 	auto serverUserCtrl = server.getOrNewComponent("serverUserCtrl");
 
 	auto database = system.getOrNewContainer("Server");
-	auto dbUserDatabase = server.getOrNewComponent("dbUserDatabase");
 
 	Type str = world.getOrNewType("String");
 	str.typeToLanguage["D"] = "string";
@@ -27,19 +43,26 @@ void main() {
 	integer.typeToLanguage["Typestrict"] = "number";
 	integer.typeToLanguage["MySQL"] = "long";
 
-	Class userClass = getOrNewClass("User", frontendUserCtrl, 
-		serverUserCtrl, dbUserDatabase
+	Class user = getOrNewClass("User", frontendUserCtrl, 
+		serverUserCtrl, database
 	);
 
-	userClass.containerType["D"] = "struct";
-	userClass.containerType["class"] = "struct";
+	user.containerType["D"] = "struct";
+	user.containerType["class"] = "struct";
 
-	MemberVariable userId = userClass.getOrNew!MemberVariable("id");
+	MemberVariable userId = user.getOrNew!MemberVariable("id");
 	userId.addLandSpecificAttribue("MySQL", "PRIMARY KEY");
-	auto userFirstname = userClass.getOrNew!MemberVariable("firstname");
-	auto userLastname = userClass.getOrNew!MemberVariable("lastname");
+	auto userFirstname = user.getOrNew!MemberVariable("firstname");
+	auto userLastname = user.getOrNew!MemberVariable("lastname");
 
-	Class employee = getOrNewClass("Employee", 
-		frontendUserCtrl, serverUserCtrl, dbUserDatabase
+	Class address = getOrNewClass("Address", 
+		frontendUserCtrl, serverUserCtrl, database
 	);
+
+	Aggregation userAddress = world.getOrNew!Aggregation("userEmployee",
+		user, address
+	);
+
+	Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	gv.generate();
 }

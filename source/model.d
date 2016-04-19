@@ -3,10 +3,12 @@ module model;
 import std.array : empty, front, split;
 import std.traits : functionAttributes, FunctionAttribute;
 import std.experimental.allocator.mallocator : Mallocator;
+import std.exception : enforce;
 import containers.hashmap;
+import containers.hashset;
 import containers.dynamicarray;
 
-private hash_t stringToHash(string str) @safe pure nothrow @nogc {
+hash_t stringToHash(string str) @safe pure nothrow @nogc {
 	hash_t hash = 5381;
 	foreach(it; str) {
 		hash = ((hash << 5) + hash) + it; /* hash * 33 + it */
@@ -20,10 +22,12 @@ hash_t EntityToHash(Entity e) pure @safe nothrow @nogc {
 }
 
 alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
-alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
+public alias StringHashSet = HashSet!(string, Mallocator, stringToHash);
+public alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
 
 abstract class Entity {
 	immutable(string) name;
+	const(Entity) parent;
 	string description;
 	string longDescription;
 
@@ -36,19 +40,26 @@ abstract class Entity {
 		return this.name == entity.name;
 	}
 
-	Entity getSubEntity(const(string[]) uri) {
-		return null;
+	this(string name, in Entity parent) {
+		this.name = name;
+		this.parent = parent;
 	}
 
-	this(string name) {
-		this.name = name;
+	string areYouIn(ref in StringHashSet store) const {
+		if(this.name in store) {
+			return this.name;
+		} else if(this.parent is null) {
+			return "";
+		} else {
+			return this.parent.areYouIn(store);
+		}
 	}
 }
 
 class Actor : Entity {
 	string type;
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
@@ -56,143 +67,136 @@ class TheWorld : Entity {
 	StringEntityMap!(Actor) actors;
 	StringEntityMap!(SoftwareSystem) softwareSystems;
 	StringEntityMap!(HardwareSystem) hardwareSystems;
-	StringEntityMap!(Connection) connections;
 	StringEntityMap!(Type) typeContainerMapping;
+	StringEntityMap!(Entity) connections;
 
 	this(in string name) {
-		super(name);
-	}
-
-	T getSubEntity(T)(string uri) {
-		const(string[]) uriSplit = split(uri, ".");
-
-		auto toIterate = [this.actors, this.softwareSystems,
-			 this.hardwareSystems, this.connections, this.types
-		];
-
-		foreach(it; toIterate) {
-			Entity ret = it.getSubEntity(uriSplit);
-			T cas = cast(T)ret;
-			if(cas !is null) {
-				return cas;
-			}
-		}
-
-		return null;
+		super(name, null);
 	}
 
 	Actor getOrNewActor(in string name) {
-		return getOrNewEntityImpl!Actor(name, this.actors);
+		return enforce(getOrNewEntityImpl!Actor(name, this.actors, this));
 	}
 
 	SoftwareSystem getOrNewSoftwareSystem(in string name) {
-		return getOrNewEntityImpl!SoftwareSystem(name, this.softwareSystems);
+		return enforce(getOrNewEntityImpl!SoftwareSystem(name,
+			this.softwareSystems, this)
+		);
 	}
 
 	HardwareSystem getOrNewHardwareSystem(in string name) {
-		return getOrNewEntityImpl!HardwareSystem(name, this.hardwareSystems);
+		return enforce(getOrNewEntityImpl!HardwareSystem(name,
+			this.hardwareSystems, null)
+		);
 	}
 
-	Connection getOrNewConnection(in string name) {
-		return getOrNewEntityImpl!Connection(name, this.connections);
+	T getOrNew(T,F,O)(in string name, F from, O to) 
+	{
+		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
+			name, this.connections, this
+		));
+		con.from = from;
+		con.to = to;
+		return con;
 	}
 
 	Type getOrNewType(in string name) {
-		return getOrNewEntityImpl!(Type)(name,
-			this.typeContainerMapping
-		);
+		return enforce(getOrNewEntityImpl!(Type)(name,
+			this.typeContainerMapping, null
+		));
+	}
+
+	override string areYouIn(ref in StringHashSet store) const {
+		return super.name in store ? super.name : "";
 	}
 }
 
-class ConnectionImpl(T,S) : Entity {
-	T from;
-	S to;
+class ConnectionImpl : Entity {
+	Entity from;
+	Entity to;
 
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
-class Dependency : ConnectionImpl!(Entity,Entity) {
-	this(in string name) {
-		super(name);
+class Dependency : ConnectionImpl {
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
-
-class Connection : ConnectionImpl!(Entity,Entity) {
+class Connection : ConnectionImpl {
 	string fromCnt;
 	string toCnt;
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
-class Aggregation : ConnectionImpl!(Class,Class) {
-	string fromCnt;
-	string toCnt;
-	Type toImplType;
-	this(in string name) {
-		super(name);
-	}
-}
-
-class Composition : ConnectionImpl!(Class,Class) {
+class Aggregation : ConnectionImpl {
 	string fromCnt;
 	string toCnt;
 	Type toImplType;
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
-class Generalization : ConnectionImpl!(Class,Class) {
-	this(in string name) {
-		super(name);
+class Composition : ConnectionImpl {
+	string fromCnt;
+	string toCnt;
+	Type toImplType;
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
-class Realization : ConnectionImpl!(Class,Class) {
-	this(in string name) {
-		super(name);
+class Generalization : ConnectionImpl {
+	this(in string name, in Entity parent) {
+		super(name, parent);
+	}
+}
+
+class Realization : ConnectionImpl {
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
 class HardwareSystem : Entity {
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
 class SoftwareSystem : Entity {
 	StringEntityMap!(Container) containers;
 	
-	this(in string name) {
-		super(name);
-	}
-
-	override Entity getSubEntity(const(string[]) uri) {
-		return getSubEntityImpl(this.containers, uri);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 
 	Container getOrNewContainer(in string name) {
-		return getOrNewEntityImpl!Container(name, this.containers);
+		return enforce(getOrNewEntityImpl!Container(name, this.containers,
+			this)
+		);
 	}
 }
 
 class Container : Entity {
+	string technology;
 	StringEntityMap!(Component) components;
+	StringEntityMap!(Class) classes;
 	
-	this(in string name) {
-		super(name);
-	}
-
-	override Entity getSubEntity(const(string[]) uri) {
-		return getSubEntityImpl(this.components, uri);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 
 	Component getOrNewComponent(in string name) {
-		return getOrNewEntityImpl!Component(name, this.components);
+		return enforce(getOrNewEntityImpl!Component(name, this.components,
+			this)
+		);
 	}
 }
 
@@ -200,17 +204,9 @@ class Component : Entity {
 	StringEntityMap!(Class) classes;
 	Component[] subComponent;
 	
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
-
-	override Entity getSubEntity(const(string[]) uri) {
-		return getSubEntityImpl(this.classes, uri);
-	}
-
-	/*Class getOrNewClass(in string name) {
-		return getOrNewEntityImpl!Class(name, this.classes);
-	}*/
 }
 
 class Class : Entity {
@@ -218,29 +214,25 @@ class Class : Entity {
 	StringEntityMap!(string) containerType;
 	
 	this(in string name) {
-		super(name);
-	}
-
-	override Entity getSubEntity(const(string[]) uri) {
-		return getSubEntityImpl(this.members, uri);
+		super(name, null);
 	}
 
 	S getOrNew(S)(in string name) {
-		return getOrNewEntityImpl!(Member,S)(name, this.members);
+		return enforce(getOrNewEntityImpl!(Member,S)(name, this.members, this));
 	}
 }
 
 class MemberModifier : Entity {
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
 class Type : Entity {
 	StringEntityMap!(string) typeToLanguage;	
 
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
@@ -253,9 +245,8 @@ class TypeMapping {
 }
 
 class Member : Entity {
-
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
@@ -263,8 +254,8 @@ class MemberVariable : Member {
 	Type type;
 	string[][string] langSpecificAttributes;
 
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 
 	void addLandSpecificAttribue(string lang, string value) {
@@ -285,8 +276,8 @@ class MemberFunction : Member {
 	DynamicArray!MemberVariable parameter;
 	DynamicArray!MemberModifier modifier;
 
-	this(in string name) {
-		super(name);
+	this(in string name, in Entity parent) {
+		super(name, parent);
 	}
 }
 
@@ -303,11 +294,13 @@ private Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
 	return null;
 }
 
-private S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map) {
+private S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map,
+		in Entity parent) 
+{
 	if(name in map) {
 		return cast(S)map[name];
 	} else {
-		S act = new S(name);
+		S act = new S(name, parent);
 		map[name] = act;
 		return act;
 	}
@@ -317,9 +310,9 @@ private S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map
 containers. If the Class can't be find by its name it is created and added
 to all containers.
 */
-Class getOrNewClass(in string name, Component[] containers...) {
+Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 	Class cls;
-	foreach(Component it; containers) {
+	foreach(it; stuffThatHoldsClasses) {
 		if(name in it.classes) {
 			cls = it.classes[name];
 			break;
@@ -330,7 +323,7 @@ Class getOrNewClass(in string name, Component[] containers...) {
 		cls = new Class(name);
 	}
 
-	foreach(it; containers) {
+	foreach(it; stuffThatHoldsClasses) {
 		if(name !in it.classes) {
 			it.classes[name] = cls;
 			break;
