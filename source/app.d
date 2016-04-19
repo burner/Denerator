@@ -5,7 +5,9 @@ import generator.graphviz;
 
 void main() {
 	auto world = new TheWorld("TheWorld");
-	auto users = world.getOrNewActor("Users");
+	Actor users = world.getOrNewActor("The Users");
+	users.description = "This is a way to long description for something "
+		~ "that should be obvious.";
 
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
 	auto frontend = system.getOrNewContainer("Frontend");

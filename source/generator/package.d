@@ -48,3 +48,18 @@ abstract class Generator {
 		return createFile(filenames.joiner("/").to!string());
 	}
 }
+
+string[] wrapLongString(string str, in uint lineLength) @safe pure {
+	import std.algorithm.iteration : filter;
+	import std.string : splitLines, wrap;
+	import std.array : array;
+	import std.conv : to;
+	auto notabnewline = str.filter!(a => a != '\n' && a != '\t')().array.idup;
+	return notabnewline.to!string().wrap(lineLength).splitLines();
+}
+
+string prepareName(string name) {
+	import std.string : translate;
+	dchar[dchar] tt = [' ':'_', '\n':'_', '\t':'_'];
+	return translate(name, tt);
+}
