@@ -56,7 +56,7 @@ class TheWorld : Entity {
 	StringEntityMap!(SoftwareSystem) softwareSystems;
 	StringEntityMap!(HardwareSystem) hardwareSystems;
 	StringEntityMap!(Type) typeContainerMapping;
-	StringEntityMap!(Connection) connections;
+	StringEntityMap!(Entity) connections;
 
 	this(in string name) {
 		super(name, null);
