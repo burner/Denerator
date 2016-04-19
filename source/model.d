@@ -95,23 +95,22 @@ class TheWorld : Entity {
 	}
 }
 
-class ConnectionImpl(T,S) : Entity {
-	T from;
-	S to;
+class ConnectionImpl : Entity {
+	Entity from;
+	Entity to;
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
 }
 
-class Dependency : ConnectionImpl!(Entity,Entity) {
+class Dependency : ConnectionImpl {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
 }
 
-
-class Connection : ConnectionImpl!(Entity,Entity) {
+class Connection : ConnectionImpl {
 	string fromCnt;
 	string toCnt;
 	this(in string name, in Entity parent) {
@@ -119,16 +118,7 @@ class Connection : ConnectionImpl!(Entity,Entity) {
 	}
 }
 
-class Aggregation : ConnectionImpl!(Class,Class) {
-	string fromCnt;
-	string toCnt;
-	Type toImplType;
-	this(in string name, in Entity parent) {
-		super(name, parent);
-	}
-}
-
-class Composition : ConnectionImpl!(Class,Class) {
+class Aggregation : ConnectionImpl {
 	string fromCnt;
 	string toCnt;
 	Type toImplType;
@@ -137,13 +127,22 @@ class Composition : ConnectionImpl!(Class,Class) {
 	}
 }
 
-class Generalization : ConnectionImpl!(Class,Class) {
+class Composition : ConnectionImpl {
+	string fromCnt;
+	string toCnt;
+	Type toImplType;
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
 }
 
-class Realization : ConnectionImpl!(Class,Class) {
+class Generalization : ConnectionImpl {
+	this(in string name, in Entity parent) {
+		super(name, parent);
+	}
+}
+
+class Realization : ConnectionImpl {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}

@@ -27,10 +27,19 @@ class Graphvic : Generator {
 
 		ltw.generate!Actor(this.world.actors);
 		ltw.generate!SoftwareSystem(this.world.softwareSystems);
+		this.generateWorldConnections(ltw);
 
 		ltw.put("}\n");
 	}
 
+	void generateWorldConnections(O)(ref O output) {
+		auto keys = super.world.connections.keys();
+		foreach(it; keys) {
+			auto con = cast(ConnectionImpl)super.world.connections[it];
+			assert(con.from !is null);
+			assert(con.to !is null);
+		}
+	}
 }
 
 private void generateIndent(O)(ref O output, int indent) {

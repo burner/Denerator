@@ -13,6 +13,10 @@ void main() {
 	auto frontend = system.getOrNewContainer("Frontend");
 	auto frontendUserCtrl = frontend.getOrNewComponent("frontUserCtrl");
 
+	auto usersFrontend = world.getOrNew!Dependency("userDepFrontend",
+		users, frontendUserCtrl
+	);
+
 	Container server = system.getOrNewContainer("Server");
 	auto serverUserCtrl = server.getOrNewComponent("serverUserCtrl");
 
