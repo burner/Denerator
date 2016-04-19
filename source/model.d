@@ -5,9 +5,10 @@ import std.traits : functionAttributes, FunctionAttribute;
 import std.experimental.allocator.mallocator : Mallocator;
 import std.exception : enforce;
 import containers.hashmap;
+import containers.hashset;
 import containers.dynamicarray;
 
-private hash_t stringToHash(string str) @safe pure nothrow @nogc {
+hash_t stringToHash(string str) @safe pure nothrow @nogc {
 	hash_t hash = 5381;
 	foreach(it; str) {
 		hash = ((hash << 5) + hash) + it; /* hash * 33 + it */
@@ -21,6 +22,7 @@ hash_t EntityToHash(Entity e) pure @safe nothrow @nogc {
 }
 
 alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
+public alias StringHashSet = HashSet!(string, Mallocator, stringToHash);
 public alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
 
 abstract class Entity {
@@ -41,6 +43,16 @@ abstract class Entity {
 	this(string name, in Entity parent) {
 		this.name = name;
 		this.parent = parent;
+	}
+
+	string areYouIn(ref in StringHashSet store) const {
+		if(this.name in store) {
+			return this.name;
+		} else if(this.parent is null) {
+			return "";
+		} else {
+			return this.parent.areYouIn(store);
+		}
 	}
 }
 
@@ -92,6 +104,10 @@ class TheWorld : Entity {
 		return enforce(getOrNewEntityImpl!(Type)(name,
 			this.typeContainerMapping, null
 		));
+	}
+
+	override string areYouIn(ref in StringHashSet store) const {
+		return super.name in store ? super.name : "";
 	}
 }
 

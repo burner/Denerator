@@ -12,9 +12,15 @@ void main() {
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
 	auto frontend = system.getOrNewContainer("Frontend");
 	auto frontendUserCtrl = frontend.getOrNewComponent("frontUserCtrl");
+	auto hardware = world.getOrNewHardwareSystem("SomeHardware");
 
 	auto usersFrontend = world.getOrNew!Dependency("userDepFrontend",
 		users, frontendUserCtrl
+	);
+	usersFrontend.description = "Uses the frontend to do stuff.";
+
+	auto frontendHardwareLink = world.getOrNew!Dependency("frontendUsesHardware",
+		frontendUserCtrl, hardware
 	);
 
 	Container server = system.getOrNewContainer("Server");

@@ -1,8 +1,5 @@
 module generator;
 
-import containers.hashset;
-public alias StringHashSet = HashSet!(string);
-
 import model;
 
 enum GenerateLevel {
@@ -62,4 +59,17 @@ string prepareName(string name) {
 	import std.string : translate;
 	dchar[dchar] tt = [' ':'_', '\n':'_', '\t':'_'];
 	return translate(name, tt);
+}
+
+void generateIndent(O)(ref O output, int indent) {
+	for(; indent > 0; --indent) {
+		output.put("\t");
+	}
+}
+
+void format(O,Args...)(ref O output, int indent, in string str, Args args) {
+	import std.format : formattedWrite;
+
+	output.generateIndent(indent);
+	output.formattedWrite(str, args);
 }
