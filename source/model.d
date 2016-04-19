@@ -185,6 +185,7 @@ class SoftwareSystem : Entity {
 }
 
 class Container : Entity {
+	string technology;
 	StringEntityMap!(Component) components;
 	StringEntityMap!(Class) classes;
 	

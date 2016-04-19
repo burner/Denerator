@@ -2,6 +2,8 @@ import std.stdio : writeln;
 
 import model;
 import generator.graphviz;
+import std.stdio : writeln;
+import std.typecons;
 
 void main() {
 	auto world = new TheWorld("TheWorld");
@@ -10,7 +12,8 @@ void main() {
 		~ "that should be obvious.";
 
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
-	auto frontend = system.getOrNewContainer("Frontend");
+	Container frontend = system.getOrNewContainer("Frontend");
+	frontend.technology = "Angular";
 	auto frontendUserCtrl = frontend.getOrNewComponent("frontUserCtrl");
 	auto hardware = world.getOrNewHardwareSystem("SomeHardware");
 
@@ -24,6 +27,8 @@ void main() {
 	);
 
 	Container server = system.getOrNewContainer("Server");
+	world.getOrNew!Dependency("frontendServerDep", frontend, server);
+
 	auto serverUserCtrl = server.getOrNewComponent("serverUserCtrl");
 
 	auto database = system.getOrNewContainer("Server");
