@@ -62,24 +62,6 @@ class TheWorld : Entity {
 		super(name, null);
 	}
 
-	/*T getSubEntity(T)(string uri) {
-		const(string[]) uriSplit = split(uri, ".");
-
-		auto toIterate = [this.actors, this.softwareSystems,
-			 this.hardwareSystems, this.connections, this.types
-		];
-
-		foreach(it; toIterate) {
-			Entity ret = it.getSubEntity(uriSplit);
-			T cas = cast(T)ret;
-			if(cas !is null) {
-				return cas;
-			}
-		}
-
-		return null;
-	}*/
-
 	Actor getOrNewActor(in string name) {
 		return enforce(getOrNewEntityImpl!Actor(name, this.actors, this));
 	}
@@ -180,10 +162,6 @@ class SoftwareSystem : Entity {
 		super(name, parent);
 	}
 
-	/*override Entity getSubEntity(const(string[]) uri) {
-		return getSubEntityImpl(this.containers, uri);
-	}*/
-
 	Container getOrNewContainer(in string name) {
 		return enforce(getOrNewEntityImpl!Container(name, this.containers,
 			this)
@@ -199,10 +177,6 @@ class Container : Entity {
 		super(name, parent);
 	}
 
-	/*override Entity getSubEntity(const(string[]) uri) {
-		return getSubEntityImpl(this.components, uri);
-	}*/
-
 	Component getOrNewComponent(in string name) {
 		return enforce(getOrNewEntityImpl!Component(name, this.components,
 			this)
@@ -217,14 +191,6 @@ class Component : Entity {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
-
-	/*override Entity getSubEntity(const(string[]) uri) {
-		return getSubEntityImpl(this.classes, uri);
-	}*/
-
-	/*Class getOrNewClass(in string name) {
-		return getOrNewEntityImpl!Class(name, this.classes);
-	}*/
 }
 
 class Class : Entity {
@@ -234,10 +200,6 @@ class Class : Entity {
 	this(in string name) {
 		super(name, null);
 	}
-
-	/*override Entity getSubEntity(const(string[]) uri) {
-		return getSubEntityImpl(this.members, uri);
-	}*/
 
 	S getOrNew(S)(in string name) {
 		return enforce(getOrNewEntityImpl!(Member,S)(name, this.members, this));
