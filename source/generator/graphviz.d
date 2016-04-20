@@ -52,6 +52,7 @@ class Graphvic : Generator {
 		auto ltw = f.lockingTextWriter();
 		generateTopMatter(ltw);
 
+		// collect all the names so we know what edges to draw
 		StringHashSet names;
 		ltw.generate!Actor(this.world.actors);
 
