@@ -15,11 +15,16 @@ void main() {
 	Container frontend = system.getOrNewContainer("Frontend");
 	frontend.technology = "Angular";
 	auto frontendUserCtrl = frontend.getOrNewComponent("frontUserCtrl");
+	auto frontendStuffCtrl = frontend.getOrNewComponent("frontStuffCtrl");
 	auto hardware = world.getOrNewHardwareSystem("SomeHardware");
 
 	auto usersFrontend = world.getOrNew!Dependency("userDepFrontend",
 		users, frontendUserCtrl
 	);
+	usersFrontend.description = "Uses the frontend to do stuff.";
+	world.getOrNew!Dependency("userDepStuffCtrl",
+		users, frontendStuffCtrl
+	).description = "Uses the Business Logic of the Awesome Software";
 	usersFrontend.description = "Uses the frontend to do stuff.";
 
 	auto frontendHardwareLink = world.getOrNew!Dependency("frontendUsesHardware",
@@ -31,7 +36,10 @@ void main() {
 
 	auto serverUserCtrl = server.getOrNewComponent("serverUserCtrl");
 
-	auto database = system.getOrNewContainer("Server");
+	auto database = system.getOrNewContainer("Database");
+	world.getOrNew!Dependency("serverDatabase",
+		server, database
+	).description = "CRUD";
 
 	Type str = world.getOrNewType("String");
 	str.typeToLanguage["D"] = "string";

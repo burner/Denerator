@@ -3,7 +3,7 @@ module generator.graphviz;
 import std.array : empty;
 import std.exception : enforce;
 import std.format : formattedWrite;
-import std.algorithm.iteration : map;
+import std.algorithm.iteration : map, joiner;
 import std.stdio : writeln;
 import std.range : chain;
 
@@ -12,6 +12,9 @@ import model;
 
 class Graphvic : Generator {
 	const(string) outputDir;
+	string TheWorldName = "theworld";
+	string TheWorldAndContainerName = "theworldandcontainer";
+
 	this(in TheWorld world, in string outputDir) {
 		super(world);
 		this.outputDir = outputDir;
@@ -21,10 +24,25 @@ class Graphvic : Generator {
 	override void generate() {
 		this.generateWorld();
 		this.generateWorldAndContainer();
+		this.generateMakefile();
+	}
+
+	void generateMakefile() {
+		auto f = Generator.createFile([this.outputDir, "Makefile"]);
+		auto ltw = f.lockingTextWriter();
+
+		auto targets = [TheWorldName,TheWorldAndContainerName];
+
+		ltw.formattedWrite("all: %s\n\n", targets.joiner(" "));
+
+		foreach(it; targets) {
+			ltw.formattedWrite("%s : %s.dot\n", it, it);
+			ltw.formattedWrite("\tdot -T png %s.dot -o %s.png\n\n", it, it);
+		}
 	}
 
 	void generateWorld() {
-		auto f = Generator.createFile([this.outputDir, "theworld.dot"]);
+		auto f = Generator.createFile([this.outputDir, TheWorldName ~ ".dot"]);
 		auto ltw = f.lockingTextWriter();
 		generateTopMatter(ltw);
 
@@ -47,7 +65,7 @@ class Graphvic : Generator {
 
 	void generateWorldAndContainer() {
 		auto f = Generator.createFile([this.outputDir, 
-			"theworldandcontainer.dot"]
+			TheWorldAndContainerName ~ ".dot"]
 		);
 		auto ltw = f.lockingTextWriter();
 		generateTopMatter(ltw);
