@@ -289,6 +289,18 @@ class MemberFunction : Member {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
+
+	T getOrNew(T)(in string name) {
+		static if(is(T == MemberVariable)) {
+			return enforce(getOrNewEntityImpl!MemberVariable(name,
+				this.parameter, this)
+			);
+		} else static if(is(T == MemberFunction)) {
+			return enforce(getOrNewEntityImpl!MemberFunction(name,
+				this.modifer, this)
+			);
+		}
+	}
 }
 
 private Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
@@ -316,6 +328,20 @@ private S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map
 	}
 }
 
+private T getOrNewEntityImpl(T)(in string name, ref DynamicArray!(T) arr,
+		in Entity parent) 
+{
+	foreach(it; arr) {
+		if(it.name == name) {
+			return it;
+		}
+	}
+
+	T ne = new T(name, parent);
+	arr.insert(ne);
+	return ne;
+}
+
 /** Gets a class from one of the containers and adds them to all other
 containers. If the Class can't be find by its name it is created and added
 to all containers.
@@ -336,7 +362,6 @@ Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 	foreach(it; stuffThatHoldsClasses) {
 		if(name !in it.classes) {
 			it.classes[name] = cls;
-			break;
 		}
 	}
 	return cls;

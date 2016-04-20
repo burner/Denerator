@@ -8,6 +8,7 @@ import std.stdio : writeln;
 import std.range : chain;
 
 import containers.hashmap;
+import containers.dynamicarray;
 
 import generator;
 import model;
@@ -16,6 +17,8 @@ class Graphvic : Generator {
 	const(string) outputDir;
 	string TheWorldName = "theworld";
 	string TheWorldAndContainerName = "theworldandcontainer";
+	string currentTechnologie;
+	string prefix;
 
 	this(in TheWorld world, in string outputDir) {
 		super(world);
@@ -108,14 +111,16 @@ class Graphvic : Generator {
 			ltw.generateSoftwareSystemTopMatter(ss, names, nameMappings);
 			
 			ltw.format(2, 
-				"cluster_%s_dummy [ width=\"0\" shape=none label = \"\", style = invis ];\n", 
+				"cluster_%s_dummy [ width=\"0\" shape=none " ~
+				"label = \"\", style = invis ];\n", 
 				prepareName(ss.name)
 			);
 
 			foreach(jt; ss.containers.keys()) {
-				ltw.generateContainerComplete(ss.containers[jt],
-					names, nameMappings
-				);
+				const Container con = ss.containers[jt];
+				this.currentTechnologie = con.technology;
+
+				generateContainerComplete(ltw, con, names, nameMappings, 0);
 			}
 			ltw.format(1, "}\n");
 			ltw.put("}\n");
@@ -130,7 +135,7 @@ class Graphvic : Generator {
 		auto keys = super.world.connections.keys();
 		foreach(it; keys) {
 			auto con = cast(ConnectionImpl)super.world.connections[it];
-			writeln(con.name);
+			//writeln(con.name);
 			assert(con.from !is null);
 			assert(con.to !is null);
 
@@ -216,6 +221,195 @@ class Graphvic : Generator {
 
 		ltw.put("}\n");
 	}
+
+	void generateClass(O)(ref O output, 
+			ref in Class cls, ref StringHashSet names,
+			ref HashMap!(string,string) nameMappings,
+			in uint ei = 0) 
+	{
+		names.insert(cls.name);
+		nameMappings[cls.name] = prepareName(cls.name);
+	
+		output.format(3 + ei, "%s_%s [\n", 
+			prepareName(this.prefix),
+			prepareName(cls.name)
+		);
+		output.format(4 + ei, "shape=box;\n");
+		output.format(4 + ei, "label = <\n");
+		output.format(5 + ei, "<table border=\"0\" cellborder=\"0\">\n");
+		output.format(5 + ei, "<tr><td>%s</td></tr>\n", cls.name);
+		output.format(5 + ei, "<tr><td>[Class]</td></tr>\n");
+		
+		if(!cls.description.empty) {
+			string[] wrapped = wrapLongString(cls.description, 40);
+			foreach(str; wrapped) {
+				output.format(5 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+			}
+		}
+	
+		foreach(it; cls.members.keys()) {
+			const(Member) mem = cls.members[it];
+			generateMember(output, mem, names, nameMappings, ei + 1);
+		}
+	
+		output.format(5 + ei, "</table>\n");
+		output.format(4 + ei, ">\n");
+		output.format(3 + ei, "]\n");
+	}
+	
+	void generateMember(O)(ref O output, 
+			in ref Member mem, ref StringHashSet names,
+			ref HashMap!(string,string) nameMappings,
+			in uint ei = 0) 
+	{
+		const MemberVariable mv = cast(MemberVariable)mem;
+		if(mv !is null) {
+			generateMemberVariable(output, mv, names, nameMappings, ei + 1);
+		}
+	
+		const MemberFunction mf = cast(MemberFunction)mem;
+		if(mf !is null) {
+			generateMemberFunction(output, mf, names, nameMappings, ei + 1);
+		}
+	}
+	
+	void generateMemberVariable(O)(ref O output, 
+			in ref MemberVariable mem, ref StringHashSet names,
+			ref HashMap!(string,string) nameMappings,
+			in uint ei = 0) 
+	{
+		if(!mem.description.empty) {
+			string[] wrapped = wrapLongString(mem.description, 40);
+			foreach(str; wrapped) {
+				output.format(ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+			}
+		}
+		writeln(this.currentTechnologie, " ", mem.name);
+		if(mem.type is null 
+				|| !(this.currentTechnologie in mem.type.typeToLanguage))
+		{
+			output.format(ei, "<tr><td>%s</td></tr>\n", 
+				mem.name
+			);
+		} else {
+			output.format(ei, "<tr><td>%s %s</td></tr>\n", 
+				mem.type.typeToLanguage[this.currentTechnologie],
+				mem.name
+			);
+		}
+	}
+
+	void generateMemberFunction(O)(ref O output, 
+			in ref MemberFunction mem, ref StringHashSet names,
+			ref HashMap!(string,string) nameMappings,
+			in uint ei = 0) 
+	{
+		if(!mem.description.empty) {
+			string[] wrapped = wrapLongString(mem.description, 40);
+			foreach(str; wrapped) {
+				output.format(ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+			}
+		}
+		writeln(this.currentTechnologie, " ", mem.name);
+		if(mem.returnType is null 
+				|| !(this.currentTechnologie in mem.returnType.typeToLanguage))
+		{
+			output.format(ei, "<tr><td>%s(%s)</td></tr>\n", 
+				mem.name, 
+				buildParameterList(mem.parameter)
+			);
+		} else {
+			output.format(ei, "<tr><td>%s %s(%s)</td></tr>\n", 
+				mem.returnType.typeToLanguage[this.currentTechnologie],
+				mem.name, buildParameterList(mem.parameter)
+			);
+		}
+	}
+
+	string buildParameterList(ref in DynamicArray!MemberVariable parameter) {
+		import std.array : array;
+		import std.conv : to;
+		string buildParameter(in MemberVariable mv) {
+			import std.format : format;
+			if(mv.type is null 
+					|| !(this.currentTechnologie in mv.type.typeToLanguage))
+			{
+				return format("%s", mv.name);
+			} else {
+				return format("%s %s", 
+					mv.type.typeToLanguage[this.currentTechnologie],
+					mv.name
+				);
+			}
+		}
+
+		return parameter[].map!(a => buildParameter(a))().joiner(", ")
+			.to!string();
+	}
+
+	void generateContainerComplete(O)(ref O output, in Container container, 
+			ref StringHashSet names, ref HashMap!(string,string) nameMappings, 
+			in uint ei = 0) 
+	{
+		this.prefix = container.name;
+		output.generateContainerTopMatter(container, names, nameMappings);
+		foreach(it; container.components.keys()) {
+			const auto com = container.components[it];
+			generateComponentComplete(output, com, names, nameMappings, ei + 1);
+		}
+
+		this.prefix = container.name;
+		foreach(it; container.classes.keys()) {
+			writeln(it);
+			const(Class) cls = container.classes[it];
+			generateClass(output, cls, names, nameMappings, ei);
+		}
+
+		output.generateContainerBottomMatter(container, names, nameMappings);
+	}
+	
+	void generateComponentComplete(O)(ref O output, in Component com, 
+			ref StringHashSet names, ref HashMap!(string,string) nameMappings, 
+			in uint ei = 0) 
+	{
+		names.insert(com.name);
+		nameMappings[com.name] = "cluster_" ~ prepareName(com.name);
+	
+		output.format(3 + ei, "subgraph cluster_%s {\n", prepareName(com.name));
+		output.format(4 + ei, "shape=box;\n");
+		output.format(4 + ei, "label = <\n");
+		output.format(5 + ei, "<table border=\"0\" cellborder=\"0\">\n");
+		output.format(5 + ei, "<tr><td>%s</td></tr>\n", com.name);
+		output.format(5 + ei, "<tr><td>[Component]</td></tr>\n");
+		
+		if(!com.description.empty) {
+			string[] wrapped = wrapLongString(com.description, 40);
+			foreach(str; wrapped) {
+				output.format(5 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+			}
+		}
+	
+		output.format(5 + ei, "</table>\n");
+		output.format(4 + ei, ">\n");
+	
+		foreach(it; com.subComponents) {
+			names.insert(it.name);
+			generateComponentComplete(output, it, names, nameMappings, ei + 1);
+		}
+
+		foreach(it; com.classes.keys()) {
+			const(Class) cls = com.classes[it];
+			generateClass(output, cls, names, nameMappings, ei + 1);
+		}
+	
+		output.format(3 + ei, 
+			"cluster_%s_dummy [ width=\"0\" shape=none " ~ 
+			"label = \"\", style = invis ];\n", 
+			prepareName(com.name)
+		);
+		output.format(3 + ei, "}\n");
+	}
+
 }
 
 private void generateTopMatter(O)(ref O output) {
@@ -442,7 +636,7 @@ private void generateContainerTopMatter(O)(ref O output,
 		in ref Container ss, ref StringHashSet names,
 		ref HashMap!(string,string) nameMappings, in uint ei = 0) 
 {
-	if(ss.components.empty) {
+	if(ss.components.empty && ss.classes.empty) {
 		output.generateContainer(ss, names, nameMappings);
 	} else {
 		names.insert(ss.name);
@@ -475,59 +669,11 @@ private void generateContainerBottomMatter(O)(ref O output,
 		in ref Container ss, ref StringHashSet names,
 		ref HashMap!(string,string) nameMappings, in uint ei = 0) 
 {
-	if(ss.components.empty) {
+	if(ss.components.empty && ss.classes.empty) {
 		//output.format(2 + ei, "]\n"); // TODO compare generateContainer
 	} else {
 		output.format(2 + ei, "}\n");
 	}
-}
-
-private void generateContainerComplete(O)(ref O output, in Container container, 
-		ref StringHashSet names, ref HashMap!(string,string) nameMappings, 
-		in uint ei = 0) 
-{
-	output.generateContainerTopMatter(container, names, nameMappings);
-	foreach(it; container.components.keys()) {
-		const auto com = container.components[it];
-		output.generateComponentComplete(com, names, nameMappings, ei + 1);
-	}
-	output.generateContainerBottomMatter(container, names, nameMappings);
-}
-
-private void generateComponentComplete(O)(ref O output, in Component com, 
-		ref StringHashSet names, ref HashMap!(string,string) nameMappings, 
-		in uint ei = 0) 
-{
-	names.insert(com.name);
-	nameMappings[com.name] = "cluster_" ~ prepareName(com.name);
-
-	output.format(3 + ei, "subgraph cluster_%s {\n", prepareName(com.name));
-	output.format(4 + ei, "shape=box;\n");
-	output.format(4 + ei, "label = <\n");
-	output.format(5 + ei, "<table border=\"0\" cellborder=\"0\">\n");
-	output.format(5 + ei, "<tr><td>%s</td></tr>\n", com.name);
-	output.format(5 + ei, "<tr><td>[Component]</td></tr>\n");
-	
-	if(!com.description.empty) {
-		string[] wrapped = wrapLongString(com.description, 40);
-		foreach(str; wrapped) {
-			output.format(5 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
-		}
-	}
-
-	output.format(5 + ei, "</table>\n");
-	output.format(4 + ei, ">\n");
-
-	foreach(it; com.subComponents) {
-		names.insert(it.name);
-		output.generateComponentComplete(it, names, nameMappings, ei + 1);
-	}
-
-	output.format(3 + ei, 
-		"cluster_%s_dummy [ width=\"0\" shape=none label = \"\", style = invis ];\n", 
-		prepareName(com.name)
-	);
-	output.format(3 + ei, "}\n");
 }
 
 private void generateContainerComponents(O)(ref O output, 
@@ -628,61 +774,4 @@ private void generateComponents(O)(ref O output,
 		);
 		output.format(3 + ei, "}\n");
 	}
-}
-
-private void generateClass(O)(ref O output, 
-		in ref Class cls, ref StringHashSet names,
-		ref HashMap!(string,string) nameMappings,
-		in string language, in uint ei = 0) 
-{
-		names.insert(cls.name);
-		nameMappings[cls.name] = prepareName(ss.name);
-
-		output.format(3 + ei, "%s [\n", prepareName(ss.name));
-		output.format(4 + ei, "shape=box;\n");
-		output.format(4 + ei, "label = <\n");
-		output.format(5 + ei, "<table border=\"0\" cellborder=\"0\">\n");
-		output.format(5 + ei, "<tr><td>%s</td></tr>\n", ss.name);
-		output.format(5 + ei, "<tr><td>[Class]</td></tr>\n");
-		
-		if(!cls.description.empty) {
-			string[] wrapped = wrapLongString(ss.description, 40);
-			foreach(str; wrapped) {
-				output.format(5 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
-			}
-		}
-
-		foreach(it; cls.members.keys()) {
-			const Member mem = cls.members[it];
-			output.generateMember(mem, names, nameMappings,
-				language, ei + 1
-			);
-		}
-
-		output.format(5 + ei, "</table>\n");
-		output.format(4 + ei, ">\n");
-		output.format(3 + ei, "]\n");
-}
-
-private void generateMember(O)(ref O output, 
-		in ref Member mem, ref StringHashSet names,
-		ref HashMap!(string,string) nameMappings,
-		in string language, in uint ei = 0) 
-{
-	const MemberVariable mv = cast(MemberVariable)mem;
-	if(mv !is null) {
-		generateMemberVariable(output, mv, names, nameMappings, ei + 1);
-	}
-
-	const MemberFunction mf = cast(MemberFunction)mem;
-	if(mf !is null) {
-		generateMemberFunction(output, mv, names, nameMappings, ei + 1);
-	}
-}
-
-private void generateMemberVariable(O)(ref O output, 
-		in ref MemberVariable mem, ref StringHashSet names,
-		ref HashMap!(string,string) nameMappings,
-		in string language, in uint ei = 0) 
-{
 }

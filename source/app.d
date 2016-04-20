@@ -29,6 +29,7 @@ void main() {
 	usersFrontend.description = "Uses the frontend to do stuff.";
 
 	Container server = system.getOrNewContainer("Server");
+	server.technology = "D";
 	world.getOrNew!Dependency("frontendServerDep", frontend, server)
 		.description = "HTTPS";
 
@@ -41,18 +42,19 @@ void main() {
 		description = "Best component name ever!";
 
 	auto database = system.getOrNewContainer("Database");
+	database.technology = "MySQL";
 	world.getOrNew!Dependency("serverDatabase",
 		server, database
 	).description = "CRUD";
 
 	Type str = world.getOrNewType("String");
 	str.typeToLanguage["D"] = "string";
-	str.typeToLanguage["Typestrict"] = "string";
+	str.typeToLanguage["Angular"] = "string";
 	str.typeToLanguage["MySQL"] = "text";
 
 	Type integer = world.getOrNewType("Int");
 	integer.typeToLanguage["D"] = "long";
-	integer.typeToLanguage["Typestrict"] = "number";
+	integer.typeToLanguage["Angular"] = "number";
 	integer.typeToLanguage["MySQL"] = "long";
 
 	Class user = getOrNewClass("User", frontendUserCtrl, 
@@ -63,13 +65,21 @@ void main() {
 	user.containerType["class"] = "struct";
 
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
+	userId.type = integer;
 	userId.addLandSpecificAttribue("MySQL", "PRIMARY KEY");
 	auto userFirstname = user.getOrNew!MemberVariable("firstname");
+	userFirstname.type = str;
 	auto userLastname = user.getOrNew!MemberVariable("lastname");
+	userLastname.type = str;
 
 	Class address = getOrNewClass("Address", 
 		frontendUserCtrl, serverUserCtrl, database
 	);
+	MemberFunction func = address.getOrNew!MemberFunction("func");
+	func.returnType = integer;
+
+	func.getOrNew!MemberVariable("a").type = integer;
+	func.getOrNew!MemberVariable("b").type = str;
 
 	Aggregation userAddress = world.getOrNew!Aggregation("userEmployee",
 		user, address
