@@ -27,7 +27,7 @@ class Graphvic : Generator {
 		this.generateWorld();
 		this.generateWorldAndContainer();
 		this.generateWorldAndContainerComponents();
-		this.generateContainersComplete();
+		this.generateSoftwareSystemsComplete();
 		this.generateMakefile();
 	}
 
@@ -80,7 +80,7 @@ class Graphvic : Generator {
 
 		foreach(key; this.world.softwareSystems.keys()) {
 			auto it = this.world.softwareSystems[key];
-			ltw.generateSoftwareSystemAndContainer(it, names, nameMappings);
+			ltw.generateSoftwareSystemAndContainers(it, names, nameMappings);
 		}
 
 		ltw.generate!HardwareSystem(this.world.hardwareSystems, names, 
@@ -92,7 +92,7 @@ class Graphvic : Generator {
 		ltw.put("}\n");
 	}
 
-	void generateContainersComplete() {
+	void generateSoftwareSystemsComplete() {
 		foreach(it; this.world.softwareSystems.keys()) {
 			auto ss = this.world.softwareSystems[it];
 			auto f = Generator.createFile([this.outputDir, it ~ ".dot"]);
@@ -340,7 +340,7 @@ private void generateHardwareSystem(O)(ref O output, in HardwareSystem ss, ref
 	output.format(1, "]\n");
 }
 
-private void generateSoftwareSystemAndContainer(O)(ref O output, 
+private void generateSoftwareSystemAndContainers(O)(ref O output, 
 		in ref SoftwareSystem ss, ref StringHashSet names, 
 		ref HashMap!(string,string) nameMappings) 
 {
@@ -348,10 +348,25 @@ private void generateSoftwareSystemAndContainer(O)(ref O output,
 	nameMappings[ss.name] = "cluster_" ~ prepareName(ss.name);
 
 	output.format(1, "subgraph cluster_%s {\n", prepareName(ss.name));
-	output.format(2, "label=\"%s\";\n", ss.name);
+	output.format(2, "label = <\n");
+	output.format(3, "<table border=\"0\" cellborder=\"0\">\n");
+	output.format(3, "<tr><td>%s</td></tr>\n", ss.name);
+	output.format(3, "<tr><td>[Software System]</td></tr>\n");
+	//output.format(3, "<tr><td>[%s]</td></tr>\n", ss.technology);
+	
+	if(!ss.description.empty) {
+		string[] wrapped = wrapLongString(ss.description, 40);
+		foreach(str; wrapped) {
+			output.format(3, "<tr><td align=\"left\">%s</td></tr>\n", str);
+		}
+	}
+
+	output.format(3, "</table>\n");
+	output.format(2, ">\n");
+	//output.format(1, "]\n");
 	
 	foreach(key; ss.containers.keys()) {
-		auto it = ss.containers[key];
+		const Container it = ss.containers[key];
 		output.generateContainer(it, names, nameMappings);
 	}
 	output.format(2, 
@@ -395,8 +410,6 @@ private void generateSoftwareSystemAndContainerComponent(O)(ref O output,
 	nameMappings[ss.name] = "cluster_" ~ prepareName(ss.name);
 
 	output.format(1, "subgraph cluster_%s {\n", prepareName(ss.name));
-	//output.format(2, "node [style=filled];\n");
-	//output.format(2, "style=filled;\n");
 	output.format(2, "shape=box;\n");
 	output.format(2, "label = <\n");
 	output.format(3, "<table border=\"0\" cellborder=\"0\">\n");
@@ -470,10 +483,51 @@ private void generateContainerBottomMatter(O)(ref O output,
 }
 
 private void generateContainerComplete(O)(ref O output, in Container container, 
-		ref StringHashSet names, ref HashMap!(string,string) nameMappings) 
+		ref StringHashSet names, ref HashMap!(string,string) nameMappings, 
+		in uint ei = 0) 
 {
 	output.generateContainerTopMatter(container, names, nameMappings);
+	foreach(it; container.components.keys()) {
+		const auto com = container.components[it];
+		output.generateComponentComplete(com, names, nameMappings, ei + 1);
+	}
 	output.generateContainerBottomMatter(container, names, nameMappings);
+}
+
+private void generateComponentComplete(O)(ref O output, in Component com, 
+		ref StringHashSet names, ref HashMap!(string,string) nameMappings, 
+		in uint ei = 0) 
+{
+	names.insert(com.name);
+	nameMappings[com.name] = "cluster_" ~ prepareName(com.name);
+
+	output.format(3 + ei, "subgraph cluster_%s {\n", prepareName(com.name));
+	output.format(4 + ei, "shape=box;\n");
+	output.format(4 + ei, "label = <\n");
+	output.format(5 + ei, "<table border=\"0\" cellborder=\"0\">\n");
+	output.format(5 + ei, "<tr><td>%s</td></tr>\n", com.name);
+	output.format(5 + ei, "<tr><td>[Component]</td></tr>\n");
+	
+	if(!com.description.empty) {
+		string[] wrapped = wrapLongString(com.description, 40);
+		foreach(str; wrapped) {
+			output.format(5 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+		}
+	}
+
+	output.format(5 + ei, "</table>\n");
+	output.format(4 + ei, ">\n");
+
+	foreach(it; com.subComponents) {
+		names.insert(it.name);
+		output.generateComponentComplete(it, names, nameMappings, ei + 1);
+	}
+
+	output.format(3 + ei, 
+		"cluster_%s_dummy [ width=\"0\" shape=none label = \"\", style = invis ];\n", 
+		prepareName(com.name)
+	);
+	output.format(3 + ei, "}\n");
 }
 
 private void generateContainerComponents(O)(ref O output, 
@@ -574,4 +628,61 @@ private void generateComponents(O)(ref O output,
 		);
 		output.format(3 + ei, "}\n");
 	}
+}
+
+private void generateClass(O)(ref O output, 
+		in ref Class cls, ref StringHashSet names,
+		ref HashMap!(string,string) nameMappings,
+		in string language, in uint ei = 0) 
+{
+		names.insert(cls.name);
+		nameMappings[cls.name] = prepareName(ss.name);
+
+		output.format(3 + ei, "%s [\n", prepareName(ss.name));
+		output.format(4 + ei, "shape=box;\n");
+		output.format(4 + ei, "label = <\n");
+		output.format(5 + ei, "<table border=\"0\" cellborder=\"0\">\n");
+		output.format(5 + ei, "<tr><td>%s</td></tr>\n", ss.name);
+		output.format(5 + ei, "<tr><td>[Class]</td></tr>\n");
+		
+		if(!cls.description.empty) {
+			string[] wrapped = wrapLongString(ss.description, 40);
+			foreach(str; wrapped) {
+				output.format(5 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+			}
+		}
+
+		foreach(it; cls.members.keys()) {
+			const Member mem = cls.members[it];
+			output.generateMember(mem, names, nameMappings,
+				language, ei + 1
+			);
+		}
+
+		output.format(5 + ei, "</table>\n");
+		output.format(4 + ei, ">\n");
+		output.format(3 + ei, "]\n");
+}
+
+private void generateMember(O)(ref O output, 
+		in ref Member mem, ref StringHashSet names,
+		ref HashMap!(string,string) nameMappings,
+		in string language, in uint ei = 0) 
+{
+	const MemberVariable mv = cast(MemberVariable)mem;
+	if(mv !is null) {
+		generateMemberVariable(output, mv, names, nameMappings, ei + 1);
+	}
+
+	const MemberFunction mf = cast(MemberFunction)mem;
+	if(mf !is null) {
+		generateMemberFunction(output, mv, names, nameMappings, ei + 1);
+	}
+}
+
+private void generateMemberVariable(O)(ref O output, 
+		in ref MemberVariable mem, ref StringHashSet names,
+		ref HashMap!(string,string) nameMappings,
+		in string language, in uint ei = 0) 
+{
 }
