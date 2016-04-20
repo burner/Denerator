@@ -86,6 +86,10 @@ class Graphvic : Generator {
 			immutable fromName = con.from.areYouIn(publicNames);
 			immutable toName = con.to.areYouIn(publicNames);
 
+			if(fromName == toName) {
+				continue;
+			}
+
 			if(!fromName.empty && !toName.empty) {
 				output.format(1, "%s -> %s", prepareName(fromName),
 					prepareName(toName)
