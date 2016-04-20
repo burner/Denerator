@@ -7,6 +7,8 @@ import std.algorithm.iteration : map, joiner;
 import std.stdio : writeln;
 import std.range : chain;
 
+import containers.hashmap;
+
 import generator;
 import model;
 
@@ -24,6 +26,8 @@ class Graphvic : Generator {
 	override void generate() {
 		this.generateWorld();
 		this.generateWorldAndContainer();
+		this.generateWorldAndContainerComponents();
+		this.generateContainersComplete();
 		this.generateMakefile();
 	}
 
@@ -33,12 +37,12 @@ class Graphvic : Generator {
 
 		auto targets = [TheWorldName,TheWorldAndContainerName];
 
-		ltw.formattedWrite("all: %s\n\n", targets.joiner(" "));
+		ltw.formattedWrite(
+			"all: $(patsubst %%.dot,%%.png,$(wildcard *.dot))\n\n"
+		);
 
-		foreach(it; targets) {
-			ltw.formattedWrite("%s : %s.dot\n", it, it);
-			ltw.formattedWrite("\tdot -T png %s.dot -o %s.png\n\n", it, it);
-		}
+		ltw.formattedWrite("%%.png : %%.dot\n");
+		ltw.formattedWrite("\tdot -T png $< -o $@");
 	}
 
 	void generateWorld() {
@@ -46,19 +50,18 @@ class Graphvic : Generator {
 		auto ltw = f.lockingTextWriter();
 		generateTopMatter(ltw);
 
-		ltw.generate!Actor(this.world.actors);
-		ltw.generate!SoftwareSystem(this.world.softwareSystems);
-		ltw.generate!HardwareSystem(this.world.hardwareSystems);
-
 		StringHashSet names;
-		foreach(it; chain(this.world.actors.keys(),
-				this.world.softwareSystems.keys(),
-				this.world.hardwareSystems.keys()))
-		{
-			names.insert(it);
-		}
+		HashMap!(string, string) nameMappings;
 
-		this.generateWorldConnections(ltw, names);
+		ltw.generate!Actor(this.world.actors, names, nameMappings);
+		ltw.generate!SoftwareSystem(this.world.softwareSystems, names,
+			nameMappings
+		);
+		ltw.generate!HardwareSystem(this.world.hardwareSystems, names,
+			nameMappings
+		);
+
+		this.generateWorldConnections(ltw, names, nameMappings);
 
 		ltw.put("}\n");
 	}
@@ -72,29 +75,58 @@ class Graphvic : Generator {
 
 		// collect all the names so we know what edges to draw
 		StringHashSet names;
-		ltw.generate!Actor(this.world.actors);
+		HashMap!(string, string) nameMappings;
+		ltw.generate!Actor(this.world.actors, names, nameMappings);
 
 		foreach(key; this.world.softwareSystems.keys()) {
 			auto it = this.world.softwareSystems[key];
-			ltw.generateSoftwareSystemAndContainer(it, names);
+			ltw.generateSoftwareSystemAndContainer(it, names, nameMappings);
 		}
 
-		ltw.generate!HardwareSystem(this.world.hardwareSystems);
+		ltw.generate!HardwareSystem(this.world.hardwareSystems, names, 
+			nameMappings
+		);
 
-		foreach(it; chain(this.world.actors.keys(),
-				this.world.hardwareSystems.keys()))
-		{
-			names.insert(it);
-		}
-
-		this.generateWorldConnections(ltw, names);
+		this.generateWorldConnections(ltw, names, nameMappings);
 
 		ltw.put("}\n");
 	}
 
+	void generateContainersComplete() {
+		foreach(it; this.world.softwareSystems.keys()) {
+			auto ss = this.world.softwareSystems[it];
+			auto f = Generator.createFile([this.outputDir, it ~ ".dot"]);
+			auto ltw = f.lockingTextWriter();
+			generateTopMatter(ltw);
+
+			StringHashSet names;
+			HashMap!(string, string) nameMappings;
+			names.insert(ss.name);
+			nameMappings[ss.name] = "cluster_" ~ prepareName(ss.name);
+
+			ltw.format(1, "subgraph cluster_%s {\n", prepareName(ss.name));
+			ltw.generateSoftwareSystemTopMatter(ss, names, nameMappings);
+			
+			ltw.format(2, 
+				"cluster_%s_dummy [ width=\"0\" shape=none label = \"\", style = invis ];\n", 
+				prepareName(ss.name)
+			);
+
+			foreach(jt; ss.containers.keys()) {
+				ltw.generateContainerComplete(ss.containers[jt],
+					names, nameMappings
+				);
+			}
+			ltw.format(1, "}\n");
+			ltw.put("}\n");
+		}
+	}
+
 	void generateWorldConnections(O)(ref O output, 
-			ref in StringHashSet publicNames) 
+			ref in StringHashSet publicNames,
+			ref in HashMap!(string,string) nameMappings) 
 	{
+		import std.algorithm.searching : startsWith;
 		auto keys = super.world.connections.keys();
 		foreach(it; keys) {
 			auto con = cast(ConnectionImpl)super.world.connections[it];
@@ -110,9 +142,35 @@ class Graphvic : Generator {
 			}
 
 			if(!fromName.empty && !toName.empty) {
-				output.format(1, "%s -> %s", prepareName(fromName),
-					prepareName(toName)
-				);
+				immutable fromNameRN = nameMappings[fromName];
+				immutable toNameRN = nameMappings[toName];
+
+				assert(!fromNameRN.empty);
+				assert(!toNameRN.empty);
+				if(fromNameRN.startsWith("cluster_") &&
+					toNameRN.startsWith("cluster_"))
+				{
+					output.format(1, "%s -> %s [ltail=%s lhead=%s]",
+						fromNameRN ~ "_dummy", toNameRN ~ "_dummy",
+						fromNameRN,
+						toNameRN,
+					);
+				} else if(!fromNameRN.startsWith("cluster_") &&
+					toNameRN.startsWith("cluster_"))
+				{
+					output.format(1, "%s -> %s [lhead=%s]", fromNameRN,
+						toNameRN ~ "_dummy", toNameRN,
+					);
+				} else if(fromNameRN.startsWith("cluster_") &&
+					!toNameRN.startsWith("cluster_"))
+				{
+					output.format(1, "%s -> %s [ltail=%s]", 
+						fromNameRN ~ "_dummy",
+						toNameRN, fromNameRN,
+					);
+				} else {
+					output.format(1, "%s -> %s", fromNameRN, toNameRN);
+				}
 				if(con.description.empty) {
 					output.put(";\n");
 				} else {
@@ -130,38 +188,72 @@ class Graphvic : Generator {
 			}
 		}
 	}
+
+	void generateWorldAndContainerComponents() {
+		auto f = Generator.createFile([this.outputDir, 
+			"theworldcontainercomponents.dot"]
+		);
+		auto ltw = f.lockingTextWriter();
+		generateTopMatter(ltw);
+
+		// collect all the names so we know what edges to draw
+		StringHashSet names;
+		HashMap!(string, string) nameMappings;
+		ltw.generate!Actor(this.world.actors, names, nameMappings);
+
+		foreach(key; this.world.softwareSystems.keys()) {
+			auto it = this.world.softwareSystems[key];
+			ltw.generateSoftwareSystemAndContainerComponent(it, names,
+				nameMappings
+			);
+		}
+
+		ltw.generate!HardwareSystem(this.world.hardwareSystems, names,
+			nameMappings
+		);
+
+		this.generateWorldConnections(ltw, names, nameMappings);
+
+		ltw.put("}\n");
+	}
 }
 
 private void generateTopMatter(O)(ref O output) {
 	output.put(
 `digraph G {
-	fontname = "Bitstream Vera Sans"
-	fontsize = 10
+	fixedsize=true 
+	compound=true 
 `
 	);
 }
 
 private void generate(T,O)(ref O output, 
-		in ref StringEntityMap!(T) map) 
+		in ref StringEntityMap!(T) map, ref StringHashSet names,
+		ref HashMap!(string,string) nameMappings) 
 {
 	auto keys = map.keys();
 	foreach(it; keys) {
 		static if(is(T == Actor)) {
-			generateActor(output, map[it]);
+			generateActor(output, map[it], names, nameMappings);
 		} else static if(is(T == SoftwareSystem)) {
-			generateSoftwareSystem(output, map[it]);
+			generateSoftwareSystem(output, map[it], names, nameMappings);
 		} else static if(is(T == HardwareSystem)) {
-			generateHardwareSystem(output, map[it]);
+			generateHardwareSystem(output, map[it], names, nameMappings);
 		}
 	}
 }
 
-private void generateActor(O)(ref O output, in Actor actor) {
+private void generateActor(O)(ref O output, in Actor actor, ref StringHashSet
+		names, ref HashMap!(string,string) nameMappings) 
+{
+	names.insert(actor.name);
+	nameMappings[actor.name] = prepareName(actor.name);
+
 	output.format(1, "%s [\n", prepareName(actor.name));
 	output.format(2, "shape=none;\n");
 	output.format(2, "label = <\n");
 	output.format(3, "<table border=\"0\" cellborder=\"0\">\n");
-	output.format(3, "<tr><td><img src=\"Stick.png\"/></td></tr>\n");
+	output.format(3, "<tr><td><img src=\"../Stick.png\"/></td></tr>\n");
 	output.format(3, "<tr><td>%s</td></tr>\n", actor.name);
 	
 	if(!actor.description.empty) {
@@ -176,9 +268,35 @@ private void generateActor(O)(ref O output, in Actor actor) {
 	output.format(1, "]\n");
 }
 
-private void generateSoftwareSystem(O)(ref O output, in SoftwareSystem ss) {
+private void generateSoftwareSystemTopMatter(O)(ref O output,
+	   	in SoftwareSystem ss, ref StringHashSet names, 
+		ref HashMap!(string,string) nameMappings, in uint ei = 0) 
+{
+	output.format(2 + ei, "shape=box;\n");
+	output.format(2 + ei, "label = <\n");
+	output.format(3 + ei, "<table border=\"0\" cellborder=\"0\">\n");
+	output.format(3 + ei, "<tr><td>%s</td></tr>\n", ss.name);
+	output.format(3 + ei, "<tr><td>[Software System]</td></tr>\n");
+	
+	if(!ss.description.empty) {
+		string[] wrapped = wrapLongString(ss.description, 40);
+		foreach(str; wrapped) {
+			output.format(3 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+		}
+	}
+
+	output.format(3 + ei, "</table>\n");
+	output.format(2 + ei, ">\n");
+}
+
+private void generateSoftwareSystem(O)(ref O output, in SoftwareSystem ss, ref
+		StringHashSet names, ref HashMap!(string,string) nameMappings) 
+{
+	names.insert(ss.name);
+	nameMappings[ss.name] = prepareName(ss.name);
+
 	output.format(1, "%s [\n", prepareName(ss.name));
-	output.format(2, "shape=box;\n");
+	/*output.format(2, "shape=box;\n");
 	output.format(2, "label = <\n");
 	output.format(3, "<table border=\"0\" cellborder=\"0\">\n");
 	output.format(3, "<tr><td>%s</td></tr>\n", ss.name);
@@ -192,11 +310,17 @@ private void generateSoftwareSystem(O)(ref O output, in SoftwareSystem ss) {
 	}
 
 	output.format(3, "</table>\n");
-	output.format(2, ">\n");
+	output.format(2, ">\n");*/
+	output.generateSoftwareSystemTopMatter(ss, names, nameMappings);
 	output.format(1, "]\n");
 }
 
-private void generateHardwareSystem(O)(ref O output, in HardwareSystem ss) {
+private void generateHardwareSystem(O)(ref O output, in HardwareSystem ss, ref
+		StringHashSet names, ref HashMap!(string,string) nameMappings) 
+{
+	names.insert(ss.name);
+	nameMappings[ss.name] = prepareName(ss.name);
+
 	output.format(1, "%s [\n", prepareName(ss.name));
 	output.format(2, "shape=box;\n");
 	output.format(2, "label = <\n");
@@ -217,23 +341,33 @@ private void generateHardwareSystem(O)(ref O output, in HardwareSystem ss) {
 }
 
 private void generateSoftwareSystemAndContainer(O)(ref O output, 
-		in ref SoftwareSystem ss, ref StringHashSet names) 
+		in ref SoftwareSystem ss, ref StringHashSet names, 
+		ref HashMap!(string,string) nameMappings) 
 {
+	names.insert(ss.name);
+	nameMappings[ss.name] = "cluster_" ~ prepareName(ss.name);
+
 	output.format(1, "subgraph cluster_%s {\n", prepareName(ss.name));
-	output.format(2, "node [style=filled];\n");
-	output.format(2, "label=\"%s\"\n", ss.name);
+	output.format(2, "label=\"%s\";\n", ss.name);
 	
 	foreach(key; ss.containers.keys()) {
 		auto it = ss.containers[key];
-		names.insert(it.name);
-		output.generateContainer(it);
+		output.generateContainer(it, names, nameMappings);
 	}
+	output.format(2, 
+		"cluster_%s_dummy [ width=\"0\" shape=none label = \"\", style = invis ];\n", 
+		prepareName(ss.name)
+	);
 	output.format(1, "}\n");
 }
 
 private void generateContainer(O)(ref O output, 
-		in ref Container ss) 
+		in ref Container ss, ref StringHashSet names, 
+		ref HashMap!(string,string) nameMappings) 
 {
+	names.insert(ss.name);
+	nameMappings[ss.name] = prepareName(ss.name);
+
 	output.format(2, "%s [\n", prepareName(ss.name));
 	output.format(3, "shape=box;\n");
 	output.format(3, "label = <\n");
@@ -251,4 +385,193 @@ private void generateContainer(O)(ref O output,
 	output.format(4, "</table>\n");
 	output.format(3, ">\n");
 	output.format(2, "]\n");
+}
+
+private void generateSoftwareSystemAndContainerComponent(O)(ref O output, 
+		in ref SoftwareSystem ss, ref StringHashSet names, 
+		ref HashMap!(string,string) nameMappings) 
+{
+	names.insert(ss.name);
+	nameMappings[ss.name] = "cluster_" ~ prepareName(ss.name);
+
+	output.format(1, "subgraph cluster_%s {\n", prepareName(ss.name));
+	//output.format(2, "node [style=filled];\n");
+	//output.format(2, "style=filled;\n");
+	output.format(2, "shape=box;\n");
+	output.format(2, "label = <\n");
+	output.format(3, "<table border=\"0\" cellborder=\"0\">\n");
+	output.format(3, "<tr><td>%s</td></tr>\n", ss.name);
+	output.format(3, "<tr><td>[Software System]</td></tr>\n");
+	
+	if(!ss.description.empty) {
+		string[] wrapped = wrapLongString(ss.description, 40);
+		foreach(str; wrapped) {
+			output.format(3, "<tr><td align=\"left\">%s</td></tr>\n", str);
+		}
+	}
+
+	output.format(3, "</table>\n");
+	output.format(2, ">\n");
+	
+	foreach(key; ss.containers.keys()) {
+		auto it = ss.containers[key];
+		names.insert(it.name);
+		output.generateContainerComponents(it, names, nameMappings);
+	}
+	output.format(2, 
+		"cluster_%s_dummy [ width=\"0\" shape=none label = \"\", style = invis ];\n", 
+		prepareName(ss.name)
+	);
+	output.format(1, "}\n");
+}
+
+private void generateContainerTopMatter(O)(ref O output,
+		in ref Container ss, ref StringHashSet names,
+		ref HashMap!(string,string) nameMappings, in uint ei = 0) 
+{
+	if(ss.components.empty) {
+		output.generateContainer(ss, names, nameMappings);
+	} else {
+		names.insert(ss.name);
+		nameMappings[ss.name] = "cluster_" ~ prepareName(ss.name);
+
+		output.format(2 + ei, "subgraph cluster_%s {\n", prepareName(ss.name));
+		output.format(3 + ei, "shape=box;\n");
+		output.format(3 + ei, "label = <\n");
+		output.format(4 + ei, "<table border=\"0\" cellborder=\"0\">\n");
+		output.format(4 + ei, "<tr><td>%s</td></tr>\n", ss.name);
+		output.format(4 + ei, "<tr><td>[%s]</td></tr>\n", ss.technology);
+		
+		if(!ss.description.empty) {
+			string[] wrapped = wrapLongString(ss.description, 40);
+			foreach(str; wrapped) {
+				output.format(4 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+			}
+		}
+
+		output.format(4 + ei, "</table>\n");
+		output.format(3 + ei, ">\n");
+		output.format(3 + ei, 
+			"cluster_%s_dummy [ width=\"0\" shape=none label = \"\", style = invis ];\n", 
+			prepareName(ss.name)
+		);
+	}
+}
+
+private void generateContainerBottomMatter(O)(ref O output,
+		in ref Container ss, ref StringHashSet names,
+		ref HashMap!(string,string) nameMappings, in uint ei = 0) 
+{
+	if(ss.components.empty) {
+		//output.format(2 + ei, "]\n"); // TODO compare generateContainer
+	} else {
+		output.format(2 + ei, "}\n");
+	}
+}
+
+private void generateContainerComplete(O)(ref O output, in Container container, 
+		ref StringHashSet names, ref HashMap!(string,string) nameMappings) 
+{
+	output.generateContainerTopMatter(container, names, nameMappings);
+	output.generateContainerBottomMatter(container, names, nameMappings);
+}
+
+private void generateContainerComponents(O)(ref O output, 
+		in ref Container ss, ref StringHashSet names,
+		ref HashMap!(string,string) nameMappings) 
+{
+	if(ss.components.empty) {
+		output.generateContainer(ss, names, nameMappings);
+	} else {
+		names.insert(ss.name);
+		nameMappings[ss.name] = "cluster_" ~ prepareName(ss.name);
+
+		output.format(2, "subgraph cluster_%s {\n", prepareName(ss.name));
+		output.format(3, "shape=box;\n");
+		output.format(3, "label = <\n");
+		output.format(4, "<table border=\"0\" cellborder=\"0\">\n");
+		output.format(4, "<tr><td>%s</td></tr>\n", ss.name);
+		output.format(4, "<tr><td>[%s]</td></tr>\n", ss.technology);
+		
+		if(!ss.description.empty) {
+			string[] wrapped = wrapLongString(ss.description, 40);
+			foreach(str; wrapped) {
+				output.format(4, "<tr><td align=\"left\">%s</td></tr>\n", str);
+			}
+		}
+
+		output.format(4, "</table>\n");
+		output.format(3, ">\n");
+
+		foreach(key; ss.components.keys()) {
+			const it = ss.components[key];	
+			names.insert(it.name);
+			output.generateComponents(it, names, nameMappings);
+		}
+		output.format(3, 
+			"cluster_%s_dummy [ width=\"0\" shape=none label = \"\", style = invis ];\n", 
+			prepareName(ss.name)
+		);
+		output.format(2, "}\n");
+	}
+}
+
+private void generateComponents(O)(ref O output, 
+		in ref Component ss, ref StringHashSet names,
+		ref HashMap!(string,string) nameMappings,
+		in uint ei = 0) 
+{
+	if(ss.subComponents.length == 0) {
+		names.insert(ss.name);
+		nameMappings[ss.name] = prepareName(ss.name);
+
+		output.format(3 + ei, "%s [\n", prepareName(ss.name));
+		output.format(4 + ei, "shape=box;\n");
+		output.format(4 + ei, "label = <\n");
+		output.format(5 + ei, "<table border=\"0\" cellborder=\"0\">\n");
+		output.format(5 + ei, "<tr><td>%s</td></tr>\n", ss.name);
+		output.format(5 + ei, "<tr><td>[Component]</td></tr>\n");
+		
+		if(!ss.description.empty) {
+			string[] wrapped = wrapLongString(ss.description, 40);
+			foreach(str; wrapped) {
+				output.format(5 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+			}
+		}
+
+		output.format(5 + ei, "</table>\n");
+		output.format(4 + ei, ">\n");
+		output.format(3 + ei, "]\n");
+	} else {
+		names.insert(ss.name);
+		nameMappings[ss.name] = "cluster_" ~ prepareName(ss.name);
+
+		output.format(3 + ei, "subgraph cluster_%s {\n", prepareName(ss.name));
+		output.format(4 + ei, "shape=box;\n");
+		output.format(4 + ei, "label = <\n");
+		output.format(5 + ei, "<table border=\"0\" cellborder=\"0\">\n");
+		output.format(5 + ei, "<tr><td>%s</td></tr>\n", ss.name);
+		output.format(5 + ei, "<tr><td>[Component]</td></tr>\n");
+		
+		if(!ss.description.empty) {
+			string[] wrapped = wrapLongString(ss.description, 40);
+			foreach(str; wrapped) {
+				output.format(5 + ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
+			}
+		}
+
+		output.format(5 + ei, "</table>\n");
+		output.format(4 + ei, ">\n");
+
+		foreach(it; ss.subComponents) {
+			names.insert(it.name);
+			output.generateComponents(it, names, nameMappings, ei + 1);
+		}
+
+		output.format(3 + ei, 
+			"cluster_%s_dummy [ width=\"0\" shape=none label = \"\", style = invis ];\n", 
+			prepareName(ss.name)
+		);
+		output.format(3 + ei, "}\n");
+	}
 }

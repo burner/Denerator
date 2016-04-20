@@ -12,6 +12,7 @@ void main() {
 		~ "that should be obvious.";
 
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
+	system.description = "The awesome system to develop.";
 	Container frontend = system.getOrNewContainer("Frontend");
 	frontend.technology = "Angular";
 	auto frontendUserCtrl = frontend.getOrNewComponent("frontUserCtrl");
@@ -24,17 +25,20 @@ void main() {
 	usersFrontend.description = "Uses the frontend to do stuff.";
 	world.getOrNew!Dependency("userDepStuffCtrl",
 		users, frontendStuffCtrl
-	).description = "Uses the Business Logic of the Awesome Software";
+	).description = "Uses the Stuff Logic of the Awesome Software";
 	usersFrontend.description = "Uses the frontend to do stuff.";
 
-	auto frontendHardwareLink = world.getOrNew!Dependency("frontendUsesHardware",
-		frontendUserCtrl, hardware
-	);
-
 	Container server = system.getOrNewContainer("Server");
-	world.getOrNew!Dependency("frontendServerDep", frontend, server);
+	world.getOrNew!Dependency("frontendServerDep", frontend, server)
+		.description = "HTTPS";
 
 	auto serverUserCtrl = server.getOrNewComponent("serverUserCtrl");
+	auto frontendHardwareLink = world.getOrNew!Dependency("frontendUsesHardware",
+		serverUserCtrl, hardware
+	);
+
+	auto serverUserSub = serverUserCtrl.getOrNewSubComponent("utils").
+		description = "Best component name ever!";
 
 	auto database = system.getOrNewContainer("Database");
 	world.getOrNew!Dependency("serverDatabase",

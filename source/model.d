@@ -202,10 +202,20 @@ class Container : Entity {
 
 class Component : Entity {
 	StringEntityMap!(Class) classes;
-	Component[] subComponent;
+	Component[string] subComponents;
 	
 	this(in string name, in Entity parent) {
 		super(name, parent);
+	}
+
+	Component getOrNewSubComponent(in string name) {
+		if(name in this.subComponents) {
+			return this.subComponents[name];
+		} else {
+			auto n = new Component(name, this);
+			this.subComponents[name] = n;
+			return n;
+		}
 	}
 }
 
