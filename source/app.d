@@ -90,7 +90,6 @@ void main() {
 	gv.generate();
 
 	MySQL mysql = new MySQL(world, "MySQL");
-	mysql.generate();
 	mysql.generate(database);
 	
 }
