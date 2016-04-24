@@ -64,7 +64,7 @@ class Actor : Entity {
 }
 
 struct SearchResult {
-	Entity entity;
+	const(Entity) entity;
 	string[] path;
 }
 
@@ -81,17 +81,16 @@ class TheWorld : Entity {
 
 	SearchResult search(Entity needle) {
 		assert(needle !is null);
-		SearchResult result;
 
-		if(Entity mnp = holdsEntityImpl(needle, result, this.actors,
+		if(const(Entity) mnp = holdsEntityImpl(needle, this.actors,
 					this.softwareSystems, this.hardwareSystems,
 					this.typeContainerMapping, this.connections)) 
 		{
-			result.entity = mnp;
+			return SearchResult(mnp, [super.name]);
 		}
 
-		result.path ~= this.name;
-		return result;
+		SearchResult dummy;
+		return dummy;
 	}
 
 	Actor getOrNewActor(in string name) {
@@ -203,23 +202,22 @@ class SoftwareSystem : Entity {
 		);
 	}
 
-	Entity holdsEntity(const Entity needle, ref SearchResult rslt) {
-		Entity tmp = holdsEntitySingleImpl(needle, rslt, this.containers);
+	SearchResult holdsEntity(const Entity needle) const {
+		const Entity tmp = holdsEntitySingleImpl(needle, this.containers);
 		if(tmp !is null) {
-			return tmp;
+			return SearchResult(tmp, [super.name]);	
 		} else {
 			foreach(it; this.containers.keys()) {
-				Container con = this.containers[it];
-				tmp = con.holdsEntity(needle, rslt);
-				if(tmp !is null) {
-					rslt.path ~= super.name;
-					return tmp;
+				const(Container) con = this.containers[it];
+				SearchResult ret = con.holdsEntity(needle);
+				if(ret.entity !is null) {
+					ret.path ~= super.name;
+					return ret;
 				}
 			}
 		}
-
-		assert(tmp is null);
-		return tmp;
+		SearchResult dummy;
+		return dummy;
 	}
 }
 
@@ -238,24 +236,22 @@ class Container : Entity {
 		);
 	}
 
-	Entity holdsEntity(const Entity needle, ref SearchResult rslt) {
-		Entity tmp = holdsEntityImpl(needle, rslt, this.components, this.classes);
+	SearchResult holdsEntity(const Entity needle) const {
+		const(Entity) tmp = holdsEntityImpl(needle, this.components, this.classes);
 		if(tmp !is null) {
-			rslt.path ~= super.name;
-			return tmp;
+			return SearchResult(tmp, [super.name]);
 		} else {
 			foreach(it; this.components.keys()) {
-				Component com = this.components[it];
-				tmp = com.holdsEntity(needle, rslt);
-				if(tmp !is null) {
-					rslt.path ~= super.name;
-					return tmp;
+				const(Component) com = this.components[it];
+				SearchResult ret = com.holdsEntity(needle);
+				if(ret.entity !is null) {
+					ret.path ~= super.name;
+					return ret;
 				}
 			}
 		}
-
-		assert(tmp is null);
-		return tmp;
+		SearchResult dummy;
+		return dummy;
 	}
 }
 
@@ -277,8 +273,24 @@ class Component : Entity {
 		}
 	}
 
-	Entity holdsEntity(const Entity needle, ref SearchResult rslt) {
-		return null;
+	SearchResult holdsEntity(const Entity needle) const {
+		const Entity tmp = holdsEntityImpl(needle, this.classes,
+				this.subComponents);
+		if(tmp !is null) {
+			return SearchResult(tmp, [super.name]);
+		} else {
+			foreach(it; this.subComponents.keys()) {
+				const(Component) com = this.subComponents[it];
+				auto ret = com.holdsEntity(needle);
+				if(ret.entity !is null) {
+					ret.path ~= super.name;
+					return ret;
+				}
+			}
+		}
+
+		SearchResult dummy;
+		return dummy;
 	}
 }
 
@@ -430,12 +442,11 @@ Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 	return cls;
 }
 
-Entity holdsEntitySingleImpl(T)(const Entity needle, ref SearchResult rslt, ref T arg)
+const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg)
 {
 	foreach(key; arg.keys()) {
 		auto entity = arg[key];
 		if(needle is entity) {
-			rslt.path ~= key;
 			return entity;
 		}
 	}
@@ -443,13 +454,12 @@ Entity holdsEntitySingleImpl(T)(const Entity needle, ref SearchResult rslt, ref 
 	return null;
 }
 
-Entity holdsEntityImpl(T...)(const Entity needle, ref SearchResult rslt, ref T args)
+const(Entity) holdsEntityImpl(T...)(const Entity needle, ref T args)
 {
 	foreach(ref arg; args) {
 		foreach(key; arg.keys()) {
 			auto entity = arg[key];
 			if(needle is entity) {
-				rslt.path ~= key;
 				return entity;
 			}
 		}
