@@ -75,6 +75,7 @@ class Graphvic : Generator {
 		);
 		auto ltw = f.lockingTextWriter();
 		generateTopMatter(ltw);
+		ltw.put("\trankdir=LR;\n");
 
 		// collect all the names so we know what edges to draw
 		StringHashSet names;
@@ -152,14 +153,47 @@ class Graphvic : Generator {
 
 			if(fromSR.entity !is null && toSR.entity !is null) {
 				writeln(ss.name, " ", it, " ", fromSR.path, " ", toSR.path);
-				output.format(1, "%s -> %s;\n",
+				output.format(1, "%s -> %s%s;\n",
 					buildPrefixStringReverse(fromSR.path) ~ "_" ~ 
 					prepareName(from.name),
 					buildPrefixStringReverse(toSR.path) ~ "_" ~ 
-					prepareName(to.name)
+					prepareName(to.name),
+					arrowhead(con)
 				);
 			}
 		}
+	}
+
+	string arrowhead(Entity en) {
+		Dependency dep = cast(Dependency)en;
+		if(dep !is null) {
+			return "[arrowhead=\"open\"]";
+		}
+		Connection con = cast(Connection)en;
+		if(con !is null) {
+			return "";
+		}
+		Aggregation agg = cast(Aggregation)en;
+		if(agg !is null) {
+			return "[arrowhead=\"odiamond\"]";
+		}
+		Composition com = cast(Composition)en;
+		if(com !is null) {
+			return "[arrowhead=\"diamond\"]";
+		}
+		Generalization  gen = cast(Generalization)en;
+		if(gen !is null) {
+			return "[arrowhead=\"empty\"]";
+		}
+		Realization  rea = cast(Realization)en;
+		if(rea !is null) {
+			return "[arrowhead=\"empty\"]";
+		}
+		ConnectionImpl ci = cast(ConnectionImpl)en;
+		if(ci !is null) {
+			return "[arrowhead=\"empty\"]";
+		}
+		return "";
 	}
 
 	void generateWorldConnections(O)(ref O output, 
@@ -585,6 +619,7 @@ class Graphvic : Generator {
 		nameMappings[ss.name] = "cluster_" ~ prepareName(ss.name);
 	
 		output.format(1, "subgraph cluster_%s {\n", prepareName(ss.name));
+		output.put("\trankdir=LR;\n");
 		output.format(2, "label = <\n");
 		output.format(3, "<table border=\"0\" cellborder=\"0\">\n");
 		output.format(3, "<tr><td>%s</td></tr>\n", ss.name);

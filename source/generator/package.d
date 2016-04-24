@@ -20,7 +20,7 @@ abstract class Generator {
 		this.world = world;
 	}
 
-	void generate();
+	abstract void generate();
 
 	static bool createFolder(in string foldername) {
 		if(exists(foldername) && isDir(foldername)) {

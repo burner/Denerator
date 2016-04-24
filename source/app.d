@@ -2,6 +2,7 @@ import std.stdio : writeln;
 
 import model;
 import generator.graphviz;
+import generator.mysql;
 import std.stdio : writeln;
 import std.typecons;
 
@@ -82,9 +83,14 @@ void main() {
 	func.getOrNew!MemberVariable("b").type = str;
 
 	Aggregation userAddress = world.getOrNew!Aggregation("userEmployee",
-		user, address
+		address, user
 	);
 
 	Graphvic gv = new Graphvic(world, "GraphvizOutput");
 	gv.generate();
+
+	MySQL mysql = new MySQL(world, "MySQL");
+	mysql.generate();
+	mysql.generate(database);
+	
 }
