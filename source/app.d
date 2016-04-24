@@ -51,12 +51,12 @@ void main() {
 	Type str = world.getOrNewType("String");
 	str.typeToLanguage["D"] = "string";
 	str.typeToLanguage["Angular"] = "string";
-	str.typeToLanguage["MySQL"] = "text";
+	str.typeToLanguage["MySQL"] = "TEXT";
 
 	Type integer = world.getOrNewType("Int");
 	integer.typeToLanguage["D"] = "long";
 	integer.typeToLanguage["Angular"] = "number";
-	integer.typeToLanguage["MySQL"] = "long";
+	integer.typeToLanguage["MySQL"] = "LONG";
 
 	Class user = getOrNewClass("User", frontendUserCtrl, 
 		serverUserCtrl, database
@@ -68,6 +68,7 @@ void main() {
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
 	userId.type = integer;
 	userId.addLandSpecificAttribue("MySQL", "PRIMARY KEY");
+	userId.addLandSpecificAttribue("MySQL", "AUTO INCREMENT");
 	auto userFirstname = user.getOrNew!MemberVariable("firstname");
 	userFirstname.type = str;
 	auto userLastname = user.getOrNew!MemberVariable("lastname");
@@ -81,6 +82,10 @@ void main() {
 
 	func.getOrNew!MemberVariable("a").type = integer;
 	func.getOrNew!MemberVariable("b").type = str;
+
+	MemberVariable addressId = address.getOrNew!MemberVariable("id");
+	addressId.type = integer;
+	addressId.addLandSpecificAttribue("MySQL", "PRIMARY KEY");
 
 	Aggregation userAddress = world.getOrNew!Aggregation("userEmployee",
 		address, user

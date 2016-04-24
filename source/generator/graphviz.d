@@ -152,7 +152,7 @@ class Graphvic : Generator {
 			appendParents(toSR, ss.parent);
 
 			if(fromSR.entity !is null && toSR.entity !is null) {
-				writeln(ss.name, " ", it, " ", fromSR.path, " ", toSR.path);
+				//writeln(ss.name, " ", it, " ", fromSR.path, " ", toSR.path);
 				output.format(1, "%s -> %s%s;\n",
 					buildPrefixStringReverse(fromSR.path) ~ "_" ~ 
 					prepareName(from.name),
@@ -351,7 +351,7 @@ class Graphvic : Generator {
 				output.format(ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
 			}
 		}
-		writeln(this.currentTechnologie, " ", mem.name);
+		//writeln(this.currentTechnologie, " ", mem.name);
 		if(mem.type is null 
 				|| !(this.currentTechnologie in mem.type.typeToLanguage))
 		{
@@ -377,7 +377,7 @@ class Graphvic : Generator {
 				output.format(ei, "<tr><td align=\"left\">%s</td></tr>\n", str);
 			}
 		}
-		writeln(this.currentTechnologie, " ", mem.name);
+		//writeln(this.currentTechnologie, " ", mem.name);
 		if(mem.returnType is null 
 				|| !(this.currentTechnologie in mem.returnType.typeToLanguage))
 		{
@@ -427,7 +427,7 @@ class Graphvic : Generator {
 		}
 
 		foreach(it; container.classes.keys()) {
-			writeln(it);
+			//writeln(it);
 			const(Class) cls = container.classes[it];
 			generateClass(output, cls, names, nameMappings, ei);
 		}
