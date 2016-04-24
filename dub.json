@@ -1,10 +1,10 @@
 {
-	"name": "dengerator",
+	"name": "degerator",
 	"description": "A minimal D application.",
 	"copyright": "Copyright © 2016, burner",
 	"authors": ["burner"],
 	"targetType" : "executable",
 	"dependencies": {
-		"emsi_containers": ">0.4.1"
+		"emsi_containers": ">0.4.2"
 	}
 }

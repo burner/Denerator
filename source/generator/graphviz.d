@@ -217,8 +217,6 @@ class Graphvic : Generator {
 			nameMappings
 		);
 
-		this.generateWorldConnections(ltw, names, nameMappings);
-
 		ltw.put("}\n");
 	}
 
@@ -400,6 +398,11 @@ class Graphvic : Generator {
 		foreach(it; com.classes.keys()) {
 			const(Class) cls = com.classes[it];
 			generateClass(output, cls, names, nameMappings, ei + 1);
+		}
+
+		foreach(const string key; this.world.connections.keys()) {
+			ConnectionImpl con = cast(ConnectionImpl)this.world.connections[key];
+			assert(con !is null);
 		}
 	
 		output.format(3 + ei, 

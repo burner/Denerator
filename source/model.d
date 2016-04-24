@@ -63,6 +63,11 @@ class Actor : Entity {
 	}
 }
 
+struct SearchResult {
+	Entity entity;
+	string[] path;
+}
+
 class TheWorld : Entity {
 	StringEntityMap!(Actor) actors;
 	StringEntityMap!(SoftwareSystem) softwareSystems;
@@ -72,6 +77,21 @@ class TheWorld : Entity {
 
 	this(in string name) {
 		super(name, null);
+	}
+
+	SearchResult search(Entity needle) {
+		assert(needle !is null);
+		SearchResult result;
+
+		if(Entity mnp = holdsEntityImpl(needle, result, this.actors,
+					this.softwareSystems, this.hardwareSystems,
+					this.typeContainerMapping, this.connections)) 
+		{
+			result.entity = mnp;
+		}
+
+		result.path ~= this.name;
+		return result;
 	}
 
 	Actor getOrNewActor(in string name) {
@@ -182,6 +202,25 @@ class SoftwareSystem : Entity {
 			this)
 		);
 	}
+
+	Entity holdsEntity(const Entity needle, ref SearchResult rslt) {
+		Entity tmp = holdsEntitySingleImpl(needle, rslt, this.containers);
+		if(tmp !is null) {
+			return tmp;
+		} else {
+			foreach(it; this.containers.keys()) {
+				Container con = this.containers[it];
+				tmp = con.holdsEntity(needle, rslt);
+				if(tmp !is null) {
+					rslt.path ~= super.name;
+					return tmp;
+				}
+			}
+		}
+
+		assert(tmp is null);
+		return tmp;
+	}
 }
 
 class Container : Entity {
@@ -197,6 +236,26 @@ class Container : Entity {
 		return enforce(getOrNewEntityImpl!Component(name, this.components,
 			this)
 		);
+	}
+
+	Entity holdsEntity(const Entity needle, ref SearchResult rslt) {
+		Entity tmp = holdsEntityImpl(needle, rslt, this.components, this.classes);
+		if(tmp !is null) {
+			rslt.path ~= super.name;
+			return tmp;
+		} else {
+			foreach(it; this.components.keys()) {
+				Component com = this.components[it];
+				tmp = com.holdsEntity(needle, rslt);
+				if(tmp !is null) {
+					rslt.path ~= super.name;
+					return tmp;
+				}
+			}
+		}
+
+		assert(tmp is null);
+		return tmp;
 	}
 }
 
@@ -216,6 +275,10 @@ class Component : Entity {
 			this.subComponents[name] = n;
 			return n;
 		}
+	}
+
+	Entity holdsEntity(const Entity needle, ref SearchResult rslt) {
+		return null;
 	}
 }
 
@@ -365,4 +428,32 @@ Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 		}
 	}
 	return cls;
+}
+
+Entity holdsEntitySingleImpl(T)(const Entity needle, ref SearchResult rslt, ref T arg)
+{
+	foreach(key; arg.keys()) {
+		auto entity = arg[key];
+		if(needle is entity) {
+			rslt.path ~= key;
+			return entity;
+		}
+	}
+
+	return null;
+}
+
+Entity holdsEntityImpl(T...)(const Entity needle, ref SearchResult rslt, ref T args)
+{
+	foreach(ref arg; args) {
+		foreach(key; arg.keys()) {
+			auto entity = arg[key];
+			if(needle is entity) {
+				rslt.path ~= key;
+				return entity;
+			}
+		}
+	}
+
+	return null;
 }
