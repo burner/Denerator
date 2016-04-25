@@ -52,6 +52,7 @@ class Graphvic : Generator {
 		auto f = Generator.createFile([this.outputDir, TheWorldName ~ ".dot"]);
 		auto ltw = f.lockingTextWriter();
 		generateTopMatter(ltw);
+		ltw.put("\trankdir=LR;\n");
 
 		StringHashSet names;
 		HashMap!(string, string) nameMappings;
