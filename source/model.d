@@ -153,6 +153,7 @@ class Connection : ConnectionImpl {
 	}
 }
 
+// from and to can exists without each other
 class Aggregation : ConnectionImpl {
 	string fromCnt;
 	string toCnt;
@@ -162,6 +163,7 @@ class Aggregation : ConnectionImpl {
 	}
 }
 
+// from can not exists without to
 class Composition : ConnectionImpl {
 	string fromCnt;
 	string toCnt;

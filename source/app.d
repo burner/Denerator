@@ -87,8 +87,20 @@ void main() {
 	addressId.type = integer;
 	addressId.addLandSpecificAttribue("MySQL", "PRIMARY KEY");
 
-	Aggregation userAddress = world.getOrNew!Aggregation("userEmployee",
+	Aggregation userAddress = world.getOrNew!Aggregation("addressUser",
 		address, user
+	);
+
+	Class postalCode = getOrNewClass("PostelCode", database);
+	MemberVariable pcID = postalCode.getOrNew!MemberVariable("id");
+	pcID.type = integer;
+	pcID.addLandSpecificAttribue("MySQL", "PRIMARY KEY");
+	pcID.addLandSpecificAttribue("MySQL", "AUTO INCREMENT");
+	MemberVariable pcCode = postalCode.getOrNew!MemberVariable("code");
+	pcCode.type = integer;
+
+	auto addressPC = world.getOrNew!Composition("addressPostalCode",
+		postalCode, address
 	);
 
 	Graphvic gv = new Graphvic(world, "GraphvizOutput");
