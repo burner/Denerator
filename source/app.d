@@ -108,5 +108,4 @@ void main() {
 
 	MySQL mysql = new MySQL(world, "MySQL");
 	mysql.generate(database);
-	
 }

@@ -257,7 +257,16 @@ class Container : Entity {
 	}
 }
 
-class Component : Entity {
+// e.g. [D] = "protected"
+class ProtectedEntity : Entity {
+	HashMap!(string,string) protection;
+
+	this(in string name, in Entity parent) {
+		super(name, parent);
+	}
+}
+
+class Component : ProtectedEntity {
 	StringEntityMap!(Class) classes;
 	Component[string] subComponents;
 	
@@ -296,7 +305,7 @@ class Component : Entity {
 	}
 }
 
-class Class : Entity {
+class Class : ProtectedEntity {
 	StringEntityMap!(Member) members;
 	StringEntityMap!(string) containerType;
 	
@@ -331,7 +340,7 @@ class TypeMapping {
 	StringEntityMap!(Type) equivalencies;
 }
 
-class Member : Entity {
+class Member : ProtectedEntity {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
