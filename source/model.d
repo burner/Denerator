@@ -130,6 +130,11 @@ class TheWorld : Entity {
 	}
 }
 
+struct ConnectionCount {
+	uint low;
+	uint high;
+}
+
 class ConnectionImpl : Entity {
 	Entity from;
 	Entity to;
@@ -155,8 +160,8 @@ class Connection : ConnectionImpl {
 
 // from and to can exists without each other
 class Aggregation : ConnectionImpl {
-	string fromCnt;
-	string toCnt;
+	ConnectionCount fromCnt;
+	ConnectionCount toCnt;
 	Type toImplType;
 	this(in string name, in Entity parent) {
 		super(name, parent);
@@ -165,8 +170,7 @@ class Aggregation : ConnectionImpl {
 
 // from can not exists without to
 class Composition : ConnectionImpl {
-	string fromCnt;
-	string toCnt;
+	ConnectionCount fromCnt; // to count is always 1 for Composition
 	Type toImplType;
 	this(in string name, in Entity parent) {
 		super(name, parent);
