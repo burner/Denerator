@@ -54,8 +54,8 @@ class MySQL : Generator {
 				agg.from.name, agg.to.name
 			);
 
-			bool first = false;
-			format(ltw, 1, "id LONG PRIMARY KEY AUTO INCREMENT");
+			bool first = true;
+			//format(ltw, 1, "id LONG PRIMARY KEY AUTO INCREMENT");
 
 			MemberVariable[] foreignKeys = 
 				this.getPrivateKeyFromMemberVariable(cast(Class)agg.to);
@@ -136,7 +136,7 @@ class MySQL : Generator {
 		}
 
 		ltw.format(0, "\n");
-		ltw.format(1, "FOREIGN KEY(%s) REFERENCES %s(%s)",
+		ltw.format(1, "FOREIGN KEY(%s) REFERENCES %s(%s) ON UPDATE CASCADE ON DELETE CASCADE",
 			foreignKeys.map!(a => std.format.format("%s_%s", name, a.name)
 			)
 			.joiner(", "),
