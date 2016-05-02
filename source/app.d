@@ -91,7 +91,7 @@ void main() {
 		address, user
 	);
 
-	Class postalCode = getOrNewClass("PostelCode", database);
+	Class postalCode = getOrNewClass("PostalCode", database);
 	MemberVariable pcID = postalCode.getOrNew!MemberVariable("id");
 	pcID.type = integer;
 	pcID.addLandSpecificAttribue("MySQL", "PRIMARY KEY");
