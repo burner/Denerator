@@ -104,12 +104,12 @@ void main() {
 		postalCode, address
 	);
 
-	Graphvic gv = new Graphvic(world, "GraphvizOutput");
-	gv.generate();
+	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	//gv.generate();
 
 	Graphvic2 gv2 = new Graphvic2(world, "GraphvizOutput2");
 	gv2.generate();
 
-	MySQL mysql = new MySQL(world, "MySQL");
-	mysql.generate(database);
+	//MySQL mysql = new MySQL(world, "MySQL");
+	//mysql.generate(database);
 }
