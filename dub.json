@@ -6,5 +6,7 @@
 	"targetType" : "executable",
 	"dependencies": {
 		"emsi_containers": "~>0.4.2"
-	}
+	},
+	"sourcePaths" : ["source", "../graphvizd/source/"],
+	"importPaths" : ["source", "../graphvizd/source/"]
 }
