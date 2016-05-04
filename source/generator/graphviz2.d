@@ -43,7 +43,7 @@ class Graphvic2 : Generator {
 		Graph g = new Graph();
 		StringHashSet names;
 		this.addActors(g, names);
-		this.addContainers(g, names);
+		this.addSystems(g, names);
 
 		auto f = Generator.createFile([this.outputDir, "systemcontext.dot"]);
 		auto ltw = f.lockingTextWriter();
@@ -72,30 +72,30 @@ class Graphvic2 : Generator {
 		return n;
 	}
 
-	void addContainers(Graph g, ref StringHashSet names) {
+	void addSystems(Graph g, ref StringHashSet names) {
 		foreach(key; this.world.softwareSystems.keys()) {
-			this.addContainer(this.world.softwareSystems[key], g);
+			this.addContainer!Node(this.world.softwareSystems[key], g);
 			names.insert(key);
 		}
 		
 		foreach(key; this.world.hardwareSystems.keys()) {
-			this.addContainer(this.world.hardwareSystems[key], g);
+			this.addContainer!Node(this.world.hardwareSystems[key], g);
 			names.insert(key);
 		}
 	}
 
-	Node addContainer(in SoftwareSystem ss, Graph g) {
-		return addContainerImpl(ss, g, "SoftwareSystem");
+	T addContainer(T)(in SoftwareSystem ss, Graph g) {
+		return addContainerImpl!T(ss, g, "SoftwareSystem");
 	}
 
-	Node addContainer(in HardwareSystem hs, Graph g) {
-		return addContainerImpl(hs, g, "HardwareSystem");
+	T addContainer(T)(in HardwareSystem hs, Graph g) {
+		return addContainerImpl!T(hs, g, "HardwareSystem");
 	}
 
-	private static Node addContainerImpl(in Entity en, Graph g, 
+	private static T addContainerImpl(T)(in Entity en, Graph g, 
 			in string type) 
 	{
-		Node n = g.get!Node(en.name);
+		T n = g.get!T(en.name);
 		auto tmp = wrapLongString(en.description, 40)
 				.map!(a => format("<tr><td>%s</td></tr>", a)).joiner("\n");
 		n.shape = "box";
