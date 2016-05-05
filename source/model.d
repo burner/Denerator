@@ -17,7 +17,7 @@ hash_t stringToHash(string str) @safe pure nothrow @nogc {
 	return hash;
 }
 
-hash_t EntityToHash(Entity e) pure @safe nothrow @nogc {
+hash_t EntityToHash(in Entity e) pure @safe nothrow @nogc {
 	return stringToHash(e.name);
 }
 
@@ -50,6 +50,16 @@ abstract class Entity {
 			return this.name;
 		} else if(this.parent is null) {
 			return "";
+		} else {
+			return this.parent.areYouIn(store);
+		}
+	}
+
+	const(Entity) areYouIn(ref in EntityHashSet!(/*const*/ Entity) store) const {
+		if(cast(Entity)(this) in store) {
+			return this;
+		} else if(this.parent is null) {
+			return null;
 		} else {
 			return this.parent.areYouIn(store);
 		}
@@ -127,6 +137,16 @@ class TheWorld : Entity {
 
 	override string areYouIn(ref in StringHashSet store) const {
 		return super.name in store ? super.name : "";
+	}
+
+	override const(Entity) areYouIn(ref in EntityHashSet!(/*const*/ Entity) store) 
+			const 
+	{
+		if(cast(Entity)(this) in store) {
+			return this;
+		} else {
+			return null;
+		}
 	}
 }
 

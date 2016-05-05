@@ -9,6 +9,8 @@ import model;
 import graph;
 import writer;
 
+alias EntitySet = EntityHashSet!(Entity);
+
 class Graphvic2 : Generator {
 	import std.format : format, formattedWrite;
 	import std.algorithm.iteration : map, joiner;
@@ -41,19 +43,20 @@ class Graphvic2 : Generator {
 
 	void generateSystemContext() {
 		Graph g = new Graph();
-		StringHashSet names;
+		EntitySet names;
 		this.addActors(g, names);
 		this.addSystems(g, names);
+		this.addEdges(g, names);
 
 		auto f = Generator.createFile([this.outputDir, "systemcontext.dot"]);
 		auto ltw = f.lockingTextWriter();
 		auto writer = new Writer!(typeof(ltw))(g, ltw);
 	}
 
-	void addActors(Graph g, ref StringHashSet names) {
+	void addActors(Graph g, ref EntitySet names) {
 		foreach(key; this.world.actors.keys()) {
 			this.addActor(this.world.actors[key], g);
-			names.insert(key);
+			names.insert(cast(Entity)(this.world.actors[key]));
 		}
 	}
 
@@ -72,15 +75,15 @@ class Graphvic2 : Generator {
 		return n;
 	}
 
-	void addSystems(Graph g, ref StringHashSet names) {
+	void addSystems(Graph g, ref EntitySet names) {
 		foreach(key; this.world.softwareSystems.keys()) {
 			this.addContainer!Node(this.world.softwareSystems[key], g);
-			names.insert(key);
+			names.insert(cast(Entity)(this.world.softwareSystems[key]));
 		}
 		
 		foreach(key; this.world.hardwareSystems.keys()) {
 			this.addContainer!Node(this.world.hardwareSystems[key], g);
-			names.insert(key);
+			names.insert(cast(Entity)(this.world.hardwareSystems[key]));
 		}
 	}
 
@@ -109,7 +112,7 @@ class Graphvic2 : Generator {
 		return n;
 	}
 
-	void addEdges(Graph g, in ref StringHashSet names) {
+	void addEdges(Graph g, in ref EntitySet names) {
 		foreach(key; this.world.connections.keys()) {
 			this.addEdge(g, cast(ConnectionImpl)this.world.connections[key], 
 				names
@@ -117,8 +120,17 @@ class Graphvic2 : Generator {
 		}
 	}
 
-	Edge addEdge(Graph g, in ConnectionImpl con, in ref StringHashSet names) {
+	Edge addEdge(Graph g, in ConnectionImpl con, 
+			in ref EntityHashSet!Entity names) 
+	{
 		assert(con !is null);
-		assert(false);
+		auto from = con.from.areYouIn(names);
+		auto to = con.to.areYouIn(names);
+		if(from !is null && to !is null && from !is to) {
+			logf("\n\t%s %s\n", from.name, to.name);
+		}
+		//assert(false);
+		Edge e;
+		return e;
 	}
 }
