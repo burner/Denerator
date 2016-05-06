@@ -14,8 +14,8 @@ alias EntitySet = EntityHashSet!(Entity);
 class Graphvic2 : Generator {
 	import std.format : format, formattedWrite;
 	import std.algorithm.iteration : map, joiner;
+	import std.typecons : scoped;
 
-	Graph g;
 	const(string) outputDir;
 
 	this(in TheWorld world, in string outputDir) {
@@ -27,6 +27,7 @@ class Graphvic2 : Generator {
 	override void generate() {
 		this.generateMakefile();
 		this.generateSystemContext();
+		this.generateSystemContainers();
 	}
 
 	void generateMakefile() {
@@ -45,12 +46,26 @@ class Graphvic2 : Generator {
 		Graph g = new Graph();
 		EntitySet names;
 		this.addActors(g, names);
-		this.addSystems(g, names);
+		this.addSystems!Node(g, names);
 		this.addEdges(g, names, 2);
 
 		auto f = Generator.createFile([this.outputDir, "systemcontext.dot"]);
 		auto ltw = f.lockingTextWriter();
-		auto writer = new Writer!(typeof(ltw))(g, ltw);
+		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+	}
+
+	void generateSystemContainers() {
+		Graph g = new Graph();
+		EntitySet names;
+		this.addActors(g, names);
+		this.addSystems!SubGraph(g, names);
+		this.addEdges(g, names, 3);
+
+		auto f = Generator.createFile([this.outputDir,
+			"systemcontextcontainers.dot"]
+		);
+		auto ltw = f.lockingTextWriter();
+		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
 	}
 
 	void addActors(Graph g, ref EntitySet names) {
@@ -75,27 +90,35 @@ class Graphvic2 : Generator {
 		return n;
 	}
 
-	void addSystems(Graph g, ref EntitySet names) {
+	void addSystems(T)(Graph g, ref EntitySet names) {
 		foreach(key; this.world.softwareSystems.keys()) {
-			this.addContainer!Node(g, this.world.softwareSystems[key]);
-			names.insert(cast(Entity)(this.world.softwareSystems[key]));
+			const(SoftwareSystem) ss = this.world.softwareSystems[key];
+			auto sg = this.addSystem!T(g, ss);
+			names.insert(cast(Entity)(ss));
+
+			static if(is(T == SubGraph)) {
+				foreach(comKey; ss.containers.keys()) {
+					auto com = ss.containers[comKey];
+					this.addContainer(sg, com, names);
+				}
+			}
 		}
 		
 		foreach(key; this.world.hardwareSystems.keys()) {
-			this.addContainer!Node(g, this.world.hardwareSystems[key]);
+			this.addSystem!Node(g, this.world.hardwareSystems[key]);
 			names.insert(cast(Entity)(this.world.hardwareSystems[key]));
 		}
 	}
 
-	T addContainer(T)(Graph g, in SoftwareSystem ss) {
-		return addContainerImpl!T(g, ss, "SoftwareSystem");
+	T addSystem(T)(Graph g, in SoftwareSystem ss) {
+		return addSystemImpl!T(g, ss, "SoftwareSystem");
 	}
 
-	T addContainer(T)(Graph g, in HardwareSystem hs) {
-		return addContainerImpl!T(g, hs, "HardwareSystem");
+	T addSystem(T)(Graph g, in HardwareSystem hs) {
+		return addSystemImpl!T(g, hs, "HardwareSystem");
 	}
 
-	private static T addContainerImpl(T)(Graph g, in Entity en, 
+	private static T addSystemImpl(T)(Graph g, in Entity en, 
 			in string type) 
 	{
 		T n = g.get!T(en.name);
@@ -108,6 +131,18 @@ class Graphvic2 : Generator {
 		.format(en.name, type, buildLabelFromDescription(en));
 
 		return n;
+	}
+
+	private void addContainer(SubGraph sg, in Container com, 
+			ref EntitySet names) 
+	{
+		Node n = sg.get!Node(com.name);
+		n.shape = "box";
+		n.label = `<<table border="0" cellborder="0">
+			<tr><td>%s</td></tr>
+			%s
+			</table>>`
+		.format(com.name, buildLabelFromDescription(com));
 	}
 
 	private static auto buildLabelFromDescription(in Entity en) {
@@ -153,7 +188,6 @@ class Graphvic2 : Generator {
 	Edge addEdge(Graph g, in ConnectionImpl con, 
 			in ref EntityHashSet!Entity names) 
 	{
-
 		if(auto c = cast(const Dependency)con) {
 			return this.addDependency(g, c, names);
 		} else if(auto c = cast(const Connection)con) {
