@@ -378,7 +378,7 @@ class MemberVariable : Member {
 		super(name, parent);
 	}
 
-	void addLandSpecificAttribue(string lang, string value) {
+	void addLandSpecificAttribute(string lang, string value) {
 		this.langSpecificAttributes[lang] ~= value;
 	}
 }

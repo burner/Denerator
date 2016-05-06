@@ -55,12 +55,12 @@ class Graphvic2 : Generator {
 
 	void addActors(Graph g, ref EntitySet names) {
 		foreach(key; this.world.actors.keys()) {
-			this.addActor(this.world.actors[key], g);
+			this.addActor(g, this.world.actors[key]);
 			names.insert(cast(Entity)(this.world.actors[key]));
 		}
 	}
 
-	Node addActor(in Actor act, Graph g) {
+	Node addActor(Graph g, in Actor act) {
 		Node n = g.get!Node(act.name);
 		auto tmp = wrapLongString(act.description, 40)
 				.map!(a => format("<tr><td>%s</td></tr>", a)).joiner("\n");
@@ -77,25 +77,25 @@ class Graphvic2 : Generator {
 
 	void addSystems(Graph g, ref EntitySet names) {
 		foreach(key; this.world.softwareSystems.keys()) {
-			this.addContainer!Node(this.world.softwareSystems[key], g);
+			this.addContainer!Node(g, this.world.softwareSystems[key]);
 			names.insert(cast(Entity)(this.world.softwareSystems[key]));
 		}
 		
 		foreach(key; this.world.hardwareSystems.keys()) {
-			this.addContainer!Node(this.world.hardwareSystems[key], g);
+			this.addContainer!Node(g, this.world.hardwareSystems[key]);
 			names.insert(cast(Entity)(this.world.hardwareSystems[key]));
 		}
 	}
 
-	T addContainer(T)(in SoftwareSystem ss, Graph g) {
-		return addContainerImpl!T(ss, g, "SoftwareSystem");
+	T addContainer(T)(Graph g, in SoftwareSystem ss) {
+		return addContainerImpl!T(g, ss, "SoftwareSystem");
 	}
 
-	T addContainer(T)(in HardwareSystem hs, Graph g) {
-		return addContainerImpl!T(hs, g, "HardwareSystem");
+	T addContainer(T)(Graph g, in HardwareSystem hs) {
+		return addContainerImpl!T(g, hs, "HardwareSystem");
 	}
 
-	private static T addContainerImpl(T)(in Entity en, Graph g, 
+	private static T addContainerImpl(T)(Graph g, in Entity en, 
 			in string type) 
 	{
 		T n = g.get!T(en.name);
@@ -129,7 +129,61 @@ class Graphvic2 : Generator {
 		if(from !is null && to !is null && from !is to) {
 			logf("\n\t%s %s\n", from.name, to.name);
 		}
-		//assert(false);
+		if(auto c = cast(const Dependency)con) {
+			return this.addDependency(g, c, names);
+		} else if(auto c = cast(const Connection)con) {
+			return this.addConnection(g, c, names);
+		} else if(auto c = cast(const Aggregation)con) {
+			return this.addAggregation(g, c, names);
+		} else if(auto c = cast(const Composition)con) {
+			return this.addComposition(g, c, names);
+		} else if(auto c = cast(const Generalization)con) {
+			return this.addGeneralization(g, c, names);
+		} else if(auto c = cast(const Realization)con) {
+			return this.addRealization(g, c, names);
+		} else {
+			assert(false);
+		}
+	}
+
+	Edge addDependency(Graph g, in Dependency con,
+		   	in ref EntityHashSet!Entity names)
+	{
+		Edge e;
+		return e;
+	}
+
+	Edge addConnection(Graph g, in Connection con,
+		   	in ref EntityHashSet!Entity names)
+	{
+		Edge e;
+		return e;
+	}
+
+	Edge addAggregation(Graph g, in Aggregation con,
+		   	in ref EntityHashSet!Entity names)
+	{
+		Edge e;
+		return e;
+	}
+
+	Edge addComposition(Graph g, in Composition con,
+		   	in ref EntityHashSet!Entity names)
+	{
+		Edge e;
+		return e;
+	}
+
+	Edge addGeneralization(Graph g, in Generalization con,
+		   	in ref EntityHashSet!Entity names)
+	{
+		Edge e;
+		return e;
+	}
+
+	Edge addRealization(Graph g, in Realization con,
+		   	in ref EntityHashSet!Entity names)
+	{
 		Edge e;
 		return e;
 	}
