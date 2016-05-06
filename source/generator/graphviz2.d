@@ -190,28 +190,35 @@ class Graphvic2 : Generator {
 	Edge addAggregation(Graph g, in Aggregation con,
 		   	in ref EntityHashSet!Entity names)
 	{
-		Edge e;
+		Edge e = this.addConnectionImpl(g, con, names);
+		e.arrowStyleTo = "odiamond";
+		e.labelFrom = connectionCountToString(con.fromCnt);
+		e.labelTo = connectionCountToString(con.toCnt);
 		return e;
 	}
 
 	Edge addComposition(Graph g, in Composition con,
 		   	in ref EntityHashSet!Entity names)
 	{
-		Edge e;
+		Edge e = this.addConnectionImpl(g, con, names);
+		e.arrowStyleTo = "diamond";
+		e.labelFrom = connectionCountToString(con.fromCnt);
 		return e;
 	}
 
 	Edge addGeneralization(Graph g, in Generalization con,
 		   	in ref EntityHashSet!Entity names)
 	{
-		Edge e;
+		Edge e = this.addConnectionImpl(g, con, names);
+		e.arrowStyleTo = "empty";
 		return e;
 	}
 
 	Edge addRealization(Graph g, in Realization con,
 		   	in ref EntityHashSet!Entity names)
 	{
-		Edge e;
+		Edge e = this.addConnectionImpl(g, con, names);
+		e.arrowStyleTo = "empty";
 		return e;
 	}
 
@@ -227,5 +234,32 @@ class Graphvic2 : Generator {
 			buildLabelFromDescription(con)
 		);
 		return ret;
+	}
+
+	private static string connectionCountToString(ref in ConnectionCount cc) {
+		import std.array : appender, empty;
+
+		if(cc.low == -1 && cc.high == -1) {
+			return "";
+		}
+
+		auto app = appender!string();
+		if(cc.low == -2) {
+			app.put("*");
+		} else if(cc.low <= 0) {
+			formattedWrite(app, "%s", cc.low);
+		}
+
+		if(!app.data.empty) {
+			app.put("..");
+		}
+
+		if(cc.high == -2) {
+			app.put("*");
+		} else if(cc.high <= 0) {
+			formattedWrite(app, "%s", cc.high);
+		}
+
+		return app.data;
 	}
 }

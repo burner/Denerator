@@ -164,8 +164,8 @@ class TheWorld : Entity {
 }
 
 struct ConnectionCount {
-	uint low;
-	uint high;
+	long low;
+	long high;
 }
 
 class ConnectionImpl : Entity {
@@ -186,8 +186,6 @@ class Dependency : ConnectionImpl {
 
 // Connection are logical connections
 class Connection : ConnectionImpl {
-	ConnectionCount fromCnt;
-	ConnectionCount toCnt;
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
