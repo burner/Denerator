@@ -46,7 +46,7 @@ class Graphvic2 : Generator {
 		EntitySet names;
 		this.addActors(g, names);
 		this.addSystems(g, names);
-		this.addEdges(g, names);
+		this.addEdges(g, names, 2);
 
 		auto f = Generator.createFile([this.outputDir, "systemcontext.dot"]);
 		auto ltw = f.lockingTextWriter();
@@ -99,36 +99,61 @@ class Graphvic2 : Generator {
 			in string type) 
 	{
 		T n = g.get!T(en.name);
-		auto tmp = wrapLongString(en.description, 40)
-				.map!(a => format("<tr><td>%s</td></tr>", a)).joiner("\n");
 		n.shape = "box";
 		n.label = `<<table border="0" cellborder="0">
 			<tr><td>%s</td></tr>
 			<tr><td>[%s]</td></tr>
 			%s
 			</table>>`
-		.format(en.name, type, tmp);
+		.format(en.name, type, buildLabelFromDescription(en));
 
 		return n;
 	}
 
-	void addEdges(Graph g, in ref EntitySet names) {
+	private static auto buildLabelFromDescription(in Entity en) {
+		return wrapLongString(en.description, 40)
+			.map!(a => format("<tr><td>%s</td></tr>", a)).joiner("\n");
+	}
+
+	void addEdges(Graph g, in ref EntitySet names, in uint deapth) {
+		import std.algorithm.iteration : splitter;
+		import std.algorithm.comparison : equal, min;
+		import std.array : array;
+
 		foreach(key; this.world.connections.keys()) {
-			this.addEdge(g, cast(ConnectionImpl)this.world.connections[key], 
-				names
+			ConnectionImpl con = cast(ConnectionImpl)this.world.connections[key];
+			assert(con !is null);
+
+			const(Entity) from = con.from.areYouIn(names);
+			const(Entity) to = con.to.areYouIn(names);
+			if(from is null && to is null && from is to && from is to) {
+				log();
+				continue;
+			}
+			logf("\n\t%s %s\n\t%s %s", con.from.name, con.to.name, 
+				from.name, to.name
 			);
+			string fromSStr = from.pathToRoot();
+			string toSStr = to.pathToRoot();
+			string[] fromS = splitter(fromSStr, ".").array;
+			string[] toS = splitter(toSStr, ".").array;
+
+			fromS = fromS[0 .. min(fromS.length, deapth)];
+			toS = toS[0 .. min(toS.length, deapth)];
+
+			if(fromS.equal(toS)) {
+				logf("%s %s", fromS, toS);
+				continue;			
+			}
+
+			this.addEdge(g, con, names);
 		}
 	}
 
 	Edge addEdge(Graph g, in ConnectionImpl con, 
 			in ref EntityHashSet!Entity names) 
 	{
-		assert(con !is null);
-		auto from = con.from.areYouIn(names);
-		auto to = con.to.areYouIn(names);
-		if(from !is null && to !is null && from !is to) {
-			logf("\n\t%s %s\n", from.name, to.name);
-		}
+
 		if(auto c = cast(const Dependency)con) {
 			return this.addDependency(g, c, names);
 		} else if(auto c = cast(const Connection)con) {
@@ -149,14 +174,16 @@ class Graphvic2 : Generator {
 	Edge addDependency(Graph g, in Dependency con,
 		   	in ref EntityHashSet!Entity names)
 	{
-		Edge e;
+		Edge e = this.addConnectionImpl(g, con, names);
+		e.edgeStyle = "dashed";
+		e.arrowStyleTo = "vee";
 		return e;
 	}
 
 	Edge addConnection(Graph g, in Connection con,
 		   	in ref EntityHashSet!Entity names)
 	{
-		Edge e;
+		Edge e = this.addConnectionImpl(g, con, names);
 		return e;
 	}
 
@@ -186,5 +213,19 @@ class Graphvic2 : Generator {
 	{
 		Edge e;
 		return e;
+	}
+
+	Edge addConnectionImpl(Graph g, in ConnectionImpl con,
+		   	in ref EntityHashSet!Entity names)
+	{
+		auto toRoot = con.from.pathToRoot();
+		auto fromRoot = con.to.pathToRoot();
+		logf("%s:\n'%s' '%s'\n'%s' '%s'", con.name, 
+			con.from.name, con.to.name, toRoot, fromRoot);
+		Edge ret = g.get!Edge(con.name, toRoot, fromRoot);
+		ret.label = format("<<table border=\"0\" cellborder=\"0\">\n%s</table>>",
+			buildLabelFromDescription(con)
+		);
+		return ret;
 	}
 }

@@ -64,6 +64,19 @@ abstract class Entity {
 			return this.parent.areYouIn(store);
 		}
 	}
+
+	final string pathToRoot() const {
+		if(this.parent is null) {
+			return "";
+		} else {
+			auto tmp = this.parent.pathToRoot();
+			if(tmp.empty) {
+				return this.name;
+			} else {
+				return tmp ~ '.' ~ this.name;
+			}
+		}
+	}
 }
 
 class Actor : Entity {
@@ -115,7 +128,7 @@ class TheWorld : Entity {
 
 	HardwareSystem getOrNewHardwareSystem(in string name) {
 		return enforce(getOrNewEntityImpl!HardwareSystem(name,
-			this.hardwareSystems, null)
+			this.hardwareSystems, this)
 		);
 	}
 
@@ -164,15 +177,17 @@ class ConnectionImpl : Entity {
 	}
 }
 
+// Dependency are basically import
 class Dependency : ConnectionImpl {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
 }
 
+// Connection are logical connections
 class Connection : ConnectionImpl {
-	string fromCnt;
-	string toCnt;
+	ConnectionCount fromCnt;
+	ConnectionCount toCnt;
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
@@ -182,7 +197,13 @@ class Connection : ConnectionImpl {
 class Aggregation : ConnectionImpl {
 	ConnectionCount fromCnt;
 	ConnectionCount toCnt;
-	Type toImplType;
+
+	// a MemberVariable that stores fromCnt instances of from
+	MemberVariable fromStore; 
+
+	// a MemberVariable that stores toCnt instances of to
+	MemberVariable toStore; 
+
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
@@ -191,18 +212,22 @@ class Aggregation : ConnectionImpl {
 // from can not exists without to
 class Composition : ConnectionImpl {
 	ConnectionCount fromCnt; // to count is always 1 for Composition
-	Type toImplType;
+
+	// a MemberVariable that stores fromCnt instances of from
+	MemberVariable fromStore; 
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
 }
 
+// Generalization subclass a Class
 class Generalization : ConnectionImpl {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
 }
 
+// Realization implements a Interface
 class Realization : ConnectionImpl {
 	this(in string name, in Entity parent) {
 		super(name, parent);
@@ -332,6 +357,8 @@ class Component : ProtectedEntity {
 class Class : ProtectedEntity {
 	StringEntityMap!(Member) members;
 	StringEntityMap!(string) containerType;
+
+	DynamicArray!Entity parents;
 	
 	this(in string name) {
 		super(name, null);
@@ -340,6 +367,23 @@ class Class : ProtectedEntity {
 	S getOrNew(S)(in string name) {
 		return enforce(getOrNewEntityImpl!(Member,S)(name, this.members, this));
 	}
+
+	override string areYouIn(ref in StringHashSet store) const {
+		if(this.name in store) {
+			return this.name;
+		} else if(this.parents.empty) {
+			return "";
+		} else {
+			foreach(it; this.parents) {
+				auto tmp = it.areYouIn(store);
+				if(!tmp.empty) {
+					return tmp;
+				}
+			}
+			return "";
+		}
+	}
+
 }
 
 class MemberModifier : Entity {
@@ -472,6 +516,7 @@ Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 	foreach(it; stuffThatHoldsClasses) {
 		if(name !in it.classes) {
 			it.classes[name] = cls;
+			cls.parents.insert(it);
 		}
 	}
 	return cls;

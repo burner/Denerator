@@ -21,11 +21,11 @@ void main() {
 	auto frontendStuffCtrl = frontend.getOrNewComponent("frontStuffCtrl");
 	auto hardware = world.getOrNewHardwareSystem("SomeHardware");
 
-	auto usersFrontend = world.getOrNew!Dependency("userDepFrontend",
+	auto usersFrontend = world.getOrNew!Connection("userDepFrontend",
 		users, frontendUserCtrl
 	);
 	usersFrontend.description = "Uses the frontend to do stuff.";
-	world.getOrNew!Dependency("userDepStuffCtrl",
+	world.getOrNew!Connection("userDepStuffCtrl",
 		users, frontendStuffCtrl
 	).description = "Uses the Stuff Logic of the Awesome Software";
 	usersFrontend.description = "Uses the frontend to do stuff.";
@@ -36,7 +36,7 @@ void main() {
 		.description = "HTTPS";
 
 	auto serverUserCtrl = server.getOrNewComponent("serverUserCtrl");
-	auto frontendHardwareLink = world.getOrNew!Dependency("frontendUsesHardware",
+	auto frontendHardwareLink = world.getOrNew!Connection("frontendUsesHardware",
 		serverUserCtrl, hardware
 	);
 
