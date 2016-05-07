@@ -21,6 +21,9 @@ void main() {
 	auto frontendStuffCtrl = frontend.getOrNewComponent("frontStuffCtrl");
 	auto hardware = world.getOrNewHardwareSystem("SomeHardware");
 
+	auto system2 = world.getOrNewSoftwareSystem("LagacySoftwareSystem");
+	system2.description = "You don't want to touch this.";
+
 	auto usersFrontend = world.getOrNew!Connection("userDepFrontend",
 		users, frontendUserCtrl
 	);
@@ -32,8 +35,11 @@ void main() {
 
 	Container server = system.getOrNewContainer("Server");
 	server.technology = "D";
-	world.getOrNew!Dependency("frontendServerDep", frontend, server)
+	world.getOrNew!Connection("frontendServerDep", frontend, server)
 		.description = "HTTPS";
+
+	world.getOrNew!Connection("serverSS2", server, system2).description =
+		"To bad we have to use that.";
 
 	auto serverUserCtrl = server.getOrNewComponent("serverUserCtrl");
 	auto frontendHardwareLink = world.getOrNew!Connection("frontendUsesHardware",
@@ -45,7 +51,7 @@ void main() {
 
 	auto database = system.getOrNewContainer("Database");
 	database.technology = "MySQL";
-	world.getOrNew!Dependency("serverDatabase",
+	world.getOrNew!Connection("serverDatabase",
 		server, database
 	).description = "CRUD";
 

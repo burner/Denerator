@@ -28,6 +28,7 @@ class Graphvic2 : Generator {
 		this.generateMakefile();
 		this.generateSystemContext();
 		this.generateSystemContainers();
+		this.generateSoftwareSystemsContainerComponents();
 	}
 
 	void generateMakefile() {
@@ -47,7 +48,7 @@ class Graphvic2 : Generator {
 		EntitySet names;
 		this.addActors(g, names);
 		this.addSystems!Node(g, names);
-		this.addEdges(g, names, 2);
+		this.addEdges(g, names, 1);
 
 		auto f = Generator.createFile([this.outputDir, "systemcontext.dot"]);
 		auto ltw = f.lockingTextWriter();
@@ -66,6 +67,40 @@ class Graphvic2 : Generator {
 		);
 		auto ltw = f.lockingTextWriter();
 		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+	}
+
+	void generateSoftwareSystemsContainerComponents() {
+		foreach(ssKey; this.world.softwareSystems.keys()) {
+			const(SoftwareSystem) ss = this.world.softwareSystems[ssKey];
+
+			Graph g = new Graph();
+			EntitySet names;
+
+			if(ss.containers.empty) {
+				this.addSystem!Node(g, ss);
+				names.insert(cast(Entity)(ss));
+			} else {
+				auto sg = this.addSystem!SubGraph(g, ss);
+				names.insert(cast(Entity)(ss));
+
+				foreach(conKey; ss.containers.keys()) {
+					const(Container) con = ss.containers[conKey];
+					if(con.components.empty) {
+						this.addContainer!Node(sg, con, names);
+					} else {
+						auto conSg = this.addContainer!SubGraph(sg, con, names);
+
+						foreach(comKey; con.components.keys()) {
+							const(Component) com = con.components[comKey];
+							this.addComponent!Node(conSg, com, names);
+						}
+					}
+				}
+			}
+			auto f = Generator.createFile([this.outputDir, ssKey ~ ".dot"]);
+			auto ltw = f.lockingTextWriter();
+			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		}
 	}
 
 	void addActors(Graph g, ref EntitySet names) {
@@ -99,7 +134,7 @@ class Graphvic2 : Generator {
 			static if(is(T == SubGraph)) {
 				foreach(comKey; ss.containers.keys()) {
 					auto com = ss.containers[comKey];
-					this.addContainer(sg, com, names);
+					auto consg = this.addContainer!Node(sg, com, names);
 				}
 			}
 		}
@@ -133,16 +168,33 @@ class Graphvic2 : Generator {
 		return n;
 	}
 
-	private void addContainer(SubGraph sg, in Container com, 
+	private T addContainer(T)(SubGraph sg, in Container com, 
 			ref EntitySet names) 
 	{
-		Node n = sg.get!Node(com.name);
+		T n = sg.get!T(com.name);
 		n.shape = "box";
 		n.label = `<<table border="0" cellborder="0">
 			<tr><td>%s</td></tr>
 			%s
 			</table>>`
 		.format(com.name, buildLabelFromDescription(com));
+
+		return n;
+	}
+
+	private T addComponent(T)(SubGraph sg, in Component com,
+			ref EntitySet names)
+	{
+		T n = sg.get!T(com.name);
+		n.shape = "box";
+		n.label = `<<table border="0" cellborder="0">
+			<tr><td>%s</td></tr>
+			<tr><td>[Component]</td></tr>
+			%s
+			</table>>`
+		.format(com.name, buildLabelFromDescription(com));
+
+		return n;
 	}
 
 	private static auto buildLabelFromDescription(in Entity en) {
@@ -168,16 +220,16 @@ class Graphvic2 : Generator {
 			logf("\n\t%s %s\n\t%s %s", con.from.name, con.to.name, 
 				from.name, to.name
 			);
-			string fromSStr = from.pathToRoot();
-			string toSStr = to.pathToRoot();
+			string fromSStr = con.from.pathToRoot();
+			string toSStr = con.to.pathToRoot();
 			string[] fromS = splitter(fromSStr, ".").array;
 			string[] toS = splitter(toSStr, ".").array;
 
+			logf("\n\t%s %s %s %s", fromSStr, toSStr, fromS, toS);
 			fromS = fromS[0 .. min(fromS.length, deapth)];
 			toS = toS[0 .. min(toS.length, deapth)];
 
 			if(fromS.equal(toS)) {
-				logf("%s %s", fromS, toS);
 				continue;			
 			}
 
