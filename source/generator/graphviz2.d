@@ -97,9 +97,20 @@ class Graphvic2 : Generator {
 					}
 				}
 			}
+			this.addEdgesToSSCC(g, ss, names);
 			auto f = Generator.createFile([this.outputDir, ssKey ~ ".dot"]);
 			auto ltw = f.lockingTextWriter();
 			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		}
+	}
+
+	void addEdgesToSSCC(Graph g, in SoftwareSystem ss, ref EntitySet names) {
+		foreach(edgeKey; this.world.connections.keys()) {
+			const(ConnectionImpl) con = 
+				cast(const(ConnectionImpl))this.world.connections[edgeKey];
+
+			assert(con !is null);
+
 		}
 	}
 
