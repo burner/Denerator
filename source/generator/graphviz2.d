@@ -12,9 +12,10 @@ import writer;
 alias EntitySet = EntityHashSet!(Entity);
 
 class Graphvic2 : Generator {
+	import std.array : array, empty;
 	import std.format : format, formattedWrite;
-	import std.algorithm.iteration : map, joiner;
-	import std.typecons : scoped;
+	import std.algorithm.iteration : map, joiner, splitter;
+	import std.typecons : scoped, Rebindable;
 
 	const(string) outputDir;
 
@@ -110,8 +111,46 @@ class Graphvic2 : Generator {
 				cast(const(ConnectionImpl))this.world.connections[edgeKey];
 
 			assert(con !is null);
+			Rebindable!(const Entity) fromEn = con.from.areYouIn(names);
+			Rebindable!(const Entity) toEn = con.to.areYouIn(names);
+			if(fromEn !is null || toEn !is null) {
+				logf("\n\t'%s' '%s' '%s'\n\t'%s' '%s'", con.name, con.from.name,
+					con.to.name,
+					fromEn !is null ? fromEn.name : "", 
+					toEn !is null ? toEn.name : ""
+				);
 
+				if(fromEn is null) {
+					fromEn = this.getAndAddTopLevel(g, con.from, names);
+				} else if(toEn is null) {
+					toEn = this.getAndAddTopLevel(g, con.to, names);
+				}
+				//logf("'%s' '%s'", fromToRoot, toToRoot);
+			}
 		}
+	}
+
+	const(Entity) getAndAddTopLevel(Graph g, const(Entity) en, 
+			ref EntitySet names) 
+	{
+		auto pathToRoot = en.pathToRoot();
+		assert(!pathToRoot.empty);
+
+		string top = splitter(pathToRoot, ".").array[0];
+
+		const(SearchResult) searchResult = this.world.search(en);
+		if(cast(const Actor)(searchResult.entity) !is null) {
+			this.addActor(g, cast(const Actor)searchResult.entity);
+			names.insert(cast(Entity)searchResult.entity);
+		} else if(cast(const SoftwareSystem)(searchResult.entity) !is null) {
+			this.addSystem!Node(g, cast(const SoftwareSystem)searchResult.entity);
+			names.insert(cast(Entity)searchResult.entity);
+		} else if(cast(const HardwareSystem)(searchResult.entity) !is null) {
+			this.addSystem!Node(g, cast(const HardwareSystem)searchResult.entity);
+			names.insert(cast(Entity)searchResult.entity);
+		}
+
+		return searchResult.entity;
 	}
 
 	void addActors(Graph g, ref EntitySet names) {
@@ -186,9 +225,12 @@ class Graphvic2 : Generator {
 		n.shape = "box";
 		n.label = `<<table border="0" cellborder="0">
 			<tr><td>%s</td></tr>
+			<tr><td>[%s]</td></tr>
 			%s
 			</table>>`
-		.format(com.name, buildLabelFromDescription(com));
+		.format(com.name, com.technology,
+			buildLabelFromDescription(com)
+		);
 
 		return n;
 	}
@@ -214,9 +256,7 @@ class Graphvic2 : Generator {
 	}
 
 	void addEdges(Graph g, in ref EntitySet names, in uint deapth) {
-		import std.algorithm.iteration : splitter;
 		import std.algorithm.comparison : equal, min;
-		import std.array : array;
 
 		foreach(key; this.world.connections.keys()) {
 			ConnectionImpl con = cast(ConnectionImpl)this.world.connections[key];
@@ -334,7 +374,7 @@ class Graphvic2 : Generator {
 	}
 
 	private static string connectionCountToString(ref in ConnectionCount cc) {
-		import std.array : appender, empty;
+		import std.array : appender;
 
 		if(cc.low == -1 && cc.high == -1) {
 			return "";

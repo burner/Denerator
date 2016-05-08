@@ -102,7 +102,7 @@ class TheWorld : Entity {
 		super(name, null);
 	}
 
-	SearchResult search(Entity needle) {
+	auto search(in Entity needle) inout {
 		assert(needle !is null);
 
 		if(const(Entity) mnp = holdsEntityImpl(needle, this.actors,
@@ -112,7 +112,7 @@ class TheWorld : Entity {
 			return SearchResult(mnp, [super.name]);
 		}
 
-		SearchResult dummy;
+		const(SearchResult) dummy;
 		return dummy;
 	}
 
@@ -532,11 +532,11 @@ const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg)
 	return null;
 }
 
-const(Entity) holdsEntityImpl(T...)(const Entity needle, ref T args)
+const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args)
 {
 	foreach(ref arg; args) {
 		foreach(key; arg.keys()) {
-			auto entity = arg[key];
+			const entity = arg[key];
 			if(needle is entity) {
 				return entity;
 			}
