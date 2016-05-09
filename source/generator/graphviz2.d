@@ -128,6 +128,7 @@ class Graphvic2 : Generator {
 				//logf("'%s' '%s'", fromToRoot, toToRoot);
 			}
 		}
+		this.addEdges(g, names, uint.max);
 	}
 
 	const(Entity) getAndAddTopLevel(Graph g, const(Entity) en, 
@@ -264,7 +265,7 @@ class Graphvic2 : Generator {
 
 			const(Entity) from = con.from.areYouIn(names);
 			const(Entity) to = con.to.areYouIn(names);
-			if(from is null && to is null && from is to && from is to) {
+			if(from is null || to is null || from is to) {
 				log();
 				continue;
 			}
