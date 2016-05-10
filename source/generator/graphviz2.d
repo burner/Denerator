@@ -95,7 +95,6 @@ class Graphvic2 : Generator {
 						foreach(const(string) comKey, const(Component) com;
 								con.components)
 						{
-							//const(Component) com = con.components[comKey];
 							this.addComponent!Node(conSg, com, names);
 						}
 					}
@@ -272,8 +271,10 @@ class Graphvic2 : Generator {
 
 			const(Entity) from = con.from.areYouIn(names);
 			const(Entity) to = con.to.areYouIn(names);
-			if(from is null || to is null || from is to) {
-				log();
+			if(from is null || to is null 
+					|| (from is to && con.from is con.to)) 
+			{
+				logf("\n\t%s %s", con.from.name, con.to.name);
 				continue;
 			}
 			logf("\n\t%s %s\n\t%s %s", con.from.name, con.to.name, 
@@ -289,6 +290,7 @@ class Graphvic2 : Generator {
 			toS = toS[0 .. min(toS.length, deapth)];
 
 			if(fromS.equal(toS)) {
+				logf("\n\t%s %s", fromS, toS);
 				continue;			
 			}
 
