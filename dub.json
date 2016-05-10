@@ -5,7 +5,7 @@
 	"authors": ["burner"],
 	"targetType" : "executable",
 	"dependencies": {
-		"emsi_containers": "~>0.4.2"
+		"emsi_containers": ">=0.4.3"
 	},
 	"sourcePaths" : ["source", "../graphvizd/source/"],
 	"importPaths" : ["source", "../graphvizd/source/"]

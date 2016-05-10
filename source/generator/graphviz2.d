@@ -71,9 +71,9 @@ class Graphvic2 : Generator {
 	}
 
 	void generateSoftwareSystemsContainerComponents() {
-		foreach(ssKey; this.world.softwareSystems.keys()) {
-			const(SoftwareSystem) ss = this.world.softwareSystems[ssKey];
-
+		foreach(const(string) ssKey, const(SoftwareSystem) ss;
+				this.world.softwareSystems)
+		{
 			Graph g = new Graph();
 			EntitySet names;
 
@@ -84,15 +84,18 @@ class Graphvic2 : Generator {
 				auto sg = this.addSystem!SubGraph(g, ss);
 				names.insert(cast(Entity)(ss));
 
-				foreach(conKey; ss.containers.keys()) {
-					const(Container) con = ss.containers[conKey];
+				foreach(const(string) conKey, const(Container) con;
+						ss.containers) 
+				{
 					if(con.components.empty) {
 						this.addContainer!Node(sg, con, names);
 					} else {
 						auto conSg = this.addContainer!SubGraph(sg, con, names);
 
-						foreach(comKey; con.components.keys()) {
-							const(Component) com = con.components[comKey];
+						foreach(const(string) comKey, const(Component) com;
+								con.components)
+						{
+							//const(Component) com = con.components[comKey];
 							this.addComponent!Node(conSg, com, names);
 						}
 					}
@@ -155,9 +158,9 @@ class Graphvic2 : Generator {
 	}
 
 	void addActors(Graph g, ref EntitySet names) {
-		foreach(key; this.world.actors.keys()) {
-			this.addActor(g, this.world.actors[key]);
-			names.insert(cast(Entity)(this.world.actors[key]));
+		foreach(const(string) key, const(Actor) act; this.world.actors) {
+			this.addActor(g, act);
+			names.insert(cast(Entity)act);
 		}
 	}
 
@@ -177,22 +180,26 @@ class Graphvic2 : Generator {
 	}
 
 	void addSystems(T)(Graph g, ref EntitySet names) {
-		foreach(key; this.world.softwareSystems.keys()) {
-			const(SoftwareSystem) ss = this.world.softwareSystems[key];
+		foreach(const(string) key, const(SoftwareSystem) ss;
+				this.world.softwareSystems)
+		{
 			auto sg = this.addSystem!T(g, ss);
 			names.insert(cast(Entity)(ss));
 
 			static if(is(T == SubGraph)) {
-				foreach(comKey; ss.containers.keys()) {
-					auto com = ss.containers[comKey];
+				foreach(const(string) comKey, const(Container) com;
+						ss.containers)
+				{
 					auto consg = this.addContainer!Node(sg, com, names);
 				}
 			}
 		}
 		
-		foreach(key; this.world.hardwareSystems.keys()) {
-			this.addSystem!Node(g, this.world.hardwareSystems[key]);
-			names.insert(cast(Entity)(this.world.hardwareSystems[key]));
+		foreach(const(string) key, const(HardwareSystem) hws;
+				this.world.hardwareSystems)
+		{
+			this.addSystem!Node(g, hws);
+			names.insert(cast(Entity)(hws));
 		}
 	}
 

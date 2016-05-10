@@ -256,8 +256,7 @@ class SoftwareSystem : Entity {
 		if(tmp !is null) {
 			return SearchResult(tmp, [super.name]);	
 		} else {
-			foreach(it; this.containers.keys()) {
-				const(Container) con = this.containers[it];
+			foreach(const(string) it, const(Container) con; this.containers) {
 				SearchResult ret = con.holdsEntity(needle);
 				if(ret.entity !is null) {
 					ret.path ~= super.name;
@@ -290,8 +289,7 @@ class Container : Entity {
 		if(tmp !is null) {
 			return SearchResult(tmp, [super.name]);
 		} else {
-			foreach(it; this.components.keys()) {
-				const(Component) com = this.components[it];
+			foreach(const(string) it, const(Component) com; this.components) {
 				SearchResult ret = com.holdsEntity(needle);
 				if(ret.entity !is null) {
 					ret.path ~= super.name;
@@ -337,8 +335,7 @@ class Component : ProtectedEntity {
 		if(tmp !is null) {
 			return SearchResult(tmp, [super.name]);
 		} else {
-			foreach(it; this.subComponents.keys()) {
-				const(Component) com = this.subComponents[it];
+			foreach(const(string) it, const(Component) com; this.subComponents) {
 				auto ret = com.holdsEntity(needle);
 				if(ret.entity !is null) {
 					ret.path ~= super.name;
@@ -535,8 +532,7 @@ const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg)
 const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args)
 {
 	foreach(ref arg; args) {
-		foreach(key; arg.keys()) {
-			const entity = arg[key];
+		foreach(const(string) key, const(Entity) entity; arg) {
 			if(needle is entity) {
 				return entity;
 			}
