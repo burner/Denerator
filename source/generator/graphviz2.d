@@ -74,6 +74,7 @@ class Graphvic2 : Generator {
 		foreach(const(string) ssKey, const(SoftwareSystem) ss;
 				this.world.softwareSystems)
 		{
+			logf("\n\n\t>>>>%s<<<<\n", ssKey);
 			Graph g = new Graph();
 			EntitySet names;
 
@@ -113,6 +114,7 @@ class Graphvic2 : Generator {
 				cast(const(ConnectionImpl))this.world.connections[edgeKey];
 
 			assert(con !is null);
+			logf("%s %s", con.from.name, con.to.name);
 			Rebindable!(const Entity) fromEn = con.from.areYouIn(names);
 			Rebindable!(const Entity) toEn = con.to.areYouIn(names);
 			if(fromEn !is null || toEn !is null) {
@@ -124,8 +126,12 @@ class Graphvic2 : Generator {
 
 				if(fromEn is null) {
 					fromEn = this.getAndAddTopLevel(g, con.from, names);
+					assert(fromEn !is null);
+					logf("%s", fromEn.name);
 				} else if(toEn is null) {
 					toEn = this.getAndAddTopLevel(g, con.to, names);
+					assert(toEn !is null);
+					logf("%s", toEn.name);
 				}
 				//logf("'%s' '%s'", fromToRoot, toToRoot);
 			}
@@ -140,20 +146,29 @@ class Graphvic2 : Generator {
 		assert(!pathToRoot.empty);
 
 		string top = splitter(pathToRoot, ".").array[0];
+		logf("top %s", top);
 
-		const(SearchResult) searchResult = this.world.search(en);
-		if(cast(const Actor)(searchResult.entity) !is null) {
-			this.addActor(g, cast(const Actor)searchResult.entity);
-			names.insert(cast(Entity)searchResult.entity);
-		} else if(cast(const SoftwareSystem)(searchResult.entity) !is null) {
-			this.addSystem!Node(g, cast(const SoftwareSystem)searchResult.entity);
-			names.insert(cast(Entity)searchResult.entity);
-		} else if(cast(const HardwareSystem)(searchResult.entity) !is null) {
-			this.addSystem!Node(g, cast(const HardwareSystem)searchResult.entity);
-			names.insert(cast(Entity)searchResult.entity);
+		const(Entity) searchResult = en.getRoot();
+		assert(searchResult !is null);
+		auto act = cast(const Actor)(searchResult);
+		auto ss = cast(const SoftwareSystem)(searchResult);
+		auto hw = cast(const HardwareSystem)(searchResult);
+		logf("%s %b %b %b", searchResult.name, act !is null, ss !is null, 
+			hw !is null
+		);
+
+		if(act !is null) {
+			this.addActor(g, act);
+			names.insert(cast(Entity)searchResult);
+		} else if(ss !is null) {
+			this.addSystem!Node(g, ss);
+			names.insert(cast(Entity)searchResult);
+		} else if(hw !is null) {
+			this.addSystem!Node(g, hw);
+			names.insert(cast(Entity)searchResult);
 		}
 
-		return searchResult.entity;
+		return searchResult;
 	}
 
 	void addActors(Graph g, ref EntitySet names) {
@@ -285,9 +300,9 @@ class Graphvic2 : Generator {
 			string[] fromS = splitter(fromSStr, ".").array;
 			string[] toS = splitter(toSStr, ".").array;
 
-			logf("\n\t%s %s %s %s", fromSStr, toSStr, fromS, toS);
 			fromS = fromS[0 .. min(fromS.length, deapth)];
 			toS = toS[0 .. min(toS.length, deapth)];
+			logf("\n\t%s %s %s %s %s", deapth, fromSStr, toSStr, fromS, toS);
 
 			if(fromS.equal(toS)) {
 				logf("\n\t%s %s", fromS, toS);
@@ -376,7 +391,11 @@ class Graphvic2 : Generator {
 		auto fromRoot = con.to.pathToRoot();
 		logf("%s:\n'%s' '%s'\n'%s' '%s'", con.name, 
 			con.from.name, con.to.name, toRoot, fromRoot);
-		Edge ret = g.get!Edge(con.name, toRoot, fromRoot);
+
+		Edge ret = g.getUnique!Edge(con.name, toRoot, fromRoot);
+		if(ret is null) {
+			return new Edge("", "", "");
+		}
 		ret.label = format("<<table border=\"0\" cellborder=\"0\">\n%s</table>>",
 			buildLabelFromDescription(con)
 		);

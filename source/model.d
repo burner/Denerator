@@ -77,6 +77,15 @@ abstract class Entity {
 			}
 		}
 	}
+
+	final auto getRoot() inout {
+		assert(this.parent !is null);
+		if(this.parent.parent is null) {
+			return this;
+		} else {
+			return this.parent.getRoot();
+		}
+	}
 }
 
 class Actor : Entity {
@@ -102,13 +111,14 @@ class TheWorld : Entity {
 		super(name, null);
 	}
 
-	auto search(in Entity needle) inout {
+	auto search(const(Entity) needle) inout {
 		assert(needle !is null);
 
-		if(const(Entity) mnp = holdsEntityImpl(needle, this.actors,
+		const(Entity) mnp = holdsEntityImpl(needle, this.actors,
 					this.softwareSystems, this.hardwareSystems,
-					this.typeContainerMapping, this.connections)) 
-		{
+					this.typeContainerMapping, this.connections);
+
+		if(mnp !is null) {
 			return SearchResult(mnp, [super.name]);
 		}
 
@@ -517,8 +527,7 @@ Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 	return cls;
 }
 
-const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg)
-{
+const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg) {
 	foreach(key; arg.keys()) {
 		auto entity = arg[key];
 		if(needle is entity) {
@@ -529,8 +538,7 @@ const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg)
 	return null;
 }
 
-const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args)
-{
+const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args) {
 	foreach(ref arg; args) {
 		foreach(const(string) key, const(Entity) entity; arg) {
 			if(needle is entity) {
