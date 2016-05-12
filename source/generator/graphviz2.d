@@ -318,15 +318,25 @@ class Graphvic2 : Generator {
 		foreach(const(string) comKey, const(Component) sCom;
 			com.subComponents)
 		{
-			if(sCom.subComponents.length == 0) {
+			if(sCom.subComponents.length == 0 && sCom.classes.empty) {
 				this.addComponent!Node(sg, sCom, names);
 			} else {
 				SubGraph comSG = 
 					this.addComponent!SubGraph(sg, com, names);
 				this.addComponentRecursive(comSG, sCom, names);
+				this.addClasses(comSG, sCom, names);
 			}
 		}
 		return null;
+	}
+
+	void addClasses(SubGraph sg, in Component com, ref EntitySet names) {
+		foreach(const(string) clsName, const(Class) cls; com.classes) {
+			this.addClass(sg, cls, names);
+		}
+	}
+
+	void addClass(SubGraph sg, in Class com, ref EntitySet names) {
 	}
 
 	private static auto buildLabelFromDescription(in Entity en) {
