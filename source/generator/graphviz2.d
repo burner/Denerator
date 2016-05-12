@@ -30,6 +30,7 @@ class Graphvic2 : Generator {
 		this.generateSystemContext();
 		this.generateSystemContainers();
 		this.generateSoftwareSystemsContainerComponents();
+		this.generateContainerComponents();
 	}
 
 	void generateMakefile() {
@@ -68,6 +69,43 @@ class Graphvic2 : Generator {
 		);
 		auto ltw = f.lockingTextWriter();
 		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+	}
+
+	void generateContainerComponents() {
+		foreach(const(string) key, const(SoftwareSystem) ss;
+				this.world.softwareSystems)
+		{
+			foreach(const(string) conKey, const(Container) con;
+					ss.containers)
+			{
+				Graph g = new Graph();
+				EntitySet names;
+
+				if(con.components.empty) {
+					this.addContainer!Node(g, con, names);
+				} else {
+					SubGraph conSG = this.addContainer!(SubGraph,Graph)
+						(g, con, names);
+
+					foreach(const(string) comKey, const(Component) com;
+						con.components)
+					{
+						if(com.subComponents.length == 0) {
+							this.addComponent!Node(conSG, com, names);
+						} else {
+							SubGraph comSG = 
+								this.addComponent!SubGraph(conSG, com, names);
+							this.addComponentRecursive(comSG, com, names);
+						}
+					}
+				}
+
+				auto f = Generator.createFile([this.outputDir, 
+					  key ~ '_' ~ conKey ~ ".dot"]);
+				auto ltw = f.lockingTextWriter();
+				auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+			}
+		}
 	}
 
 	void generateSoftwareSystemsContainerComponents() {
@@ -201,14 +239,16 @@ class Graphvic2 : Generator {
 			names.insert(cast(Entity)(ss));
 
 			static if(is(T == SubGraph)) {
-				foreach(const(string) comKey, const(Container) com;
+				foreach(const(string) comKey,
+						const(Container) com;
 						ss.containers)
 				{
-					auto consg = this.addContainer!Node(sg, com, names);
+					auto consg =
+						this.addContainer!Node(sg, com, names);
 				}
 			}
 		}
-		
+
 		foreach(const(string) key, const(HardwareSystem) hws;
 				this.world.hardwareSystems)
 		{
@@ -240,7 +280,7 @@ class Graphvic2 : Generator {
 		return n;
 	}
 
-	private T addContainer(T)(SubGraph sg, in Container com, 
+	private T addContainer(T,G)(G sg, in Container com, 
 			ref EntitySet names) 
 	{
 		T n = sg.get!T(com.name);
@@ -270,6 +310,23 @@ class Graphvic2 : Generator {
 		.format(com.name, buildLabelFromDescription(com));
 
 		return n;
+	}
+
+	SubGraph addComponentRecursive(SubGraph sg, in Component com,
+			ref EntitySet names)
+	{
+		foreach(const(string) comKey, const(Component) sCom;
+			com.subComponents)
+		{
+			if(sCom.subComponents.length == 0) {
+				this.addComponent!Node(sg, sCom, names);
+			} else {
+				SubGraph comSG = 
+					this.addComponent!SubGraph(sg, com, names);
+				this.addComponentRecursive(comSG, sCom, names);
+			}
+		}
+		return null;
 	}
 
 	private static auto buildLabelFromDescription(in Entity en) {

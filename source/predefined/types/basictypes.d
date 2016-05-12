@@ -2,7 +2,7 @@ module predefined.types.basictypes;
 
 import model;
 
-Type floatType(World world) {
+Type floatType(TheWorld world) {
 	Type lng = world.getOrNewType("Float");
 	lng.typeToLanguage["D"] = "float";
 	lng.typeToLanguage["C"] = "float";
@@ -15,7 +15,7 @@ Type floatType(World world) {
 	return lng;
 }
 
-Type doubleType(World world) {
+Type doubleType(TheWorld world) {
 	Type lng = world.getOrNewType("Double");
 	lng.typeToLanguage["D"] = "double";
 	lng.typeToLanguage["C"] = "double";
@@ -28,7 +28,7 @@ Type doubleType(World world) {
 	return lng;
 }
 
-Type longType(World world) {
+Type longType(TheWorld world) {
 	Type lng = world.getOrNewType("Long");
 	lng.typeToLanguage["D"] = "long";
 	lng.typeToLanguage["C"] = "int64_t";
@@ -41,7 +41,7 @@ Type longType(World world) {
 	return lng;
 }
 
-Type intType(World world) {
+Type intType(TheWorld world) {
 	Type lng = world.getOrNewType("Int");
 	lng.typeToLanguage["D"] = "int";
 	lng.typeToLanguage["C"] = "int32_t";
@@ -54,7 +54,7 @@ Type intType(World world) {
 	return lng;
 }
 
-Type shortType(World world) {
+Type shortType(TheWorld world) {
 	Type lng = world.getOrNewType("Short");
 	lng.typeToLanguage["D"] = "short";
 	lng.typeToLanguage["C"] = "int16_t";
@@ -67,7 +67,7 @@ Type shortType(World world) {
 	return lng;
 }
 
-Type byteType(World world) {
+Type byteType(TheWorld world) {
 	Type lng = world.getOrNewType("Byte");
 	lng.typeToLanguage["D"] = "byte";
 	lng.typeToLanguage["C"] = "int8_t";
@@ -80,7 +80,7 @@ Type byteType(World world) {
 	return lng;
 }
 
-Type boolType(World world) {
+Type boolType(TheWorld world) {
 	Type lng = world.getOrNewType("Bool");
 	lng.typeToLanguage["D"] = "bool";
 	lng.typeToLanguage["C"] = "bool";
@@ -93,7 +93,7 @@ Type boolType(World world) {
 	return lng;
 }
 
-Type stringType(World world) {
+Type stringType(TheWorld world) {
 	Type lng = world.getOrNewType("String");
 	lng.typeToLanguage["D"] = "string";
 	lng.typeToLanguage["C"] = "const char*";
@@ -106,7 +106,7 @@ Type stringType(World world) {
 	return lng;
 }
 
-Type dateType(World world) {
+Type dateType(TheWorld world) {
 	Type lng = world.getOrNewType("Date");
 	lng.typeToLanguage["D"] = "Date";
 	lng.typeToLanguage["C++"] = "std::time_point";
@@ -118,7 +118,7 @@ Type dateType(World world) {
 	return lng;
 }
 
-Type timeType(World world) {
+Type timeType(TheWorld world) {
 	Type lng = world.getOrNewType("Time");
 	lng.typeToLanguage["D"] = "TimeOfDay";
 	lng.typeToLanguage["C++"] = "std::time_point";
@@ -130,7 +130,7 @@ Type timeType(World world) {
 	return lng;
 }
 
-Type dateTimeType(World world) {
+Type dateTimeType(TheWorld world) {
 	Type lng = world.getOrNewType("DateTime");
 	lng.typeToLanguage["D"] = "DateTime";
 	lng.typeToLanguage["C++"] = "std::time_point";
