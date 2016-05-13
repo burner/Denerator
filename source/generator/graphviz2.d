@@ -186,6 +186,9 @@ class Graphvic2 : Generator {
 		this.addEdges(g, names, uint.max);
 	}
 
+	void addEdgesToContainer(Graph g, in Container con, ref EntitySet names) {
+	}
+
 	const(Entity) getAndAddTopLevel(Graph g, const(Entity) en, 
 			ref EntitySet names) 
 	{
