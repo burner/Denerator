@@ -93,6 +93,7 @@ void main() {
 
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
 	userId.type = integer;
+	userId.protection["D"] = "private";
 	userId.addLandSpecificAttribute("MySQL", "PRIMARY KEY");
 	userId.addLandSpecificAttribute("MySQL", "AUTO INCREMENT");
 	auto userFirstname = user.getOrNew!MemberVariable("firstname");

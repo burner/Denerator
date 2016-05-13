@@ -18,6 +18,7 @@ class Graphvic2 : Generator {
 	import std.typecons : scoped, Rebindable;
 
 	const(string) outputDir;
+	string currentTechnologie;
 
 	this(in TheWorld world, in string outputDir) {
 		super(world);
@@ -78,10 +79,11 @@ class Graphvic2 : Generator {
 			foreach(const(string) conKey, const(Container) con;
 					ss.containers)
 			{
+				this.currentTechnologie = con.technology;
 				Graph g = new Graph();
 				EntitySet names;
 
-				if(con.components.empty) {
+				if(con.components.empty && con.classes.empty) {
 					this.addContainer!Node(g, con, names);
 				} else {
 					SubGraph conSG = this.addContainer!(SubGraph,Graph)
@@ -90,13 +92,17 @@ class Graphvic2 : Generator {
 					foreach(const(string) comKey, const(Component) com;
 						con.components)
 					{
-						if(com.subComponents.length == 0) {
+						if(com.subComponents.length == 0 && com.classes.empty) {
 							this.addComponent!Node(conSG, com, names);
 						} else {
-							SubGraph comSG = 
-								this.addComponent!SubGraph(conSG, com, names);
-							this.addComponentRecursive(comSG, com, names);
+							this.addComponentRecursive(conSG, com, names);
 						}
+					}
+
+					foreach(const(string) clsKey, const(Class) cls;
+						con.classes)
+					{
+						this.addClass(conSG, cls, names);
 					}
 				}
 
@@ -126,6 +132,9 @@ class Graphvic2 : Generator {
 				foreach(const(string) conKey, const(Container) con;
 						ss.containers) 
 				{
+					this.currentTechnologie = con.technology;
+					scope(exit) this.currentTechnologie = "";
+
 					if(con.components.empty) {
 						this.addContainer!Node(sg, con, names);
 					} else {
@@ -243,6 +252,7 @@ class Graphvic2 : Generator {
 						const(Container) com;
 						ss.containers)
 				{
+
 					auto consg =
 						this.addContainer!Node(sg, com, names);
 				}
@@ -280,18 +290,20 @@ class Graphvic2 : Generator {
 		return n;
 	}
 
-	private T addContainer(T,G)(G sg, in Container com, 
+	private T addContainer(T,G)(G sg, in Container con, 
 			ref EntitySet names) 
 	{
-		T n = sg.get!T(com.name);
+		this.currentTechnologie = con.technology;
+
+		T n = sg.get!T(con.name);
 		n.shape = "box";
 		n.label = `<<table border="0" cellborder="0">
 			<tr><td>%s</td></tr>
 			<tr><td>[%s]</td></tr>
 			%s
 			</table>>`
-		.format(com.name, com.technology,
-			buildLabelFromDescription(com)
+		.format(con.name, con.technology,
+			buildLabelFromDescription(con)
 		);
 
 		return n;
@@ -315,19 +327,21 @@ class Graphvic2 : Generator {
 	SubGraph addComponentRecursive(SubGraph sg, in Component com,
 			ref EntitySet names)
 	{
+		names.insert(cast(Entity)com);
+
+		SubGraph comSG = this.addComponent!SubGraph(sg, com, names);
+		this.addClasses(comSG, com, names);
+
 		foreach(const(string) comKey, const(Component) sCom;
 			com.subComponents)
 		{
 			if(sCom.subComponents.length == 0 && sCom.classes.empty) {
-				this.addComponent!Node(sg, sCom, names);
+				this.addComponent!Node(comSG, sCom, names);
 			} else {
-				SubGraph comSG = 
-					this.addComponent!SubGraph(sg, com, names);
 				this.addComponentRecursive(comSG, sCom, names);
-				this.addClasses(comSG, sCom, names);
 			}
 		}
-		return null;
+		return comSG;
 	}
 
 	void addClasses(SubGraph sg, in Component com, ref EntitySet names) {
@@ -336,7 +350,80 @@ class Graphvic2 : Generator {
 		}
 	}
 
-	void addClass(SubGraph sg, in Class com, ref EntitySet names) {
+	Node addClass(SubGraph sg, in Class cls, ref EntitySet names) {
+		names.insert(cast(Entity)cls);
+
+		Node node = sg.get!Node(cls.name);
+		node.label = format(
+			`<<table border="0" cellborder="0">
+			<tr><td>%s</td></tr>
+			<tr><td>[Class]</td></tr>
+			%s
+			</table>>`, cls.name, this.genClassMember(cls.members)
+		);
+		node.shape = "box";
+
+		return node;
+	}
+
+	string genClassMember(in ref StringEntityMap!Member member) {
+		import std.array : appender;
+		string buildParameter(in MemberVariable mv) {
+			if(mv.type is null 
+					|| !(this.currentTechnologie in mv.type.typeToLanguage))
+			{
+				return format("%s", mv.name);
+			} else {
+				return format("%s %s", 
+					mv.type.typeToLanguage[this.currentTechnologie],
+					mv.name
+				);
+			}
+		}
+
+		auto app = appender!string();
+
+		foreach(const(string) memName, const(Entity) value; member) {
+			auto mem = cast(Member)value;
+			assert(mem !is null);
+
+			if(!mem.description.empty) {
+				foreach(str; wrapLongString(mem.description, 40)) {
+					formattedWrite(app, "<tr><td align=\"left\">%s</td></tr>\n", str);
+				}
+			}
+			formattedWrite(app, "<tr><td align=\"left\">");
+			if(this.currentTechnologie in mem.protection)
+			{
+				formattedWrite(app, "%s ",
+					  	mem.protection[this.currentTechnologie]
+				);
+			}
+
+			const MemberVariable mv = cast(MemberVariable)mem;
+			if(mv !is null) {
+				if(mv.type !is null 
+						&& (this.currentTechnologie in mv.type.typeToLanguage))
+				{
+					formattedWrite(app, "%s ", 
+						mv.type.typeToLanguage[this.currentTechnologie]
+					);
+				}
+			}
+
+			formattedWrite(app, "%s", mem.name);
+
+			const MemberFunction mf = cast(MemberFunction)mem;
+			if(mf !is null) {
+				formattedWrite(app, "(%s)",
+					mf.parameter[].map!(a => buildParameter(a))().joiner(", ")
+				);
+			}
+
+			formattedWrite(app, "</td></tr>\n");
+		}
+
+		return app.data;
 	}
 
 	private static auto buildLabelFromDescription(in Entity en) {
