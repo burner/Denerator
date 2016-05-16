@@ -106,10 +106,43 @@ class Graphvic2 : Generator {
 					}
 				}
 
+				this.addEdgeToContainer(g, con, names);
+
 				auto f = Generator.createFile([this.outputDir, 
 					  key ~ '_' ~ conKey ~ ".dot"]);
 				auto ltw = f.lockingTextWriter();
 				auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+			}
+		}
+	}
+
+	void addEdgesToContainer(Graph g, in Container con, ref EntitySet names) {
+		foreach(edgeKey; this.world.connections.keys()) {
+			const(ConnectionImpl) con = 
+				cast(const(ConnectionImpl))this.world.connections[edgeKey];
+
+			assert(con !is null);
+			assert(con !is null);
+			logf("%s %s", con.from.name, con.to.name);
+			Rebindable!(const Entity) fromEn = con.from.areYouIn(names);
+			Rebindable!(const Entity) toEn = con.to.areYouIn(names);
+
+			if(fromEn !is null || toEn !is null) {
+				logf("\n\t'%s' '%s' '%s'\n\t'%s' '%s'", con.name, con.from.name,
+					con.to.name,
+					fromEn !is null ? fromEn.name : "", 
+					toEn !is null ? toEn.name : ""
+				);
+
+				if(fromEn is null) {
+					fromEn = this.getAndComponentOfContainer(g, con.from, con, names);
+					assert(fromEn !is null);
+					logf("%s", fromEn.name);
+				} else if(toEn is null) {
+					toEn = this.getAndComponentOfContainer(g, con.to, con, names);
+					assert(toEn !is null);
+					logf("%s", toEn.name);
+				}
 			}
 		}
 	}
@@ -186,7 +219,23 @@ class Graphvic2 : Generator {
 		this.addEdges(g, names, uint.max);
 	}
 
-	void addEdgesToContainer(Graph g, in Container con, ref EntitySet names) {
+	const(Entity) getAndComponentOfContainer(SubGraph g, const(Entity) en, 
+			const(Container) con, ref EntitySet names) 
+	{
+		auto rslt = con.holdsEntity(en);
+		if(rslt.entity !is null) {
+			auto com = cast(const Component)(rslt.entity);
+			auto cls = cast(const Class)(rslt.entity);
+			if(com !is null) {
+				this.addComponent!Node(g, com, names);
+			} else if(cls !is null) {
+				this.addClass(g, cls, names);
+			}
+			return rslt.entity;
+		} else {
+			return this.getAndAddTopLevel(g, en, names);
+		}
+
 	}
 
 	const(Entity) getAndAddTopLevel(Graph g, const(Entity) en, 
