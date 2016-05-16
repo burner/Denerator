@@ -106,7 +106,7 @@ class Graphvic2 : Generator {
 					}
 				}
 
-				this.addEdgeToContainer(g, con, names);
+				this.addEdgesToContainer(g, con, names);
 
 				auto f = Generator.createFile([this.outputDir, 
 					  key ~ '_' ~ conKey ~ ".dot"]);
@@ -117,29 +117,29 @@ class Graphvic2 : Generator {
 	}
 
 	void addEdgesToContainer(Graph g, in Container con, ref EntitySet names) {
+		assert(con !is null);
 		foreach(edgeKey; this.world.connections.keys()) {
-			const(ConnectionImpl) con = 
+			const(ConnectionImpl) connection = 
 				cast(const(ConnectionImpl))this.world.connections[edgeKey];
 
-			assert(con !is null);
-			assert(con !is null);
-			logf("%s %s", con.from.name, con.to.name);
-			Rebindable!(const Entity) fromEn = con.from.areYouIn(names);
-			Rebindable!(const Entity) toEn = con.to.areYouIn(names);
+			assert(connection !is null);
+			logf("%s %s", connection.from.name, connection.to.name);
+			Rebindable!(const Entity) fromEn = connection.from.areYouIn(names);
+			Rebindable!(const Entity) toEn = connection.to.areYouIn(names);
 
 			if(fromEn !is null || toEn !is null) {
-				logf("\n\t'%s' '%s' '%s'\n\t'%s' '%s'", con.name, con.from.name,
-					con.to.name,
+				logf("\n\t'%s' '%s' '%s'\n\t'%s' '%s'", connection.name,
+					connection.from.name, connection.to.name,
 					fromEn !is null ? fromEn.name : "", 
 					toEn !is null ? toEn.name : ""
 				);
 
 				if(fromEn is null) {
-					fromEn = this.getAndComponentOfContainer(g, con.from, con, names);
+					fromEn = this.getAndComponentOfContainer(g, connection.from, con, names);
 					assert(fromEn !is null);
 					logf("%s", fromEn.name);
 				} else if(toEn is null) {
-					toEn = this.getAndComponentOfContainer(g, con.to, con, names);
+					toEn = this.getAndComponentOfContainer(g, connection.to, con, names);
 					assert(toEn !is null);
 					logf("%s", toEn.name);
 				}
@@ -219,7 +219,7 @@ class Graphvic2 : Generator {
 		this.addEdges(g, names, uint.max);
 	}
 
-	const(Entity) getAndComponentOfContainer(SubGraph g, const(Entity) en, 
+	const(Entity) getAndComponentOfContainer(Graph g, const(Entity) en, 
 			const(Container) con, ref EntitySet names) 
 	{
 		auto rslt = con.holdsEntity(en);
@@ -361,7 +361,7 @@ class Graphvic2 : Generator {
 		return n;
 	}
 
-	private T addComponent(T)(SubGraph sg, in Component com,
+	private T addComponent(T,G)(G sg, in Component com,
 			ref EntitySet names)
 	{
 		T n = sg.get!T(com.name);
@@ -402,7 +402,7 @@ class Graphvic2 : Generator {
 		}
 	}
 
-	Node addClass(SubGraph sg, in Class cls, ref EntitySet names) {
+	Node addClass(G)(G sg, in Class cls, ref EntitySet names) {
 		names.insert(cast(Entity)cls);
 
 		Node node = sg.get!Node(cls.name);
