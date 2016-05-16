@@ -127,7 +127,7 @@ class Graphvic2 : Generator {
 				names.insert(cast(Entity)(ss));
 			} else {
 				auto sg = this.addSystem!SubGraph(g, ss);
-				names.insert(cast(Entity)(ss));
+				names.insert(cast(Entity)ss);
 
 				foreach(const(string) conKey, const(Container) con;
 						ss.containers) 
@@ -248,7 +248,7 @@ class Graphvic2 : Generator {
 				this.world.softwareSystems)
 		{
 			auto sg = this.addSystem!T(g, ss);
-			names.insert(cast(Entity)(ss));
+			names.insert(cast(Entity)ss);
 
 			static if(is(T == SubGraph)) {
 				foreach(const(string) comKey,
@@ -266,7 +266,7 @@ class Graphvic2 : Generator {
 				this.world.hardwareSystems)
 		{
 			this.addSystem!Node(g, hws);
-			names.insert(cast(Entity)(hws));
+			names.insert(cast(Entity)hws);
 		}
 	}
 
@@ -471,7 +471,7 @@ class Graphvic2 : Generator {
 	}
 
 	Edge addEdge(Graph g, in ConnectionImpl con, 
-			in ref EntityHashSet!Entity names) 
+			in ref EntitySet names) 
 	{
 		if(auto c = cast(const Dependency)con) {
 			return this.addDependency(g, c, names);
@@ -491,7 +491,7 @@ class Graphvic2 : Generator {
 	}
 
 	Edge addDependency(Graph g, in Dependency con,
-		   	in ref EntityHashSet!Entity names)
+		   	in ref EntitySet names)
 	{
 		Edge e = this.addConnectionImpl(g, con, names);
 		e.edgeStyle = "dashed";
@@ -500,14 +500,14 @@ class Graphvic2 : Generator {
 	}
 
 	Edge addConnection(Graph g, in Connection con,
-		   	in ref EntityHashSet!Entity names)
+		   	in ref EntitySet names)
 	{
 		Edge e = this.addConnectionImpl(g, con, names);
 		return e;
 	}
 
 	Edge addAggregation(Graph g, in Aggregation con,
-		   	in ref EntityHashSet!Entity names)
+		   	in ref EntitySet names)
 	{
 		Edge e = this.addConnectionImpl(g, con, names);
 		e.arrowStyleTo = "odiamond";
@@ -517,7 +517,7 @@ class Graphvic2 : Generator {
 	}
 
 	Edge addComposition(Graph g, in Composition con,
-		   	in ref EntityHashSet!Entity names)
+		   	in ref EntitySet names)
 	{
 		Edge e = this.addConnectionImpl(g, con, names);
 		e.arrowStyleTo = "diamond";
@@ -526,7 +526,7 @@ class Graphvic2 : Generator {
 	}
 
 	Edge addGeneralization(Graph g, in Generalization con,
-		   	in ref EntityHashSet!Entity names)
+		   	in ref EntitySet names)
 	{
 		Edge e = this.addConnectionImpl(g, con, names);
 		e.arrowStyleTo = "empty";
@@ -534,7 +534,7 @@ class Graphvic2 : Generator {
 	}
 
 	Edge addRealization(Graph g, in Realization con,
-		   	in ref EntityHashSet!Entity names)
+		   	in ref EntitySet names)
 	{
 		Edge e = this.addConnectionImpl(g, con, names);
 		e.arrowStyleTo = "empty";
@@ -542,7 +542,7 @@ class Graphvic2 : Generator {
 	}
 
 	Edge addConnectionImpl(Graph g, in ConnectionImpl con,
-		   	in ref EntityHashSet!Entity names)
+		   	in ref EntitySet names)
 	{
 		auto toRoot = con.from.pathToRoot();
 		auto fromRoot = con.to.pathToRoot();

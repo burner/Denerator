@@ -55,7 +55,7 @@ abstract class Entity {
 		}
 	}
 
-	const(Entity) areYouIn(ref in EntityHashSet!(/*const*/ Entity) store) const {
+	const(Entity) areYouIn(ref in EntityHashSet!(Entity) store) const {
 		if(cast(Entity)(this) in store) {
 			return this;
 		} else if(this.parent is null) {
@@ -162,7 +162,7 @@ class TheWorld : Entity {
 		return super.name in store ? super.name : "";
 	}
 
-	override const(Entity) areYouIn(ref in EntityHashSet!(/*const*/ Entity) store) 
+	override const(Entity) areYouIn(ref in EntityHashSet!(Entity) store) 
 			const 
 	{
 		if(cast(Entity)(this) in store) {
