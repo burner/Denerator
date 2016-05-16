@@ -28,9 +28,9 @@ class Graphvic2 : Generator {
 
 	override void generate() {
 		this.generateMakefile();
-		this.generateSystemContext();
-		this.generateSystemContainers();
-		this.generateSoftwareSystemsContainerComponents();
+		//this.generateSystemContext();
+		//this.generateSystemContainers();
+		//this.generateSoftwareSystemsContainerComponents();
 		this.generateContainerComponents();
 	}
 
@@ -79,6 +79,8 @@ class Graphvic2 : Generator {
 			foreach(const(string) conKey, const(Container) con;
 					ss.containers)
 			{
+				logf("\n\n\t>>>>%s<<<<\n", conKey);
+
 				this.currentTechnologie = con.technology;
 				Graph g = new Graph();
 				EntitySet names;
@@ -88,6 +90,8 @@ class Graphvic2 : Generator {
 				} else {
 					SubGraph conSG = this.addContainer!(SubGraph,Graph)
 						(g, con, names);
+					assert(conSG !is null);
+					names.insert(cast(Entity)con);
 
 					foreach(const(string) comKey, const(Component) com;
 						con.components)
@@ -133,7 +137,9 @@ class Graphvic2 : Generator {
 					fromEn !is null ? fromEn.name : "", 
 					toEn !is null ? toEn.name : ""
 				);
+			}
 
+			/+{
 				if(fromEn is null) {
 					fromEn = this.getAndComponentOfContainer(g, connection.from, con, names);
 					assert(fromEn !is null);
@@ -143,8 +149,9 @@ class Graphvic2 : Generator {
 					assert(toEn !is null);
 					logf("%s", toEn.name);
 				}
-			}
+			}+/
 		}
+		this.addEdges(g, names, uint.max);
 	}
 
 	void generateSoftwareSystemsContainerComponents() {
@@ -241,6 +248,7 @@ class Graphvic2 : Generator {
 	const(Entity) getAndAddTopLevel(Graph g, const(Entity) en, 
 			ref EntitySet names) 
 	{
+		logf("%s", en.name);
 		auto pathToRoot = en.pathToRoot();
 		assert(!pathToRoot.empty);
 
@@ -634,4 +642,13 @@ class Graphvic2 : Generator {
 
 		return app.data;
 	}
+}
+
+void printNamesIn(in ref EntitySet names) {
+	import std.stdio : writef, writeln;
+	log("names");
+	foreach(const(Entity) en; names) {
+		writef("%s ", en.name);
+	}
+	writeln();
 }
