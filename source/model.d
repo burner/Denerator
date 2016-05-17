@@ -86,12 +86,18 @@ abstract class Entity {
 			return this.parent.getRoot();
 		}
 	}
+
+	Entity dup(in Entity parent) const;
 }
 
 class Actor : Entity {
 	string type;
 	this(in string name, in Entity parent) {
 		super(name, parent);
+	}
+
+	override Entity dup(in Entity parent) const {
+		return new Actor(this.name, parent);
 	}
 }
 
@@ -109,6 +115,31 @@ class TheWorld : Entity {
 
 	this(in string name) {
 		super(name, null);
+	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new TheWorld(this.name);
+		foreach(const(string) name, const(Actor) act; this.actors) {
+			ret.actors[name] = convert!Actor(act.dup(ret));
+		}
+
+		foreach(const(string) name, const(SoftwareSystem) ss; this.softwareSystems) {
+			ret.softwareSystems[name] = convert!SoftwareSystem(ss.dup(ret));
+		}
+
+		foreach(const(string) name, const(HardwareSystem) hw; this.hardwareSystems) {
+			ret.hardwareSystems[name] = convert!HardwareSystem(hw.dup(ret));
+		}
+
+		foreach(const(string) name, const(Type) t; this.typeContainerMapping) {
+			ret.typeContainerMapping[name] = convert!Type(t.dup(ret));
+		}
+
+		foreach(const(string) name, const(Entity) c; this.connections) {
+			ret.connections[name] = convert!Entity(c.dup(ret));
+		}
+
+		return ret;
 	}
 
 	auto search(const(Entity) needle) inout {
@@ -185,6 +216,10 @@ class ConnectionImpl : Entity {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
+
+	override Entity dup(in Entity parent) const {
+		assert(false, "Do not call directly");
+	}
 }
 
 // Dependency are basically import
@@ -246,6 +281,10 @@ class HardwareSystem : Entity {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
+
+	override Entity dup(in Entity parent) const {
+		return new HardwareSystem(this.name, parent);
+	}
 }
 
 class SoftwareSystem : Entity {
@@ -277,6 +316,15 @@ class SoftwareSystem : Entity {
 		SearchResult dummy;
 		return dummy;
 	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new SoftwareSystem(this.name, parent);
+		foreach(const(string) name, const(Container) con; this.containers) {
+			ret.containers[name] = convert!Container(con.dup(ret));
+		}
+
+		return ret;
+	}
 }
 
 class Container : Entity {
@@ -286,6 +334,19 @@ class Container : Entity {
 	
 	this(in string name, in Entity parent) {
 		super(name, parent);
+	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new Container(this.name, parent);
+		foreach(const(string) name, const(Component) com; this.components) {
+			ret.components[name] = convert!Component(com.dup(ret));
+		}
+
+		foreach(const(string) name, const(Class) cls; this.classes) {
+			ret.classes[name] = convert!Class(cls.dup(ret));
+		}
+
+		return ret;
 	}
 
 	Component getOrNewComponent(in string name) {
@@ -318,6 +379,14 @@ class ProtectedEntity : Entity {
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
+	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new ProtectedEntity(this.name, parent);
+		foreach(const(string) key, const(string) value; this.protection) {
+			ret.protection[key] = value;
+		}
+		return ret;
 	}
 }
 
@@ -357,6 +426,23 @@ class Component : ProtectedEntity {
 		SearchResult dummy;
 		return dummy;
 	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new Component(this.name, parent);
+		foreach(const(string) key, const(string) value; this.protection) {
+			ret.protection[key] = value;
+		}
+
+		foreach(const(string) key, const(Class) value; this.classes) {
+			ret.classes[key] = convert!Class(value.dup(ret));
+		}
+
+		foreach(key, value; this.subComponents) {
+			ret.subComponents[key] = convert!Component(value.dup(ret));
+		}
+
+		return ret;
+	}
 }
 
 class Class : ProtectedEntity {
@@ -367,6 +453,23 @@ class Class : ProtectedEntity {
 	
 	this(in string name) {
 		super(name, null);
+	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new Class(this.name);
+		foreach(const(string) key, const(string) value; this.protection) {
+			ret.protection[key] = value;
+		}
+
+		foreach(const(string) key, const(Member) value; this.members) {
+			ret.members[key] = convert!Member(value.dup(ret));
+		}
+
+		foreach(const(string) key, const(string) value; this.containerType) {
+			ret.containerType[key] = value;
+		}
+
+		return ret;
 	}
 
 	S getOrNew(S)(in string name) {
@@ -411,6 +514,11 @@ class MemberModifier : Entity {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new MemberModifier(this.name, parent);
+		return ret;
+	}
 }
 
 class Type : Entity {
@@ -418,6 +526,15 @@ class Type : Entity {
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
+	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new Type(this.name, parent);
+		foreach(const(string) key, const(string) value; this.typeToLanguage) {
+			ret.typeToLanguage[key] = value;
+		}
+
+		return ret;
 	}
 }
 
@@ -433,6 +550,15 @@ class Member : ProtectedEntity {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new Member(this.name, parent);
+		foreach(const(string) key, const(string) value; this.protection) {
+			ret.protection[key] = value;
+		}
+
+		return ret;
+	}
 }
 
 class MemberVariable : Member {
@@ -445,6 +571,21 @@ class MemberVariable : Member {
 
 	void addLandSpecificAttribute(string lang, string value) {
 		this.langSpecificAttributes[lang] ~= value;
+	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new MemberVariable(this.name, parent);
+		foreach(const(string) key, const(string) value; this.protection) {
+			ret.protection[key] = value;
+		}
+
+		ret.type = convert!Type(this.type.dup(ret));
+
+		foreach(key, value; this.langSpecificAttributes) {
+			ret.langSpecificAttributes[key] = value.dup;
+		}
+
+		return ret;
 	}
 }
 
@@ -475,6 +616,25 @@ class MemberFunction : Member {
 				this.modifer, this)
 			);
 		}
+	}
+
+	override Entity dup(in Entity parent) const {
+		auto ret = new MemberFunction(this.name, parent);
+		foreach(const(string) key, const(string) value; this.protection) {
+			ret.protection[key] = value;
+		}
+
+		ret.returnType = convert!Type(this.returnType.dup(ret));
+
+		foreach(const(MemberVariable) value; this.parameter) {
+			ret.parameter.insert(convert!MemberVariable(value.dup(ret)));
+		}
+
+		foreach(const(MemberModifier) value; this.modifier) {
+			ret.modifier.insert(convert!MemberModifier(value.dup(ret)));
+		}
+
+		return ret;
 	}
 }
 
@@ -564,4 +724,14 @@ const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args) {
 	}
 
 	return null;
+}
+
+T convert(T,S)(S s) {
+	T ret = cast(T)s;
+	if(ret is null) {
+		return ret;
+	} else {
+		throw new Exception("Cannot convert " ~ S.stringof ~ " to " ~
+				T.stringof);
+	}
 }
