@@ -202,6 +202,10 @@ class TheWorld : Entity {
 			return null;
 		}
 	}
+
+	void drop(in ref StringHashSet toKeep) {
+
+	}
 }
 
 struct ConnectionCount {
