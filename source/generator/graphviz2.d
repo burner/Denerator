@@ -82,13 +82,14 @@ class Graphvic2 : Generator {
 				logf("\n\n\t>>>>%s<<<<\n", conKey);
 
 				this.currentTechnologie = con.technology;
-				Graph g = new Graph();
+				Graph gs = new Graph();
 				EntitySet names;
+				SubGraph g = this.addSystem!SubGraph(gs, ss);
 
 				if(con.components.empty && con.classes.empty) {
 					this.addContainer!Node(g, con, names);
 				} else {
-					SubGraph conSG = this.addContainer!(SubGraph,Graph)
+					SubGraph conSG = this.addContainer!(SubGraph,SubGraph)
 						(g, con, names);
 					assert(conSG !is null);
 					names.insert(cast(Entity)con);
@@ -110,19 +111,21 @@ class Graphvic2 : Generator {
 					}
 				}
 
-				this.addEdgesToContainer(g, con, names);
+				printNamesIn(names);
+			//	this.addEdgesToContainer(gs, con, names);
+				this.addEdgesToSSCC(gs, ss, names);
 
 				auto f = Generator.createFile([this.outputDir, 
 					  key ~ '_' ~ conKey ~ ".dot"]);
 				auto ltw = f.lockingTextWriter();
-				auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+				auto writer = scoped!(Writer!(typeof(ltw)))(gs, ltw);
 			}
 		}
 	}
 
 	void addEdgesToContainer(Graph g, in Container con, ref EntitySet names) {
 		assert(con !is null);
-		foreach(edgeKey; this.world.connections.keys()) {
+		/+foreach(edgeKey; this.world.connections.keys()) {
 			const(ConnectionImpl) connection = 
 				cast(const(ConnectionImpl))this.world.connections[edgeKey];
 
@@ -131,15 +134,13 @@ class Graphvic2 : Generator {
 			Rebindable!(const Entity) fromEn = connection.from.areYouIn(names);
 			Rebindable!(const Entity) toEn = connection.to.areYouIn(names);
 
-			if(fromEn !is null || toEn !is null) {
+			if(fromEn is null || toEn is null) {
 				logf("\n\t'%s' '%s' '%s'\n\t'%s' '%s'", connection.name,
 					connection.from.name, connection.to.name,
 					fromEn !is null ? fromEn.name : "", 
 					toEn !is null ? toEn.name : ""
 				);
-			}
 
-			/+{
 				if(fromEn is null) {
 					fromEn = this.getAndComponentOfContainer(g, connection.from, con, names);
 					assert(fromEn !is null);
@@ -149,8 +150,8 @@ class Graphvic2 : Generator {
 					assert(toEn !is null);
 					logf("%s", toEn.name);
 				}
-			}+/
-		}
+			}
+		}+/
 		this.addEdges(g, names, uint.max);
 	}
 
@@ -213,11 +214,15 @@ class Graphvic2 : Generator {
 
 				if(fromEn is null) {
 					fromEn = this.getAndAddTopLevel(g, con.from, names);
-					assert(fromEn !is null);
+					if(fromEn is null) {
+						return;
+					}
 					logf("%s", fromEn.name);
 				} else if(toEn is null) {
 					toEn = this.getAndAddTopLevel(g, con.to, names);
-					assert(toEn !is null);
+					if(toEn is null) {
+						return;
+					}
 					logf("%s", toEn.name);
 				}
 				//logf("'%s' '%s'", fromToRoot, toToRoot);
@@ -229,6 +234,7 @@ class Graphvic2 : Generator {
 	const(Entity) getAndComponentOfContainer(Graph g, const(Entity) en, 
 			const(Container) con, ref EntitySet names) 
 	{
+		log(en.name);
 		auto rslt = con.holdsEntity(en);
 		if(rslt.entity !is null) {
 			auto com = cast(const Component)(rslt.entity);
@@ -250,7 +256,10 @@ class Graphvic2 : Generator {
 	{
 		logf("%s", en.name);
 		auto pathToRoot = en.pathToRoot();
-		assert(!pathToRoot.empty);
+		if(pathToRoot.empty) {
+			log();
+			return null;
+		}
 
 		string top = splitter(pathToRoot, ".").array[0];
 		logf("top %s", top);
@@ -498,12 +507,17 @@ class Graphvic2 : Generator {
 			ConnectionImpl con = cast(ConnectionImpl)this.world.connections[key];
 			assert(con !is null);
 
-			const(Entity) from = con.from.areYouIn(names);
-			const(Entity) to = con.to.areYouIn(names);
+			EntitySet copyWithoutFromTo;
+			copyWithout(names, copyWithoutFromTo, con.from, con.to);
+			printNamesIn(copyWithoutFromTo);
+
+			const(Entity) from = con.from.areYouIn(copyWithoutFromTo);
+			const(Entity) to = con.to.areYouIn(copyWithoutFromTo);
 			if(from is null || to is null 
 					|| (from is to && con.from is con.to)) 
 			{
-				logf("\n\t%s %s", con.from.name, con.to.name);
+				logf("\n\t%s %s\n\t%s %s", con.from.name, con.to.name,
+					from is null, to is null);
 				continue;
 			}
 			logf("\n\t%s %s\n\t%s %s", con.from.name, con.to.name, 
@@ -523,7 +537,7 @@ class Graphvic2 : Generator {
 				continue;			
 			}
 
-			this.addEdge(g, con, names);
+			this.addEdge(g, con, copyWithoutFromTo);
 		}
 	}
 
@@ -608,6 +622,7 @@ class Graphvic2 : Generator {
 
 		Edge ret = g.getUnique!Edge(con.name, toRoot, fromRoot);
 		if(ret is null) {
+			log();
 			return new Edge("", "", "");
 		}
 		ret.label = format("<<table border=\"0\" cellborder=\"0\">\n%s</table>>",
@@ -651,4 +666,16 @@ void printNamesIn(in ref EntitySet names) {
 		writef("%s ", en.name);
 	}
 	writeln();
+}
+
+void copyWithout(in ref EntitySet o, ref EntitySet n, in Entity ex1, in Entity ex2) {
+	foreach(const Entity en; o) {
+		if(en == ex1 || en == ex2) {
+			continue;
+		} else {
+			Entity nen = cast(Entity)en;
+			n.insert(nen);
+		}
+	}
+
 }

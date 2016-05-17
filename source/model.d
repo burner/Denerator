@@ -389,6 +389,22 @@ class Class : ProtectedEntity {
 		}
 	}
 
+	override const(Entity) areYouIn(ref in EntityHashSet!(Entity) store) const {
+		if(store.contains(cast(Entity)(this))) {
+			return this;
+		} else if(this.parents.empty) {
+			return null;
+		} else {
+			foreach(it; this.parents) {
+				auto tmp = it.areYouIn(store);
+				if(tmp !is null) {
+					return tmp;
+				}
+			}
+
+			return null;
+		}
+	}
 }
 
 class MemberModifier : Entity {
