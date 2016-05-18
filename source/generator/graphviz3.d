@@ -1,5 +1,6 @@
-module graphviz3;
+module generator.graphviz3;
 
+import std.exception : enforce;
 import std.experimental.logger;
 
 import generator;
@@ -10,6 +11,9 @@ import graph;
 import writer;
 
 class Graphvic3 : Generator {
+	import std.typecons : scoped, Rebindable;
+	import std.format : format, formattedWrite;
+
 	const(string) outputDir;
 	string currentTechnologie;
 
@@ -21,6 +25,7 @@ class Graphvic3 : Generator {
 
 	override void generate() {
 		this.generateMakefile();
+		this.generateSystemContext();
 	}
 
 	void generateMakefile() {
@@ -39,9 +44,16 @@ class Graphvic3 : Generator {
 		Graph g = new Graph();
 		TheWorld copy = duplicateNodes(this.world);
 
+		StringHashSet empty;
+
+		foreach(const(string) key, SoftwareSystem ss; copy.softwareSystems) {
+			ss.drop(empty);
+		}
+
+		reAdjustEdges(this.world, copy);
+
 		auto f = Generator.createFile([this.outputDir, "systemcontext.dot"]);
 		auto ltw = f.lockingTextWriter();
 		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
 	}
-
 }

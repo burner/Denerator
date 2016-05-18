@@ -36,6 +36,20 @@ TheWorld duplicateNodes(in TheWorld old) {
 	return ret;
 }
 
+void reAdjustEdges(in TheWorld old, TheWorld ne) {
+	foreach(const(string) key, const(Entity) en; old.connections) {
+		const(ConnectionImpl) con = cast(ConnectionImpl)en;
+
+		string fPath = con.from.pathToRoot();
+		string tPath = con.to.pathToRoot();
+
+		auto fEn = ne.get(fPath);
+		auto tEn = ne.get(tPath);
+		logf("%s %s", fEn.name, tEn.name);
+	}
+
+}
+
 private {
 	void addClasses(SoftwareSystem ss, ref StringEntityMap!Class classes) {
 		void addClasses(Container con, ref StringEntityMap!Class classes) {

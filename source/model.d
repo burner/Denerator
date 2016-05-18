@@ -1,6 +1,6 @@
 module model;
 
-import std.array : empty, front, split, appender;
+import std.array : array, empty, front, split, appender;
 import std.format : format, formattedWrite;
 import std.stdio : writeln;
 import std.traits : BaseClassesTuple, functionAttributes, FunctionAttribute;
@@ -27,7 +27,7 @@ alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
 public alias StringHashSet = HashSet!(string, Mallocator, stringToHash);
 public alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
 
-abstract class Entity {
+class Entity {
 	immutable(string) name;
 	const(Entity) parent;
 	string description;
@@ -95,6 +95,10 @@ abstract class Entity {
 			return this.parent.getRoot();
 		}
 	}
+
+	Entity get(string[] path) {
+		return this;
+	}
 }
 
 class Actor : Entity {
@@ -144,6 +148,35 @@ class TheWorld : Entity {
 		}
 	}
 
+	override Entity get(string[] path) {
+		if(path.empty) {
+			return this;
+		} else {
+			immutable fr = path.front;
+			path = path[1 .. $];
+
+			foreach(const(string) name, Actor act; this.actors) {
+				if(name == fr) {
+					return act.get(path);
+				}
+			}
+
+			foreach(const(string) name, SoftwareSystem ss; this.softwareSystems) {
+				if(name == fr) {
+					return ss.get(path);
+				}
+			}
+
+			foreach(const(string) name, HardwareSystem hw; this.hardwareSystems) {
+				if(name == fr) {
+					return hw.get(path);
+				}
+			}
+
+			return this;
+		}
+	}
+
 	auto search(const(Entity) needle) inout {
 		assert(needle !is null);
 
@@ -175,13 +208,33 @@ class TheWorld : Entity {
 		);
 	}
 
-	T getOrNew(T,F,O)(in string name, F from, O to) 
-	{
+	T getOrNew(T,F,O)(in string name, F from, O to) {
 		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
 			name, this.connections, this
 		));
 		con.from = from;
 		con.to = to;
+		return con;
+	}
+
+	T getOrNew(T,F,O)(T toCopy, F from, O to) {
+		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
+			toCopy.name, this.connections, this
+		));
+		con.from = from;
+		con.to = to;
+		con.description = toCopy.description;
+		con.longDescription = toCopy.longDescription;
+
+		static if(is(T == Aggregation)) {
+			con.fromCnt = toCopy.fromCnt;
+			con.toCnt = toCopy.toCnt;
+			con.fromStore = toCopy.fromStore;
+			con.toStore = toCopy.toStore;
+		} else static if(is(T == Composition)) {
+			con.fromCnt = toCopy.fromCnt;
+			con.fromStore = toCopy.fromStore;
+		}
 		return con;
 	}
 
@@ -205,8 +258,31 @@ class TheWorld : Entity {
 		}
 	}
 
-	void drop(in ref StringHashSet toKeep) {
+	Entity get(string path) {
+		import std.algorithm.iteration : splitter;
+		string[] spath = splitter(path, ".").array;
+		return this.get(spath);
+	}
 
+	void drop(in ref StringHashSet toKeep) {
+		auto keys = this.softwareSystems.keys();
+		foreach(key; keys) {
+			if(key !in toKeep) {
+				this.softwareSystems.remove(key);
+			}
+		}
+		keys = this.actors.keys();
+		foreach(key; keys) {
+			if(key !in toKeep) {
+				this.actors.remove(key);
+			}
+		}
+		keys = this.hardwareSystems.keys();
+		foreach(key; keys) {
+			if(key !in toKeep) {
+				this.hardwareSystems.remove(key);
+			}
+		}
 	}
 }
 
@@ -325,6 +401,32 @@ class SoftwareSystem : Entity {
 		SearchResult dummy;
 		return dummy;
 	}
+
+	override Entity get(string[] path) {
+		if(path.empty) {
+			return this;
+		} else {
+			immutable fr = path.front;
+			path = path[1 .. $];
+
+			foreach(const(string) name, Container con; this.containers) {
+				if(name == fr) {
+					return con.get(path);
+				}
+			}
+
+			return this;
+		}
+	}
+
+	void drop(in ref StringHashSet toKeep) {
+		auto keys = this.containers.keys();
+		foreach(key; keys) {
+			if(key !in toKeep) {
+				this.containers.remove(key);
+			}
+		}
+	}
 }
 
 class Container : Entity {
@@ -371,6 +473,45 @@ class Container : Entity {
 		}
 		SearchResult dummy;
 		return dummy;
+	}
+
+	override Entity get(string[] path) {
+		if(path.empty) {
+			return this;
+		} else {
+			immutable fr = path.front;
+			path = path[1 .. $];
+
+			foreach(const(string) name, Component com; this.components) {
+				if(name == fr) {
+					return com.get(path);
+				}
+			}
+
+			foreach(const(string) name, Class cls; this.classes) {
+				if(name == fr) {
+					return cls.get(path);
+				}
+			}
+
+			return this;
+		}
+	}
+
+	void drop(in ref StringHashSet toKeep) {
+		auto keys = this.components.keys();
+		foreach(key; keys) {
+			if(key !in toKeep) {
+				this.components.remove(key);
+			}
+		}
+
+		keys = this.classes.keys();
+		foreach(key; keys) {
+			if(key !in toKeep) {
+				this.classes.remove(key);
+			}
+		}
 	}
 }
 
@@ -439,6 +580,45 @@ class Component : ProtectedEntity {
 		SearchResult dummy;
 		return dummy;
 	}
+
+	override Entity get(string[] path) {
+		if(path.empty) {
+			return this;
+		} else {
+			immutable fr = path.front;
+			path = path[1 .. $];
+
+			foreach(const(string) name, Component com; this.subComponents) {
+				if(name == fr) {
+					return com.get(path);
+				}
+			}
+
+			foreach(const(string) name, Class cls; this.classes) {
+				if(name == fr) {
+					return cls.get(path);
+				}
+			}
+
+			return this;
+		}
+	}
+
+	void drop(in ref StringHashSet toKeep) {
+		auto keys = this.subComponents.keys();
+		foreach(key; keys) {
+			if(key !in toKeep) {
+				this.subComponents.remove(key);
+			}
+		}
+
+		keys = this.classes.keys();
+		foreach(key; keys) {
+			if(key !in toKeep) {
+				this.classes.remove(key);
+			}
+		}
+	}
 }
 
 class Class : ProtectedEntity {
@@ -501,6 +681,23 @@ class Class : ProtectedEntity {
 			}
 
 			return null;
+		}
+	}
+
+	override Entity get(string[] path) {
+		if(path.empty) {
+			return this;
+		} else {
+			immutable fr = path.front;
+			path = path[1 .. $];
+
+			foreach(const(string) name, Member mem; this.members) {
+				if(name == fr) {
+					return mem.get(path);
+				}
+			}
+
+			return this;
 		}
 	}
 }

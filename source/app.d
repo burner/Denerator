@@ -35,8 +35,6 @@ void main() {
 	users.description = "This is a way to long description for something "
 		~ "that should be obvious.";
 
-	writeln(users.toString());
-
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
 	system.description = "The awesome system to develop.";
 	Container frontend = system.getOrNewContainer("Frontend");
