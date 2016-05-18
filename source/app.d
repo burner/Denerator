@@ -4,10 +4,12 @@ import model;
 import duplicator;
 import generator.graphviz;
 import generator.graphviz2;
+import generator.graphviz3;
 import generator.mysql;
 import std.stdio : writeln;
 import std.typecons;
 import std.experimental.logger;
+import containers.hashmap;
 
 class NoTimeLogger : Logger {
 	import std.stdio : writefln;
@@ -32,6 +34,8 @@ void main() {
 	Actor users = world.getOrNewActor("The Users");
 	users.description = "This is a way to long description for something "
 		~ "that should be obvious.";
+
+	writeln(users.toString());
 
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
 	system.description = "The awesome system to develop.";
@@ -138,6 +142,9 @@ void main() {
 
 	//Graphvic2 gv2 = new Graphvic2(world, "GraphvizOutput2");
 	//gv2.generate();
+
+	Graphvic3 gv3 = new Graphvic3(world, "GraphvizOutput3");
+	gv3.generate();
 
 	//MySQL mysql = new MySQL(world, "MySQL");
 	//mysql.generate(database);

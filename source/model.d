@@ -1,7 +1,9 @@
 module model;
 
-import std.array : empty, front, split;
-import std.traits : functionAttributes, FunctionAttribute;
+import std.array : empty, front, split, appender;
+import std.format : format, formattedWrite;
+import std.stdio : writeln;
+import std.traits : BaseClassesTuple, functionAttributes, FunctionAttribute;
 import std.experimental.allocator.mallocator : Mallocator;
 import std.exception : enforce;
 import containers.hashmap;
