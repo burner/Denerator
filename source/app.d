@@ -1,6 +1,7 @@
 import std.stdio : writeln;
 
 import model;
+import duplicator;
 import generator.graphviz;
 import generator.graphviz2;
 import generator.mysql;
@@ -130,7 +131,7 @@ void main() {
 		postalCode, address
 	);
 
-	auto copy = duplicate(world);
+	auto copy = duplicateNodes(world);
 
 	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
 	//gv.generate();

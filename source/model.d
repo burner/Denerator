@@ -3,6 +3,7 @@ module model;
 import std.array : empty, front, split;
 import std.traits : functionAttributes, FunctionAttribute;
 import std.experimental.allocator.mallocator : Mallocator;
+import std.experimental.logger;
 import std.exception : enforce;
 import containers.hashmap;
 import containers.hashset;
@@ -716,8 +717,4 @@ T convert(T,S)(S s) {
 		throw new Exception("Cannot convert " ~ S.stringof ~ " to " ~
 				T.stringof);
 	}
-}
-
-TheWorld duplicate(in TheWorld old) {
-	return new TheWorld(old);
 }
