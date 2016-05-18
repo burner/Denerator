@@ -336,6 +336,7 @@ class Container : Entity {
 
 	this(in Container old, in Entity parent) {
 		super(old, parent);
+		this.technology = old.technology;
 		foreach(const(string) name, const(Component) com; old.components) {
 			this.components[name] = new Component(com, this);
 		}
@@ -343,6 +344,8 @@ class Container : Entity {
 		foreach(const(string) name, const(Class) cls; old.classes) {
 			this.classes[name] = new Class(cls, this);
 		}
+
+		assert(!this.name.empty);
 	}
 
 	Component getOrNewComponent(in string name) {
@@ -403,6 +406,7 @@ class Component : ProtectedEntity {
 		foreach(string key, const(Component) value; old.subComponents) {
 			this.subComponents[key] = new Component(value, this);
 		}
+		assert(!this.name.empty);
 	}
 
 	Component getOrNewSubComponent(in string name) {
@@ -457,6 +461,8 @@ class Class : ProtectedEntity {
 		foreach(const(string) key, const(string) value; old.containerType) {
 			this.containerType[key] = value;
 		}
+
+		assert(!this.name.empty);
 	}
 
 	S getOrNew(S)(in string name) {

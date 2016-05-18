@@ -12,13 +12,6 @@ TheWorld duplicateNodes(in TheWorld old) {
 		addClasses(ss, classes);
 	}
 
-	foreach(const(string) key, Class cls; classes) {
-		while(!cls.parents.empty) {
-			cls.parents.remove(0);
-		}
-	}
-	log(classes.length);
-
 	foreach(const(string) key, SoftwareSystem ss; ret.softwareSystems) {
 		modClasses(ss, classes);
 	}
@@ -27,7 +20,16 @@ TheWorld duplicateNodes(in TheWorld old) {
 	ehs.insert(ret);
 
 	foreach(const(string) key, Class cls; classes) {
-		log(cls.name);
+		assert(cls.areYouIn(ehs) is ret, cls.name);
+	}
+
+	StringEntityMap!Class classes2;
+
+	foreach(const(string) key, SoftwareSystem ss; ret.softwareSystems) {
+		addClasses(ss, classes);
+	}
+
+	foreach(const(string) key, Class cls; classes2) {
 		assert(cls.areYouIn(ehs) is ret, cls.name);
 	}
 
@@ -66,6 +68,7 @@ private {
 	}
 
 	void modClasses(SoftwareSystem ss, ref StringEntityMap!Class classes) {
+		import std.algorithm.searching : canFind;
 		void modClasses(Container con, ref StringEntityMap!Class classes) {
 			void modClasses(Component com, ref StringEntityMap!Class classes) {
 				foreach(const(string) key, Component scom; com.subComponents) {
@@ -73,11 +76,11 @@ private {
 				}
 
 				foreach(const(string) key, Class cls; classes) {
-					logf("%s %s", com.name, key);
 					if(key in com.classes) {
-						log(key);
 						com.classes[key] = cls;
-						cls.parents.insert(com);
+						if(!canFind(cls.parents[], com)) {
+							cls.parents.insert(com);
+						}
 					}
 				}
 			}
@@ -87,11 +90,11 @@ private {
 			}
 
 			foreach(const(string) key, Class cls; classes) {
-				logf("%s %s", con.name, key);
 				if(key in con.classes) {
-					log(key);
 					con.classes[key] = cls;
-					cls.parents.insert(con);
+					if(!canFind(cls.parents[], con)) {
+						cls.parents.insert(con);
+					}
 				}
 			}
 		}
