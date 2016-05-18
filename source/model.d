@@ -3,7 +3,6 @@ module model;
 import std.array : empty, front, split;
 import std.traits : functionAttributes, FunctionAttribute;
 import std.experimental.allocator.mallocator : Mallocator;
-import std.experimental.logger;
 import std.exception : enforce;
 import containers.hashmap;
 import containers.hashset;
@@ -48,9 +47,9 @@ abstract class Entity {
 
 	this(in Entity old, in Entity parent) {
 		this.name = old.name;
+		this.parent = parent;
 		this.description = old.description;
 		this.longDescription = old.longDescription;
-		this.parent = parent;
 	}
 
 	string areYouIn(ref in StringHashSet store) const {
@@ -401,7 +400,7 @@ class Component : ProtectedEntity {
 			this.classes[key] = new Class(value, this);
 		}
 
-		foreach(key, value; old.subComponents) {
+		foreach(string key, const(Component) value; old.subComponents) {
 			this.subComponents[key] = new Component(value, this);
 		}
 	}
