@@ -45,6 +45,13 @@ abstract class Entity {
 		this.parent = parent;
 	}
 
+	this(in Entity old, in Entity parent) {
+		this.name = old.name;
+		this.description = old.description;
+		this.longDescription = old.longDescription;
+		this.parent = parent;
+	}
+
 	string areYouIn(ref in StringHashSet store) const {
 		if(this.name in store) {
 			return this.name;
@@ -86,8 +93,6 @@ abstract class Entity {
 			return this.parent.getRoot();
 		}
 	}
-
-	Entity dup(in Entity parent) const;
 }
 
 class Actor : Entity {
@@ -96,8 +101,9 @@ class Actor : Entity {
 		super(name, parent);
 	}
 
-	override Entity dup(in Entity parent) const {
-		return new Actor(this.name, parent);
+	this(in Actor old, in Entity parent) {
+		super(old, parent);
+		this.type = old.type;
 	}
 }
 
@@ -117,29 +123,23 @@ class TheWorld : Entity {
 		super(name, null);
 	}
 
-	override Entity dup(in Entity parent) const {
-		auto ret = new TheWorld(this.name);
-		foreach(const(string) name, const(Actor) act; this.actors) {
-			ret.actors[name] = convert!Actor(act.dup(ret));
+	this(in TheWorld old) {
+		super(old, null);
+		foreach(const(string) name, const(Actor) act; old.actors) {
+			this.actors[name] = new Actor(act, this);
 		}
 
-		foreach(const(string) name, const(SoftwareSystem) ss; this.softwareSystems) {
-			ret.softwareSystems[name] = convert!SoftwareSystem(ss.dup(ret));
+		foreach(const(string) name, const(SoftwareSystem) ss; old.softwareSystems) {
+			this.softwareSystems[name] = new SoftwareSystem(ss, this);
 		}
 
-		foreach(const(string) name, const(HardwareSystem) hw; this.hardwareSystems) {
-			ret.hardwareSystems[name] = convert!HardwareSystem(hw.dup(ret));
+		foreach(const(string) name, const(HardwareSystem) hw; old.hardwareSystems) {
+			this.hardwareSystems[name] = new HardwareSystem(hw, this);
 		}
 
-		foreach(const(string) name, const(Type) t; this.typeContainerMapping) {
-			ret.typeContainerMapping[name] = convert!Type(t.dup(ret));
+		foreach(const(string) name, const(Type) t; old.typeContainerMapping) {
+			this.typeContainerMapping[name] = new Type(t, this);
 		}
-
-		foreach(const(string) name, const(Entity) c; this.connections) {
-			ret.connections[name] = convert!Entity(c.dup(ret));
-		}
-
-		return ret;
 	}
 
 	auto search(const(Entity) needle) inout {
@@ -220,10 +220,6 @@ class ConnectionImpl : Entity {
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
-
-	override Entity dup(in Entity parent) const {
-		assert(false, "Do not call directly");
-	}
 }
 
 // Dependency are basically import
@@ -286,8 +282,8 @@ class HardwareSystem : Entity {
 		super(name, parent);
 	}
 
-	override Entity dup(in Entity parent) const {
-		return new HardwareSystem(this.name, parent);
+	this(in HardwareSystem old, in Entity parent) {
+		super(old, parent);
 	}
 }
 
@@ -296,6 +292,13 @@ class SoftwareSystem : Entity {
 	
 	this(in string name, in Entity parent) {
 		super(name, parent);
+	}
+
+	this(in SoftwareSystem old, in Entity parent) {
+		super(old, parent);
+		foreach(const(string) name, const(Container) con; old.containers) {
+			this.containers[name] = new Container(con, this);
+		}
 	}
 
 	Container getOrNewContainer(in string name) {
@@ -320,15 +323,6 @@ class SoftwareSystem : Entity {
 		SearchResult dummy;
 		return dummy;
 	}
-
-	override Entity dup(in Entity parent) const {
-		auto ret = new SoftwareSystem(this.name, parent);
-		foreach(const(string) name, const(Container) con; this.containers) {
-			ret.containers[name] = convert!Container(con.dup(ret));
-		}
-
-		return ret;
-	}
 }
 
 class Container : Entity {
@@ -340,17 +334,15 @@ class Container : Entity {
 		super(name, parent);
 	}
 
-	override Entity dup(in Entity parent) const {
-		auto ret = new Container(this.name, parent);
-		foreach(const(string) name, const(Component) com; this.components) {
-			ret.components[name] = convert!Component(com.dup(ret));
+	this(in Container old, in Entity parent) {
+		super(old, parent);
+		foreach(const(string) name, const(Component) com; old.components) {
+			this.components[name] = new Component(com, this);
 		}
 
-		foreach(const(string) name, const(Class) cls; this.classes) {
-			ret.classes[name] = convert!Class(cls.dup(ret));
+		foreach(const(string) name, const(Class) cls; old.classes) {
+			this.classes[name] = new Class(cls, this);
 		}
-
-		return ret;
 	}
 
 	Component getOrNewComponent(in string name) {
@@ -385,12 +377,11 @@ class ProtectedEntity : Entity {
 		super(name, parent);
 	}
 
-	override Entity dup(in Entity parent) const {
-		auto ret = new ProtectedEntity(this.name, parent);
-		foreach(const(string) key, const(string) value; this.protection) {
-			ret.protection[key] = value;
+	this(in ProtectedEntity old, in Entity parent) {
+		super(old, parent);
+		foreach(const(string) key, const(string) value; old.protection) {
+			this.protection[key] = value;
 		}
-		return ret;
 	}
 }
 
@@ -400,6 +391,18 @@ class Component : ProtectedEntity {
 	
 	this(in string name, in Entity parent) {
 		super(name, parent);
+	}
+
+	this(in Component old, in Entity parent) {
+		super(old, parent);
+
+		foreach(const(string) key, const(Class) value; old.classes) {
+			this.classes[key] = new Class(value, this);
+		}
+
+		foreach(key, value; old.subComponents) {
+			this.subComponents[key] = new Component(value, this);
+		}
 	}
 
 	Component getOrNewSubComponent(in string name) {
@@ -430,50 +433,30 @@ class Component : ProtectedEntity {
 		SearchResult dummy;
 		return dummy;
 	}
-
-	override Entity dup(in Entity parent) const {
-		auto ret = new Component(this.name, parent);
-		foreach(const(string) key, const(string) value; this.protection) {
-			ret.protection[key] = value;
-		}
-
-		foreach(const(string) key, const(Class) value; this.classes) {
-			ret.classes[key] = convert!Class(value.dup(ret));
-		}
-
-		foreach(key, value; this.subComponents) {
-			ret.subComponents[key] = convert!Component(value.dup(ret));
-		}
-
-		return ret;
-	}
 }
 
 class Class : ProtectedEntity {
 	StringEntityMap!(Member) members;
 	StringEntityMap!(string) containerType;
 
-	DynamicArray!Entity parents;
+	DynamicArray!(Entity) parents;
 	
 	this(in string name) {
 		super(name, null);
 	}
 
-	override Entity dup(in Entity parent) const {
-		auto ret = new Class(this.name);
-		foreach(const(string) key, const(string) value; this.protection) {
-			ret.protection[key] = value;
+	this(in Class old, in Entity parent) {
+		super(old, null);	// TODO we need to fix up the parents in a second
+		// pass after we have copied TheWorld
+		this.parents.insert(cast(Entity)parent);
+
+		foreach(const(string) key, const(Member) value; old.members) {
+			this.members[key] = new Member(value, this);
 		}
 
-		foreach(const(string) key, const(Member) value; this.members) {
-			ret.members[key] = convert!Member(value.dup(ret));
+		foreach(const(string) key, const(string) value; old.containerType) {
+			this.containerType[key] = value;
 		}
-
-		foreach(const(string) key, const(string) value; this.containerType) {
-			ret.containerType[key] = value;
-		}
-
-		return ret;
 	}
 
 	S getOrNew(S)(in string name) {
@@ -519,9 +502,8 @@ class MemberModifier : Entity {
 		super(name, parent);
 	}
 
-	override Entity dup(in Entity parent) const {
-		auto ret = new MemberModifier(this.name, parent);
-		return ret;
+	this(in MemberModifier old, in Entity parent) {
+		super(old, parent);
 	}
 }
 
@@ -532,13 +514,12 @@ class Type : Entity {
 		super(name, parent);
 	}
 
-	override Entity dup(in Entity parent) const {
-		auto ret = new Type(this.name, parent);
-		foreach(const(string) key, const(string) value; this.typeToLanguage) {
-			ret.typeToLanguage[key] = value;
-		}
+	this(in Type old, in Entity parent) {
+		super(old, parent);
 
-		return ret;
+		foreach(const(string) key, const(string) value; old.typeToLanguage) {
+			this.typeToLanguage[key] = value;
+		}
 	}
 }
 
@@ -555,13 +536,12 @@ class Member : ProtectedEntity {
 		super(name, parent);
 	}
 
-	override Entity dup(in Entity parent) const {
-		auto ret = new Member(this.name, parent);
-		foreach(const(string) key, const(string) value; this.protection) {
-			ret.protection[key] = value;
-		}
+	this(in Member old, in Entity parent) {
+		super(old, parent);
 
-		return ret;
+		foreach(const(string) key, const(string) value; old.protection) {
+			this.protection[key] = value;
+		}
 	}
 }
 
@@ -573,23 +553,22 @@ class MemberVariable : Member {
 		super(name, parent);
 	}
 
-	void addLandSpecificAttribute(string lang, string value) {
-		this.langSpecificAttributes[lang] ~= value;
+	this(in MemberVariable old, in Entity parent) {
+		super(old, parent);
+
+		foreach(const(string) key, const(string) value; old.protection) {
+			this.protection[key] = value;
+		}
+
+		this.type = new Type(old.type, this);
+
+		foreach(key, value; old.langSpecificAttributes) {
+			this.langSpecificAttributes[key] = value.dup;
+		}
 	}
 
-	override Entity dup(in Entity parent) const {
-		auto ret = new MemberVariable(this.name, parent);
-		foreach(const(string) key, const(string) value; this.protection) {
-			ret.protection[key] = value;
-		}
-
-		ret.type = convert!Type(this.type.dup(ret));
-
-		foreach(key, value; this.langSpecificAttributes) {
-			ret.langSpecificAttributes[key] = value.dup;
-		}
-
-		return ret;
+	void addLandSpecificAttribute(string lang, string value) {
+		this.langSpecificAttributes[lang] ~= value;
 	}
 }
 
@@ -610,6 +589,24 @@ class MemberFunction : Member {
 		super(name, parent);
 	}
 
+	this(in MemberFunction old, in Entity parent) {
+		super(old, parent);
+
+		foreach(const(string) key, const(string) value; old.protection) {
+			this.protection[key] = value;
+		}
+
+		this.returnType = new Type(old.returnType, this);
+
+		foreach(const(MemberVariable) value; old.parameter) {
+			this.parameter.insert(new MemberVariable(value, this));
+		}
+
+		foreach(const(MemberModifier) value; old.modifier) {
+			this.modifier.insert(new MemberModifier(value, this));
+		}
+	}
+
 	T getOrNew(T)(in string name) {
 		static if(is(T == MemberVariable)) {
 			return enforce(getOrNewEntityImpl!MemberVariable(name,
@@ -620,25 +617,6 @@ class MemberFunction : Member {
 				this.modifer, this)
 			);
 		}
-	}
-
-	override Entity dup(in Entity parent) const {
-		auto ret = new MemberFunction(this.name, parent);
-		foreach(const(string) key, const(string) value; this.protection) {
-			ret.protection[key] = value;
-		}
-
-		ret.returnType = convert!Type(this.returnType.dup(ret));
-
-		foreach(const(MemberVariable) value; this.parameter) {
-			ret.parameter.insert(convert!MemberVariable(value.dup(ret)));
-		}
-
-		foreach(const(MemberModifier) value; this.modifier) {
-			ret.modifier.insert(convert!MemberModifier(value.dup(ret)));
-		}
-
-		return ret;
 	}
 }
 
@@ -738,4 +716,8 @@ T convert(T,S)(S s) {
 		throw new Exception("Cannot convert " ~ S.stringof ~ " to " ~
 				T.stringof);
 	}
+}
+
+TheWorld duplicate(in TheWorld old) {
+	return new TheWorld(old);
 }

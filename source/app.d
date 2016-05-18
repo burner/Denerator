@@ -130,11 +130,13 @@ void main() {
 		postalCode, address
 	);
 
+	auto copy = duplicate(world);
+
 	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
 	//gv.generate();
 
-	Graphvic2 gv2 = new Graphvic2(world, "GraphvizOutput2");
-	gv2.generate();
+	//Graphvic2 gv2 = new Graphvic2(world, "GraphvizOutput2");
+	//gv2.generate();
 
 	//MySQL mysql = new MySQL(world, "MySQL");
 	//mysql.generate(database);
