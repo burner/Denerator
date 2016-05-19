@@ -45,7 +45,34 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 
 		auto fEn = ne.get(fPath);
 		auto tEn = ne.get(tPath);
-		logf("%s %s", fEn.name, tEn.name);
+		assert(fEn !is null);
+		assert(tEn !is null);
+		logf("\n\t%s %s\n\t%s %s", con.from.name, con.to.name,
+			fEn.name, tEn.name
+		);
+
+		if(fEn is tEn) {
+			logf("%s %s %s", con.name, fEn.name, tEn.name);
+			continue;
+		}
+
+		if(auto c = cast(Realization)(con)) {
+			ne.getOrNew!Realization(c, fEn, tEn);
+		} else if(auto c = cast(Generalization)(con)) {
+			ne.getOrNew!Generalization(c, fEn, tEn);
+		} else if(auto c = cast(Composition)(con)) {
+			ne.getOrNew!Composition(c, fEn, tEn);
+		} else if(auto c = cast(Aggregation)(con)) {
+			ne.getOrNew!Aggregation(c, fEn, tEn);
+		} else if(auto c = cast(Connection)(con)) {
+			ne.getOrNew!Connection(c, fEn, tEn);
+		} else if(auto c = cast(Dependency)(con)) {
+			ne.getOrNew!Dependency(c, fEn, tEn);
+		} else if(auto c = cast(ConnectionImpl)(con)) {
+			ne.getOrNew!ConnectionImpl(c, fEn, tEn);
+		} else {
+			assert(false);
+		}
 	}
 
 }
