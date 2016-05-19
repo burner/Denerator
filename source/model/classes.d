@@ -1,10 +1,14 @@
 module model.classes;
 
+import std.exception : enforce;
+
 import containers.dynamicarray;
 
-import model.entity : ProtectedEntity;
+import model.entity : getOrNewEntityImpl, Entity, ProtectedEntity;
+import model.type : Type;
 
 class Class : ProtectedEntity {
+	import std.array : empty, front;
 	import model.entity : Entity, EntityHashSet, StringEntityMap, StringHashSet;
 	import model.type : Type;
 

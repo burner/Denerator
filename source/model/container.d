@@ -1,11 +1,12 @@
 module model.container;
 
-import model.entity : Entity;
+import model.entity;
 
 class Container : Entity {
-	import model.entity : StringEntityMap;
+	import std.array : empty, front;
 	import model.classes;
 	import model.component;
+	import model.world : SearchResult;
 
 	string technology;
 	StringEntityMap!(Component) components;
@@ -30,6 +31,7 @@ class Container : Entity {
 	}
 
 	Component getOrNewComponent(in string name) {
+		import std.exception : enforce;
 		return enforce(getOrNewEntityImpl!Component(name, this.components,
 			this)
 		);

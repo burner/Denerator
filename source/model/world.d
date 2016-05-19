@@ -1,6 +1,7 @@
 module model.world;
 
-import model.entity : Entity;
+import model.entity : getOrNewEntityImpl, holdsEntityImpl, Entity, EntityHashSet, 
+	   StringEntityMap, StringHashSet;
 
 struct SearchResult {
 	const(Entity) entity;
@@ -8,12 +9,15 @@ struct SearchResult {
 }
 
 class TheWorld : Entity {
-	import model.entity : StringEntityMap;
+	import std.array : empty, front;
+	import std.exception : enforce;
 	import model.container : Container;
 	import model.world : SearchResult;
 	import model.actor : Actor;
 	import model.softwaresystem : SoftwareSystem;
 	import model.hardwaresystem : HardwareSystem;
+	import model.type : Type;
+	import model.connections;
 
 	StringEntityMap!(Actor) actors;
 	StringEntityMap!(SoftwareSystem) softwareSystems;
@@ -155,6 +159,7 @@ class TheWorld : Entity {
 	}
 
 	Entity get(string path) {
+		import std.array : array;
 		import std.algorithm.iteration : splitter;
 		string[] spath = splitter(path, ".").array;
 		return this.get(spath);

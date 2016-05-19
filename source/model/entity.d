@@ -1,7 +1,10 @@
 module model.entity;
 
+import std.experimental.allocator.mallocator : Mallocator;
+
 import containers.hashmap;
 import containers.hashset;
+import containers.dynamicarray;
 
 hash_t stringToHash(string str) @safe pure nothrow @nogc {
 	hash_t hash = 5381;
@@ -16,7 +19,7 @@ hash_t EntityToHash(in Entity e) pure @safe nothrow @nogc {
 	return stringToHash(e.name);
 }
 
-alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
+public alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
 public alias StringHashSet = HashSet!(string, Mallocator, stringToHash);
 public alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
 
@@ -68,6 +71,7 @@ class Entity {
 	}
 
 	final string pathToRoot() const {
+		import std.array : empty;
 		if(this.parent is null) {
 			return "";
 		} else {
@@ -110,7 +114,7 @@ class ProtectedEntity : Entity {
 	}
 }
 
-private Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
+Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
 	if(!uri.empty && uri.front in map) {
 		Entity sub = map[uri.front];
 		if(uri.length == 1) {
@@ -123,7 +127,7 @@ private Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
 	return null;
 }
 
-private S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map,
+S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map,
 		in Entity parent) 
 {
 	if(name in map) {
@@ -135,7 +139,7 @@ private S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map
 	}
 }
 
-private T getOrNewEntityImpl(T)(in string name, ref DynamicArray!(T) arr,
+T getOrNewEntityImpl(T)(in string name, ref DynamicArray!(T) arr,
 		in Entity parent) 
 {
 	foreach(it; arr) {
@@ -149,3 +153,14 @@ private T getOrNewEntityImpl(T)(in string name, ref DynamicArray!(T) arr,
 	return ne;
 }
 
+const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args) {
+	foreach(ref arg; args) {
+		foreach(const(string) key, const(Entity) entity; arg) {
+			if(needle is entity) {
+				return entity;
+			}
+		}
+	}
+
+	return null;
+}

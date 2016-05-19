@@ -14,6 +14,7 @@ public import model.connections;
 public import model.container;
 public import model.entity;
 public import model.softwaresystem;
+public import model.hardwaresystem;
 public import model.type;
 public import model.world;
 
@@ -25,27 +26,4 @@ T convert(T,S)(S s) {
 		throw new Exception("Cannot convert " ~ S.stringof ~ " to " ~
 				T.stringof);
 	}
-}
-
-const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg) {
-	foreach(key; arg.keys()) {
-		auto entity = arg[key];
-		if(needle is entity) {
-			return entity;
-		}
-	}
-
-	return null;
-}
-
-const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args) {
-	foreach(ref arg; args) {
-		foreach(const(string) key, const(Entity) entity; arg) {
-			if(needle is entity) {
-				return entity;
-			}
-		}
-	}
-
-	return null;
 }

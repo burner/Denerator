@@ -1,9 +1,21 @@
 module model.softwaresystem;
 
-import model.entity : Entity;
+//import model.entity : Entity;
+import model.entity;
+
+private const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg) {
+	foreach(key; arg.keys()) {
+		auto entity = arg[key];
+		if(needle is entity) {
+			return entity;
+		}
+	}
+
+	return null;
+}
 
 class SoftwareSystem : Entity {
-	import model.entity : StringEntityMap;
+	import std.array : empty, front;
 	import model.container : Container;
 	import model.world : SearchResult;
 
@@ -21,6 +33,7 @@ class SoftwareSystem : Entity {
 	}
 
 	Container getOrNewContainer(in string name) {
+		import std.exception : enforce;
 		return enforce(getOrNewEntityImpl!Container(name, this.containers,
 			this)
 		);

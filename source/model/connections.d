@@ -1,5 +1,8 @@
 module model.connections;
 
+import model.entity : Entity;
+import model.classes : MemberVariable;
+
 struct ConnectionCount {
 	long low;
 	long high;
