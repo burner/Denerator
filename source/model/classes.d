@@ -3,9 +3,11 @@ module model.classes;
 import containers.dynamicarray;
 
 import model.entity : ProtectedEntity;
-import model.type : Type;
 
 class Class : ProtectedEntity {
+	import model.entity : Entity, EntityHashSet, StringEntityMap, StringHashSet;
+	import model.type : Type;
+
 	StringEntityMap!(Member) members;
 	StringEntityMap!(string) containerType;
 

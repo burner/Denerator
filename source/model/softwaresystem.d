@@ -1,9 +1,12 @@
 module model.softwaresystem;
 
-import model.entity : Entity, StringEntityMap;
-import model.container : Container;
+import model.entity : Entity;
 
 class SoftwareSystem : Entity {
+	import model.entity : StringEntityMap;
+	import model.container : Container;
+	import model.world : SearchResult;
+
 	StringEntityMap!(Container) containers;
 	
 	this(in string name, in Entity parent) {

@@ -1,8 +1,6 @@
 module model.world;
 
-import model.entity : Entity, StringEntityMap;
-import model.actor : Actor;
-import model.softwaresystem : SoftwareSystem;
+import model.entity : Entity;
 
 struct SearchResult {
 	const(Entity) entity;
@@ -10,6 +8,13 @@ struct SearchResult {
 }
 
 class TheWorld : Entity {
+	import model.entity : StringEntityMap;
+	import model.container : Container;
+	import model.world : SearchResult;
+	import model.actor : Actor;
+	import model.softwaresystem : SoftwareSystem;
+	import model.hardwaresystem : HardwareSystem;
+
 	StringEntityMap!(Actor) actors;
 	StringEntityMap!(SoftwareSystem) softwareSystems;
 	StringEntityMap!(HardwareSystem) hardwareSystems;

@@ -1,6 +1,12 @@
 module model.container;
 
+import model.entity : Entity;
+
 class Container : Entity {
+	import model.entity : StringEntityMap;
+	import model.classes;
+	import model.component;
+
 	string technology;
 	StringEntityMap!(Component) components;
 	StringEntityMap!(Class) classes;

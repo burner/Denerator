@@ -3,6 +3,8 @@ module model.type;
 import model.entity : Entity;
 
 class Type : Entity {
+	import model.entity : StringEntityMap;
+
 	StringEntityMap!(string) typeToLanguage;	
 
 	this(in string name, in Entity parent) {
@@ -23,5 +25,6 @@ class Type : Entity {
 For instance, a D string may becomes a LONGTEXT in MySQL
 */
 class TypeMapping {
+	import model.entity : StringEntityMap;
 	StringEntityMap!(Type) equivalencies;
 }

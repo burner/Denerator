@@ -68,13 +68,3 @@ class Realization : ConnectionImpl {
 		super(name, parent);
 	}
 }
-
-class HardwareSystem : Entity {
-	this(in string name, in Entity parent) {
-		super(name, parent);
-	}
-
-	this(in HardwareSystem old, in Entity parent) {
-		super(old, parent);
-	}
-}
