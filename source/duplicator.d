@@ -52,9 +52,10 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 		);
 
 		if(fEn is tEn) {
-			logf("%s %s %s", con.name, fEn.name, tEn.name);
 			continue;
 		}
+
+		logf("%s %s %s", con.name, fEn.name, tEn.name);
 
 		if(auto c = cast(Realization)(con)) {
 			ne.getOrNew!Realization(c, fEn, tEn);
