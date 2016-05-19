@@ -2,6 +2,7 @@ module model.component;
 
 import model.entity : Entity, ProtectedEntity, StringEntityMap;
 import model.classes;
+import model.world : SearchResult;
 
 class Component : ProtectedEntity {
 	StringEntityMap!(Class) classes;

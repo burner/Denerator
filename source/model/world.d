@@ -1,5 +1,9 @@
 module model.world;
 
+import model.entity : Entity, StringEntityMap;
+import model.actor : Actor;
+import model.softwaresystem : SoftwareSystem;
+
 struct SearchResult {
 	const(Entity) entity;
 	string[] path;

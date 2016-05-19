@@ -1,5 +1,8 @@
 module model.softwaresystem;
 
+import model.entity : Entity, StringEntityMap;
+import model.container : Container;
+
 class SoftwareSystem : Entity {
 	StringEntityMap!(Container) containers;
 	
