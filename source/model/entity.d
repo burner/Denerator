@@ -1,5 +1,8 @@
 module model.entity;
 
+import containers.hashmap;
+import containers.hashset;
+
 hash_t stringToHash(string str) @safe pure nothrow @nogc {
 	hash_t hash = 5381;
 	foreach(it; str) {

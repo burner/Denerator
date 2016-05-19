@@ -1,5 +1,8 @@
 module model.component;
 
+import model.entity : Entity, ProtectedEntity, StringEntityMap;
+import model.classes;
+
 class Component : ProtectedEntity {
 	StringEntityMap!(Class) classes;
 	Component[string] subComponents;

@@ -6,12 +6,9 @@ import std.stdio : writeln;
 import std.traits : BaseClassesTuple, functionAttributes, FunctionAttribute;
 import std.experimental.allocator.mallocator : Mallocator;
 import std.exception : enforce;
-import containers.hashmap;
-import containers.hashset;
-import containers.dynamicarray;
 
 public import model.actor;
-public import model.class;
+public import model.classes;
 public import model.component;
 public import model.connections;
 public import model.container;

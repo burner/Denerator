@@ -1,4 +1,9 @@
-module model.class;
+module model.classes;
+
+import containers.dynamicarray;
+
+import model.entity : ProtectedEntity;
+import model.type : Type;
 
 class Class : ProtectedEntity {
 	StringEntityMap!(Member) members;

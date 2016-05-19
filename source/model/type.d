@@ -1,4 +1,6 @@
-module source.type;
+module model.type;
+
+import model.entity : Entity;
 
 class Type : Entity {
 	StringEntityMap!(string) typeToLanguage;	
