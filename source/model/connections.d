@@ -71,3 +71,21 @@ class Realization : ConnectionImpl {
 		super(name, parent);
 	}
 }
+
+struct ConnectedPath {
+	string from;
+	string to;
+}
+
+/* The idea of this function is to find a path from "from" and a path from
+"to" that equal in the first three level (World.SoftwareSystem.Container).
+ConnectedPaths where from and to are not empty are connected Classes inside a
+container or component. This is important as Classes can be part of multiple
+containers or components and we need to draw the edges between them in all
+containers and components.
+*/
+ConnectedPath[] connectPaths(string[] from, string[] to) {
+	ConnectedPath[] ret;
+
+	return ret;
+}

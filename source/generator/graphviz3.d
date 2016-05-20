@@ -88,6 +88,11 @@ class Graphvic3 : Generator {
 		{
 			generate(value, g);
 		}
+
+		foreach(const(string) key, const(Entity) value; world.connections) {
+			ConnectionImpl con = cast(ConnectionImpl)value;
+			assert(con !is null);
+		}
 	}
 
 	void generate(G)(in Actor act, G g) {

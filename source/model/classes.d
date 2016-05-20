@@ -90,6 +90,15 @@ class Class : ProtectedEntity {
 			return this;
 		}
 	}
+
+	string[] pathsToRoot() const {
+		string[] ret;
+		foreach(const(Entity) par; this.parents[]) {
+			ret ~= (par.pathToRoot() ~ "." ~ this.name);
+		}
+
+		return ret;
+	}
 }
 
 class MemberModifier : Entity {
