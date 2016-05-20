@@ -85,7 +85,29 @@ containers or components and we need to draw the edges between them in all
 containers and components.
 */
 ConnectedPath[] connectPaths(string[] from, string[] to) {
+	import std.algorithm.iteration : splitter;
+	import std.algorithm.comparison : equal;
+	import std.array : array;
 	ConnectedPath[] ret;
+	outer: foreach(string fit; from) {
+		string[] fsp = fit.splitter(".").array;
+		if(fsp.length < 2) {
+			continue;
+		}
+		auto fsps = fsp[0 .. 3];
+		foreach(string tit; to) {
+			string[] tsp = tit.splitter(".").array;
+			if(tsp.length < 2) {
+				continue;
+			}
+			auto tsps = tsp[0 .. 3];
+
+			if(fsps.equal(tsps)) {
+				ret ~= ConnectedPath(fit, tit);
+				continue outer;
+			}
+		}
+	}
 
 	return ret;
 }

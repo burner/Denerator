@@ -92,6 +92,18 @@ class Graphvic3 : Generator {
 		foreach(const(string) key, const(Entity) value; world.connections) {
 			ConnectionImpl con = cast(ConnectionImpl)value;
 			assert(con !is null);
+			logf("%s %s", con.from.name, con.to.name);
+			generate(con, g);
+		}
+	}
+
+	void generate(in ConnectionImpl con, Graph g) {
+		// class to class is a special case because these edges might be
+		// required to be placed in multible containers or components
+		if((cast(Class)con.from) !is null && (cast(Class)con.from) !is null) {
+
+		} else {
+
 		}
 	}
 

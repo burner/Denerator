@@ -51,6 +51,7 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 			fEn.name, tEn.name
 		);
 
+		// no selfconnecting edges
 		if(fEn is tEn) {
 			continue;
 		}
