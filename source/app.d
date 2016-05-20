@@ -93,6 +93,7 @@ void main() {
 
 	user.containerType["D"] = "struct";
 	user.containerType["class"] = "struct";
+	user.containerType["MySQL"] = "Table";
 
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
 	userId.type = integer;
@@ -107,6 +108,8 @@ void main() {
 	Class address = getOrNewClass("Address", 
 		frontendUserCtrl, serverUserCtrl, database
 	);
+	address.containerType["MySQL"] = "Table";
+
 	MemberFunction func = address.getOrNew!MemberFunction("func");
 	func.returnType = integer;
 
@@ -122,6 +125,7 @@ void main() {
 	);
 
 	Class postalCode = getOrNewClass("PostalCode", database);
+	postalCode.containerType["MySQL"] = "Table";
 	MemberVariable pcID = postalCode.getOrNew!MemberVariable("id");
 	pcID.type = integer;
 	pcID.addLandSpecificAttribute("MySQL", "PRIMARY KEY");
