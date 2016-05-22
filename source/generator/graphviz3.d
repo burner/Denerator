@@ -103,8 +103,65 @@ class Graphvic3 : Generator {
 		if((cast(Class)con.from) !is null && (cast(Class)con.from) !is null) {
 
 		} else {
+			auto fromRoot = con.from.pathToRoot();	
+			auto toRoot = con.to.pathToRoot();	
 
+			logf("%s\n\t%s\n\t%s", con.name, fromRoot, toRoot);
+			Edge edge = g.getUnique!Edge(con.name, fromRoot, toRoot);
+			if(edge is null) {
+				logf("%s", con.name);
+				return;
+			}
 		}
+	}
+
+	void generate(in ConnectionImpl con, Edge e) {
+		e.label = format(
+			"<<table border=\"0\" cellborder=\"0\">\n%s</table>>",
+			buildLabelFromDescription(con)
+		);
+		if(auto c = cast(const Dependency)con) {
+			generate(con, e);
+		} else if(auto c = cast(const Connection)con) {
+			generate(con, e);
+		} else if(auto c = cast(const Aggregation)con) {
+			generate(con, e);
+		} else if(auto c = cast(const Composition)con) {
+			generate(con, e);
+		} else if(auto c = cast(const Generalization)con) {
+			generate(con, e);
+		} else if(auto c = cast(const Realization)con) {
+			generate(con, e);
+		} else {
+			assert(false, con.name);
+		}
+	}
+
+	void generate(in Dependency dep, Edge e) {
+		e.edgeStyle = "dashed";
+		e.arrowStyleTo = "vee";
+	}
+
+	void generate(in Connection con, Edge e) {
+	}
+
+	void generate(in Aggregation con, Edge e) {
+		e.arrowStyleTo = "odiamond";
+		e.labelFrom = generate(con.fromCnt);
+		e.labelTo = generate(con.toCnt);
+	}
+
+	void generate(in Composition con, Edge e) {
+		e.arrowStyleTo = "diamond";
+		e.labelFrom = generate(con.fromCnt);
+	}
+
+	void generate(in Generalization con, Edge e) {
+		e.arrowStyleTo = "empty";
+	}
+
+	void generate(in Realization con, Edge e) {
+		e.arrowStyleTo = "empty";
 	}
 
 	void generate(G)(in Actor act, G g) {
@@ -175,6 +232,33 @@ class Graphvic3 : Generator {
 				generate(value, sg);
 			}		
 		}
+	}
+
+	string generate(ref in ConnectionCount cc) {
+		import std.array : appender;
+
+		if(cc.low == -1 && cc.high == -1) {
+			return "";
+		}
+
+		auto app = appender!string();
+		if(cc.low == -2) {
+			app.put("*");
+		} else if(cc.low <= 0) {
+			formattedWrite(app, "%s", cc.low);
+		}
+
+		if(!app.data.empty) {
+			app.put("..");
+		}
+
+		if(cc.high == -2) {
+			app.put("*");
+		} else if(cc.high <= 0) {
+			formattedWrite(app, "%s", cc.high);
+		}
+
+		return app.data;
 	}
 
 	void generate(G)(in Class cls, G g) {
@@ -255,7 +339,6 @@ class Graphvic3 : Generator {
 	T make(T,G)(in Entity en, G g, in string[] additional) {
 		auto tmp = additional.map!(a => format("<tr><td>%s</td></tr>", a))
 			.joiner("\n").to!(char[])().idup;
-		logf("%s %s", additional, tmp);
 		T n = g.get!T(en.name);
 		n.shape = "box";
 		n.label = `<<table border="0" cellborder="0">
