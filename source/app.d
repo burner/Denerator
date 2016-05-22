@@ -98,8 +98,8 @@ void main() {
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
 	userId.type = integer;
 	userId.protection["D"] = "private";
-	userId.addLandSpecificAttribute("MySQL", "PRIMARY KEY");
-	userId.addLandSpecificAttribute("MySQL", "AUTO INCREMENT");
+	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
+	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
 	auto userFirstname = user.getOrNew!MemberVariable("firstname");
 	userFirstname.type = str;
 	auto userLastname = user.getOrNew!MemberVariable("lastname");
@@ -118,7 +118,7 @@ void main() {
 
 	MemberVariable addressId = address.getOrNew!MemberVariable("id");
 	addressId.type = integer;
-	addressId.addLandSpecificAttribute("MySQL", "PRIMARY KEY");
+	addressId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 
 	Aggregation userAddress = world.getOrNew!Aggregation("addressUser",
 		address, user
@@ -128,8 +128,8 @@ void main() {
 	postalCode.containerType["MySQL"] = "Table";
 	MemberVariable pcID = postalCode.getOrNew!MemberVariable("id");
 	pcID.type = integer;
-	pcID.addLandSpecificAttribute("MySQL", "PRIMARY KEY");
-	pcID.addLandSpecificAttribute("MySQL", "AUTO INCREMENT");
+	pcID.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
+	pcID.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
 	MemberVariable pcCode = postalCode.getOrNew!MemberVariable("code");
 	pcCode.type = integer;
 

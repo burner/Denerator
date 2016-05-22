@@ -100,8 +100,23 @@ class Graphvic3 : Generator {
 	void generate(in ConnectionImpl con, Graph g) {
 		// class to class is a special case because these edges might be
 		// required to be placed in multible containers or components
-		if((cast(Class)con.from) !is null && (cast(Class)con.from) !is null) {
-
+		Class fromCls = cast(Class)con.from;
+		Class toCls = cast(Class)con.to;
+		if(fromCls !is null && toCls !is null) {
+			string[] fPaths = fromCls.pathsToRoot();
+			string[] tPaths = toCls.pathsToRoot();
+			logf("%s %s", fPaths, tPaths);
+			ConnectedPath[] paths = connectedPaths(fPaths, tPaths);
+			foreach(it; paths) {
+				logf("\n\t%s || %s", it.from, it.to);
+				Edge edge = g.getUnique!Edge(con.name, it.from, it.to);
+				if(edge is null) {
+					logf("%s", con.name);
+					return;
+				} else {
+					generate(con, edge);
+				}
+			}
 		} else {
 			auto fromRoot = con.from.pathToRoot();	
 			auto toRoot = con.to.pathToRoot();	
@@ -111,6 +126,8 @@ class Graphvic3 : Generator {
 			if(edge is null) {
 				logf("%s", con.name);
 				return;
+			} else {
+				generate(con, edge);
 			}
 		}
 	}
@@ -121,17 +138,17 @@ class Graphvic3 : Generator {
 			buildLabelFromDescription(con)
 		);
 		if(auto c = cast(const Dependency)con) {
-			generate(con, e);
+			generate(c, e);
 		} else if(auto c = cast(const Connection)con) {
-			generate(con, e);
+			generate(c, e);
 		} else if(auto c = cast(const Aggregation)con) {
-			generate(con, e);
+			generate(c, e);
 		} else if(auto c = cast(const Composition)con) {
-			generate(con, e);
+			generate(c, e);
 		} else if(auto c = cast(const Generalization)con) {
-			generate(con, e);
+			generate(c, e);
 		} else if(auto c = cast(const Realization)con) {
-			generate(con, e);
+			generate(c, e);
 		} else {
 			assert(false, con.name);
 		}
@@ -242,6 +259,7 @@ class Graphvic3 : Generator {
 		}
 
 		auto app = appender!string();
+		app.put("\"");
 		if(cc.low == -2) {
 			app.put("*");
 		} else if(cc.low <= 0) {
@@ -257,6 +275,7 @@ class Graphvic3 : Generator {
 		} else if(cc.high <= 0) {
 			formattedWrite(app, "%s", cc.high);
 		}
+		app.put("\"");
 
 		return app.data;
 	}

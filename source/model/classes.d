@@ -147,14 +147,14 @@ class MemberVariable : Member {
 		}
 	}
 
-	void addLandSpecificAttribute(string lang, string value) {
+	void addLangSpecificAttribute(string lang, string value) {
 		this.langSpecificAttributes[lang] ~= value;
 	}
 }
 
 unittest {
-	auto mv = new MemberVariable("name");
-	mv.addLandSpecificAttribue("Foo", "Bar");
+	auto mv = new MemberVariable("name", null);
+	mv.addLangSpecificAttribute("Foo", "Bar");
 
 	assert(mv.langSpecificAttributes["Foo"].length == 1);
 	assert(mv.langSpecificAttributes["Foo"] == ["Bar"]);

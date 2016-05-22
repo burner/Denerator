@@ -84,7 +84,7 @@ container or component. This is important as Classes can be part of multiple
 containers or components and we need to draw the edges between them in all
 containers and components.
 */
-ConnectedPath[] connectPaths(string[] from, string[] to) {
+ConnectedPath[] connectedPaths(string[] from, string[] to) {
 	import std.algorithm.iteration : splitter;
 	import std.algorithm.comparison : equal;
 	import std.array : array;
@@ -94,20 +94,67 @@ ConnectedPath[] connectPaths(string[] from, string[] to) {
 		if(fsp.length < 2) {
 			continue;
 		}
-		auto fsps = fsp[0 .. 3];
+		auto fsps = fsp[0 .. 2];
 		foreach(string tit; to) {
 			string[] tsp = tit.splitter(".").array;
 			if(tsp.length < 2) {
 				continue;
 			}
-			auto tsps = tsp[0 .. 3];
+			auto tsps = tsp[0 .. 2];
 
 			if(fsps.equal(tsps)) {
 				ret ~= ConnectedPath(fit, tit);
-				continue outer;
+				break;
 			}
 		}
 	}
 
 	return ret;
+}
+
+unittest {
+	import std.format : format;
+	string[] from = [
+		"AwesomeSoftware.Frontend.frontUserCtrl.Address",
+		"AwesomeSoftware.Database.Address",
+		"AwesomeSoftware.Server.serverUserCtrl.Address"
+	];
+
+	string[] to = [
+		"AwesomeSoftware.Frontend.frontUserCtrl.User",
+		"AwesomeSoftware.Server.serverUserCtrl.User",
+		"AwesomeSoftware.Database.User"
+	];
+
+	ConnectedPath[] correct = [
+		ConnectedPath(
+			"AwesomeSoftware.Frontend.frontUserCtrl.Address",
+			"AwesomeSoftware.Frontend.frontUserCtrl.User"
+		),
+		ConnectedPath(
+			"AwesomeSoftware.Server.serverUserCtrl.Address",
+			"AwesomeSoftware.Server.serverUserCtrl.User"
+		),
+		ConnectedPath(
+			"AwesomeSoftware.Database.Address",
+			"AwesomeSoftware.Database.User"
+		)
+	];
+
+	auto rslt = connectedPaths(from, to);
+	assert(correct.length == rslt.length,
+		format("%s %s\n%s", correct.length, rslt.length, rslt)
+	);
+	
+	foreach(it; correct) {
+		bool found = false;
+		foreach(jt; rslt) {
+			if(it == jt) {
+				found = true;
+				break;
+			}
+		}
+
+		assert(found, format("%s %s", it, rslt));
+	}
 }
