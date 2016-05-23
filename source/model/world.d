@@ -50,7 +50,7 @@ class TheWorld : Entity {
 
 	override Entity get(string[] path) {
 		if(path.empty) {
-			return this;
+			return null;
 		} else {
 			immutable fr = path.front;
 			path = path[1 .. $];
@@ -73,7 +73,7 @@ class TheWorld : Entity {
 				}
 			}
 
-			return this;
+			return null;
 		}
 	}
 

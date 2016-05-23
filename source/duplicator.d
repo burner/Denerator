@@ -52,11 +52,12 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 
 		string fPath = pathToRoot(con.from);
 		string tPath = pathToRoot(con.to);
+		logf("%s %s", fPath, tPath);
 
 		auto fEn = ne.get(fPath);
 		auto tEn = ne.get(tPath);
-		assert(fEn !is null);
-		assert(tEn !is null);
+		if(fEn is null) continue;
+		if(tEn is null) continue;
 		logf("%s\n\t%s %s\n\t%s %s", con.name, con.from.name, con.to.name,
 			fEn.name, tEn.name
 		);

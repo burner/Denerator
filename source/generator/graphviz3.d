@@ -30,7 +30,8 @@ class Graphvic3 : Generator {
 		this.generateMakefile();
 		//this.generateAll();
 		//this.generateSystemContext();
-		this.generateSoftwareSystem();
+		//this.generateSoftwareSystem();
+		this.generateSoftwareSystemOnly();
 	}
 
 	void generateMakefile() {
@@ -91,6 +92,36 @@ class Graphvic3 : Generator {
 			this.generate(copy, g);
 
 			auto f = Generator.createFile([this.outputDir, ssName ~ ".dot"]);
+			auto ltw = f.lockingTextWriter();
+			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		}
+	}
+
+	void generateSoftwareSystemOnly() {
+		foreach(const(string) ssName, const(SoftwareSystem) ss;
+				this.world.softwareSystems)
+		{
+			Graph g = new Graph();
+			StringHashSet toKeep;
+			toKeep.insert(ssName);
+			TheWorld copy = duplicateNodes(this.world);
+			removeAll(copy.actors);
+			removeAll(copy.hardwareSystems);
+
+			copy.drop(toKeep);
+
+			/*foreach(const(string) ssNameC, SoftwareSystem ssC;
+					copy.softwareSystems)
+			{
+				if(ssNameC != ssName) {
+					ssC.drop(empty);
+				}
+			}*/
+
+			reAdjustEdges(this.world, copy);
+			this.generate(copy, g);
+
+			auto f = Generator.createFile([this.outputDir, ssName ~ "_only.dot"]);
 			auto ltw = f.lockingTextWriter();
 			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
 		}
@@ -405,5 +436,12 @@ class Graphvic3 : Generator {
 	private static auto buildLabelFromDescription(in Entity en) {
 		return wrapLongString(en.description, 40)
 			.map!(a => format("<tr><td>%s</td></tr>", a)).joiner("\n");
+	}
+
+	private static void removeAll(C)(ref C c) {
+		auto keys = c.keys();
+		foreach(it; keys) {
+			c.remove(it);
+		}
 	}
 }
