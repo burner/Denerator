@@ -27,7 +27,13 @@ class Class : ProtectedEntity {
 		this.parents.insert(cast(Entity)parent);
 
 		foreach(const(string) key, const(Member) value; old.members) {
-			this.members[key] = new Member(value, this);
+			if(auto mf = cast(const MemberFunction)value) {
+				this.members[key] = new MemberFunction(mf, this);
+			} else if(auto mv = cast(const MemberVariable)value) {
+				this.members[key] = new MemberVariable(mv, this);
+			} else {
+				assert(false);
+			}
 		}
 
 		foreach(const(string) key, const(string) value; old.containerType) {
@@ -89,6 +95,10 @@ class Class : ProtectedEntity {
 
 			return this;
 		}
+	}
+
+	override string pathToRoot() const {
+		throw new Exception("Class can have multiple paths to root");
 	}
 
 	string[] pathsToRoot() const {

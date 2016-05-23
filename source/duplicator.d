@@ -37,17 +37,27 @@ TheWorld duplicateNodes(in TheWorld old) {
 }
 
 void reAdjustEdges(in TheWorld old, TheWorld ne) {
+	string pathToRoot(in Entity en) {
+		import std.array : empty;
+		if(auto c = cast(const(Class))en) {
+			string[] paths = c.pathsToRoot();
+			assert(!paths.empty);
+			return paths[0];
+		} else {
+			return en.pathToRoot();
+		}
+	}
 	foreach(const(string) key, const(Entity) en; old.connections) {
 		const(ConnectionImpl) con = cast(ConnectionImpl)en;
 
-		string fPath = con.from.pathToRoot();
-		string tPath = con.to.pathToRoot();
+		string fPath = pathToRoot(con.from);
+		string tPath = pathToRoot(con.to);
 
 		auto fEn = ne.get(fPath);
 		auto tEn = ne.get(tPath);
 		assert(fEn !is null);
 		assert(tEn !is null);
-		logf("\n\t%s %s\n\t%s %s", con.from.name, con.to.name,
+		logf("%s\n\t%s %s\n\t%s %s", con.name, con.from.name, con.to.name,
 			fEn.name, tEn.name
 		);
 

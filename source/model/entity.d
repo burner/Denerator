@@ -70,7 +70,7 @@ class Entity {
 		}
 	}
 
-	final string pathToRoot() const {
+	string pathToRoot() const {
 		import std.array : empty;
 		if(this.parent is null) {
 			return "";

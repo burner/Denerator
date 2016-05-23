@@ -28,8 +28,9 @@ class Graphvic3 : Generator {
 
 	override void generate() {
 		this.generateMakefile();
-		this.generateAll();
-		this.generateSystemContext();
+		//this.generateAll();
+		//this.generateSystemContext();
+		this.generateSoftwareSystem();
 	}
 
 	void generateMakefile() {
@@ -72,6 +73,29 @@ class Graphvic3 : Generator {
 		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
 	}
 
+	void generateSoftwareSystem() {
+		foreach(const(string) ssName, const(SoftwareSystem) ss;
+				this.world.softwareSystems)
+		{
+			Graph g = new Graph();
+			StringHashSet empty;
+			TheWorld copy = duplicateNodes(this.world);
+			foreach(const(string) ssNameC, SoftwareSystem ssC;
+					copy.softwareSystems) 
+			{
+				if(ssNameC != ssName) {
+					ssC.drop(empty);
+				}
+			}
+			reAdjustEdges(this.world, copy);
+			this.generate(copy, g);
+
+			auto f = Generator.createFile([this.outputDir, ssName ~ ".dot"]);
+			auto ltw = f.lockingTextWriter();
+			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		}
+	}
+
 	void generate(in TheWorld world, Graph g) {
 		foreach(const(string) key, const(Actor) value; world.actors) {
 			generate(value, g);
@@ -98,6 +122,20 @@ class Graphvic3 : Generator {
 	}
 
 	void generate(in ConnectionImpl con, Graph g) {
+		void impl(in ConnectionImpl con, string from, string to, 
+				Graph g) 
+		{
+			logf("\n\t%s || %s", from, to);
+			Edge edge = g.getUnique!Edge(con.name ~ from ~ to,
+				 from, to
+			);
+			if(edge is null) {
+				logf("%s", con.name);
+				return;
+			} else {
+				generate(con, edge);
+			}
+		}
 		// class to class is a special case because these edges might be
 		// required to be placed in multible containers or components
 		Class fromCls = cast(Class)con.from;
@@ -108,27 +146,12 @@ class Graphvic3 : Generator {
 			logf("%s %s", fPaths, tPaths);
 			ConnectedPath[] paths = connectedPaths(fPaths, tPaths);
 			foreach(it; paths) {
-				logf("\n\t%s || %s", it.from, it.to);
-				Edge edge = g.getUnique!Edge(con.name ~ it.from ~ it.to, it.from, it.to);
-				if(edge is null) {
-					logf("%s", con.name);
-					return;
-				} else {
-					generate(con, edge);
-				}
+				impl(con, it.from, it.to, g);
 			}
 		} else {
 			auto fromRoot = con.from.pathToRoot();	
 			auto toRoot = con.to.pathToRoot();	
-
-			logf("%s\n\t%s\n\t%s", con.name, fromRoot, toRoot);
-			Edge edge = g.getUnique!Edge(con.name, fromRoot, toRoot);
-			if(edge is null) {
-				logf("%s", con.name);
-				return;
-			} else {
-				generate(con, edge);
-			}
+			impl(con, fromRoot, toRoot, g);
 		}
 	}
 
@@ -351,6 +374,7 @@ class Graphvic3 : Generator {
 
 			const MemberFunction mf = cast(MemberFunction)mem;
 			if(mf !is null) {
+				logf("%s", mf.parameter.length);
 				formattedWrite(app, "(%s)",
 					mf.parameter[].map!(a => buildParameter(a))().joiner(", ")
 				);

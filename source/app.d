@@ -35,6 +35,9 @@ void main() {
 	users.description = "This is a way to long description for something "
 		~ "that should be obvious.";
 
+	Actor admin = world.getOrNewActor("The Admin");
+	admin.description = "An admin does what an admin does.";
+
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
 	system.description = "The awesome system to develop.";
 	Container frontend = system.getOrNewContainer("Frontend");
@@ -54,6 +57,10 @@ void main() {
 		users, frontendStuffCtrl
 	).description = "Uses the Stuff Logic of the Awesome Software";
 	usersFrontend.description = "Uses the frontend to do stuff.";
+
+	world.getOrNew!Connection("adminUser",
+		admin, frontendUserCtrl
+	).description = "Manager Users";
 
 	Container server = system.getOrNewContainer("Server");
 	server.technology = "D";
