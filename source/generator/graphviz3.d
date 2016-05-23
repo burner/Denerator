@@ -116,8 +116,6 @@ class Graphvic3 : Generator {
 		StringHashSet toKeep;
 		toKeep.insert(ss.name);
 		TheWorld copy = duplicateNodes(this.world);
-		//removeAll(copy.actors);
-		//removeAll(copy.hardwareSystems);
 
 		copy.drop(toKeep);
 
@@ -439,12 +437,5 @@ class Graphvic3 : Generator {
 	private static auto buildLabelFromDescription(in Entity en) {
 		return wrapLongString(en.description, 40)
 			.map!(a => format("<tr><td>%s</td></tr>", a)).joiner("\n");
-	}
-
-	private static void removeAll(C)(ref C c) {
-		auto keys = c.keys();
-		foreach(it; keys) {
-			c.remove(it);
-		}
 	}
 }
