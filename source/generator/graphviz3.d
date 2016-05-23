@@ -31,7 +31,7 @@ class Graphvic3 : Generator {
 		//this.generateAll();
 		//this.generateSystemContext();
 		//this.generateSoftwareSystem();
-		this.generateSoftwareSystemOnly();
+		this.generateSystemOnly();
 	}
 
 	void generateMakefile() {
@@ -97,34 +97,37 @@ class Graphvic3 : Generator {
 		}
 	}
 
-	void generateSoftwareSystemOnly() {
+	void generateSystemOnly() {
 		foreach(const(string) ssName, const(SoftwareSystem) ss;
 				this.world.softwareSystems)
 		{
-			Graph g = new Graph();
-			StringHashSet toKeep;
-			toKeep.insert(ssName);
-			TheWorld copy = duplicateNodes(this.world);
-			removeAll(copy.actors);
-			removeAll(copy.hardwareSystems);
-
-			copy.drop(toKeep);
-
-			/*foreach(const(string) ssNameC, SoftwareSystem ssC;
-					copy.softwareSystems)
-			{
-				if(ssNameC != ssName) {
-					ssC.drop(empty);
-				}
-			}*/
-
-			reAdjustEdges(this.world, copy);
-			this.generate(copy, g);
-
-			auto f = Generator.createFile([this.outputDir, ssName ~ "_only.dot"]);
-			auto ltw = f.lockingTextWriter();
-			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+			generateSystemOnlyImpl(ss);
 		}
+
+		foreach(const(string) ssName, const(HardwareSystem) hw;
+				this.world.hardwareSystems)
+		{
+			generateSystemOnlyImpl(hw);
+		}
+	}
+
+	void generateSystemOnlyImpl(System)(in System ss) {
+		Graph g = new Graph();
+		StringHashSet toKeep;
+		toKeep.insert(ss.name);
+		TheWorld copy = duplicateNodes(this.world);
+		//removeAll(copy.actors);
+		//removeAll(copy.hardwareSystems);
+
+		copy.drop(toKeep);
+
+		reAdjustEdges(this.world, copy);
+		this.generate(copy, g);
+
+		auto f = Generator.createFile([this.outputDir, ss.name ~ "_only.dot"]);
+		auto ltw = f.lockingTextWriter();
+		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		
 	}
 
 	void generate(in TheWorld world, Graph g) {
