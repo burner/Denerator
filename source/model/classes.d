@@ -236,3 +236,13 @@ Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 	return cls;
 }
 
+string pathToRoot(in Entity en) {
+	import std.array : empty;
+	if(auto c = cast(const(Class))en) {
+		string[] paths = c.pathsToRoot();
+		assert(!paths.empty);
+		return paths[0];
+	} else {
+		return en.pathToRoot();
+	}
+}

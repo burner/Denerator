@@ -28,10 +28,11 @@ class Graphvic3 : Generator {
 
 	override void generate() {
 		this.generateMakefile();
-		//this.generateAll();
-		//this.generateSystemContext();
-		//this.generateSoftwareSystem();
+		this.generateAll();
+		this.generateSystemContext();
+		this.generateSoftwareSystem();
 		this.generateSystemOnly();
+		this.generateContainerOnly();
 	}
 
 	void generateMakefile() {
@@ -94,6 +95,34 @@ class Graphvic3 : Generator {
 			auto f = Generator.createFile([this.outputDir, ssName ~ ".dot"]);
 			auto ltw = f.lockingTextWriter();
 			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		}
+	}
+
+	void generateContainerOnly() {
+		foreach(const(string) ssName, const(SoftwareSystem) ss;
+				this.world.softwareSystems)
+		{
+			foreach(const(string) conName, const(Container) con;
+					ss.containers)
+			{
+				Graph g = new Graph();
+				StringHashSet toKeep;
+				toKeep.insert(ssName);
+				toKeep.insert(conName);
+
+				TheWorld copy = duplicateNodes(this.world);
+				copy.drop(toKeep);
+				removeAll(copy.softwareSystems[ssName].containers, toKeep);
+
+				reAdjustEdges(this.world, copy);
+				this.generate(copy, g);
+
+				auto f = Generator.createFile([this.outputDir, 
+					ssName ~ "_" ~ conName ~ "_only.dot"]
+				);
+				auto ltw = f.lockingTextWriter();
+				auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+			}
 		}
 	}
 
@@ -181,8 +210,8 @@ class Graphvic3 : Generator {
 				impl(con, it.from, it.to, g);
 			}
 		} else {
-			auto fromRoot = con.from.pathToRoot();
-			auto toRoot = con.to.pathToRoot();
+			auto fromRoot = pathToRoot(con.from);
+			auto toRoot = pathToRoot(con.to);
 			impl(con, fromRoot, toRoot, g);
 		}
 	}
@@ -437,5 +466,14 @@ class Graphvic3 : Generator {
 	private static auto buildLabelFromDescription(in Entity en) {
 		return wrapLongString(en.description, 40)
 			.map!(a => format("<tr><td>%s</td></tr>", a)).joiner("\n");
+	}
+
+	private static void removeAll(C)(ref C c, in ref StringHashSet toKeep) {
+		auto keys = c.keys();
+		foreach(it; keys) {
+			if(it !in toKeep) {		
+				c.remove(it);
+			}
+		}
 	}
 }

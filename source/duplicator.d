@@ -37,16 +37,6 @@ TheWorld duplicateNodes(in TheWorld old) {
 }
 
 void reAdjustEdges(in TheWorld old, TheWorld ne) {
-	string pathToRoot(in Entity en) {
-		import std.array : empty;
-		if(auto c = cast(const(Class))en) {
-			string[] paths = c.pathsToRoot();
-			assert(!paths.empty);
-			return paths[0];
-		} else {
-			return en.pathToRoot();
-		}
-	}
 	foreach(const(string) key, const(Entity) en; old.connections) {
 		const(ConnectionImpl) con = cast(ConnectionImpl)en;
 
