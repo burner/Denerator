@@ -44,6 +44,11 @@ class Aggregation : ConnectionImpl {
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
+		fromCnt.low = -1;
+		fromCnt.high = -1;
+
+		toCnt.low = -1;
+		toCnt.high = -1;
 	}
 }
 
@@ -55,6 +60,8 @@ class Composition : ConnectionImpl {
 	MemberVariable fromStore; 
 	this(in string name, in Entity parent) {
 		super(name, parent);
+		fromCnt.low = -1;
+		fromCnt.high = -1;
 	}
 }
 
