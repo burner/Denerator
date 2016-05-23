@@ -46,8 +46,10 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 
 		auto fEn = ne.get(fPath);
 		auto tEn = ne.get(tPath);
+
 		if(fEn is null) continue;
 		if(tEn is null) continue;
+
 		logf("%s\n\t%s %s\n\t%s %s", con.name, con.from.name, con.to.name,
 			fEn.name, tEn.name
 		);
