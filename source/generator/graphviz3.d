@@ -156,29 +156,36 @@ class Graphvic3 : Generator {
 
 	void generate(in Dependency dep, Edge e) {
 		e.edgeStyle = "dashed";
-		e.arrowStyleTo = "vee";
+		e.arrowStyleTo = "\"vee\"";
+		e.arrowStyleFrom = "\"none\"";
 	}
 
 	void generate(in Connection con, Edge e) {
+		e.arrowStyleTo = "\"none\"";
+		e.arrowStyleFrom = "\"empty\"";
 	}
 
 	void generate(in Aggregation con, Edge e) {
-		e.arrowStyleTo = "odiamond";
+		e.arrowStyleTo = "\"none\"";
+		e.arrowStyleFrom = "\"odiamond\"";
 		e.labelFrom = generate(con.fromCnt);
 		e.labelTo = generate(con.toCnt);
 	}
 
 	void generate(in Composition con, Edge e) {
-		e.arrowStyleTo = "diamond";
+		e.arrowStyleTo = "\"none\"";
+		e.arrowStyleFrom = "\"diamond\"";
 		e.labelFrom = generate(con.fromCnt);
 	}
 
 	void generate(in Generalization con, Edge e) {
-		e.arrowStyleTo = "empty";
+		e.arrowStyleTo = "\"empty\"";
+		e.arrowStyleFrom = "\"none\"";
 	}
 
 	void generate(in Realization con, Edge e) {
-		e.arrowStyleTo = "empty";
+		e.arrowStyleTo = "\"none\"";
+		e.arrowStyleFrom = "\"none\"";
 	}
 
 	void generate(G)(in Actor act, G g) {
