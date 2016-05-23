@@ -11,7 +11,7 @@ class Container : Entity {
 	string technology;
 	StringEntityMap!(Component) components;
 	StringEntityMap!(Class) classes;
-	
+
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}

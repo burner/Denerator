@@ -11,7 +11,7 @@ hash_t stringToHash(string str) @safe pure nothrow @nogc {
 	foreach(it; str) {
 		hash = ((hash << 5) + hash) + it; /* hash * 33 + it */
 	}
-	
+
 	return hash;
 }
 
@@ -128,7 +128,7 @@ Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
 }
 
 S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map,
-		in Entity parent) 
+		in Entity parent)
 {
 	if(name in map) {
 		return cast(S)map[name];
@@ -140,7 +140,7 @@ S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map,
 }
 
 T getOrNewEntityImpl(T)(in string name, ref DynamicArray!(T) arr,
-		in Entity parent) 
+		in Entity parent)
 {
 	foreach(it; arr) {
 		if(it.name == name) {

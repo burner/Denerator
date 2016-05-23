@@ -94,7 +94,7 @@ void main() {
 	integer.typeToLanguage["Angular"] = "number";
 	integer.typeToLanguage["MySQL"] = "LONG";
 
-	Class user = getOrNewClass("User", frontendUserCtrl, 
+	Class user = getOrNewClass("User", frontendUserCtrl,
 		serverUserCtrl, database
 	);
 
@@ -112,7 +112,7 @@ void main() {
 	auto userLastname = user.getOrNew!MemberVariable("lastname");
 	userLastname.type = str;
 
-	Class address = getOrNewClass("Address", 
+	Class address = getOrNewClass("Address",
 		frontendUserCtrl, serverUserCtrl, database
 	);
 	address.containerType["MySQL"] = "Table";

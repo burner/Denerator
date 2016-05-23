@@ -5,7 +5,7 @@ import model.entity : Entity;
 class Type : Entity {
 	import model.entity : StringEntityMap;
 
-	StringEntityMap!(string) typeToLanguage;	
+	StringEntityMap!(string) typeToLanguage;
 
 	this(in string name, in Entity parent) {
 		super(name, parent);

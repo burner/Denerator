@@ -81,7 +81,7 @@ class Graphvic3 : Generator {
 			StringHashSet empty;
 			TheWorld copy = duplicateNodes(this.world);
 			foreach(const(string) ssNameC, SoftwareSystem ssC;
-					copy.softwareSystems) 
+					copy.softwareSystems)
 			{
 				if(ssNameC != ssName) {
 					ssC.drop(empty);
@@ -102,13 +102,13 @@ class Graphvic3 : Generator {
 		}
 
 		foreach(const(string) key, const(SoftwareSystem) value;
-				world.softwareSystems) 
+				world.softwareSystems)
 		{
 			generate(value, g);
 		}
 
 		foreach(const(string) key, const(HardwareSystem) value;
-				world.hardwareSystems) 
+				world.hardwareSystems)
 		{
 			generate(value, g);
 		}
@@ -122,8 +122,8 @@ class Graphvic3 : Generator {
 	}
 
 	void generate(in ConnectionImpl con, Graph g) {
-		void impl(in ConnectionImpl con, string from, string to, 
-				Graph g) 
+		void impl(in ConnectionImpl con, string from, string to,
+				Graph g)
 		{
 			logf("\n\t%s || %s", from, to);
 			Edge edge = g.getUnique!Edge(con.name ~ from ~ to,
@@ -149,8 +149,8 @@ class Graphvic3 : Generator {
 				impl(con, it.from, it.to, g);
 			}
 		} else {
-			auto fromRoot = con.from.pathToRoot();	
-			auto toRoot = con.to.pathToRoot();	
+			auto fromRoot = con.from.pathToRoot();
+			auto toRoot = con.to.pathToRoot();
 			impl(con, fromRoot, toRoot, g);
 		}
 	}
@@ -233,7 +233,7 @@ class Graphvic3 : Generator {
 			SubGraph sg = make!SubGraph(ss, g, ssDescription);
 			foreach(const(string) key, const(Container) value; ss.containers) {
 				generate(value, sg);
-			}		
+			}
 		}
 	}
 
@@ -250,15 +250,15 @@ class Graphvic3 : Generator {
 		} else {
 			SubGraph sg = make!SubGraph(container, g, containerDescription);
 			foreach(const(string) key, const(Component) value;
-					container.components) 
+					container.components)
 			{
 				generate(value, sg);
-			}		
+			}
 			foreach(const(string) key, const(Class) value;
-					container.classes) 
+					container.classes)
 			{
 				generate(value, sg);
-			}		
+			}
 		}
 	}
 
@@ -269,15 +269,15 @@ class Graphvic3 : Generator {
 		} else {
 			SubGraph sg = make!SubGraph(component, g, componentDescription);
 			foreach(const(string) key, const(Component) value;
-					component.subComponents) 
+					component.subComponents)
 			{
 				generate(value, sg);
-			}		
+			}
 			foreach(const(string) key, const(Class) value;
-					component.classes) 
+					component.classes)
 			{
 				generate(value, sg);
-			}		
+			}
 		}
 	}
 
@@ -317,8 +317,8 @@ class Graphvic3 : Generator {
 			<tr><td>%s</td></tr>
 			<tr><td>[%s]</td></tr>
 			%s
-			</table>>`, cls.name, 
-			(this.currentTechnology !in cls.containerType) 
+			</table>>`, cls.name,
+			(this.currentTechnology !in cls.containerType)
 				? "class" : cls.containerType[this.currentTechnology],
 			this.genClassMember(cls.members)
 		);
@@ -328,12 +328,12 @@ class Graphvic3 : Generator {
 	string genClassMember(in ref StringEntityMap!Member member) {
 		import std.array : appender;
 		string buildParameter(in MemberVariable mv) {
-			if(mv.type is null 
+			if(mv.type is null
 					|| !(this.currentTechnology in mv.type.typeToLanguage))
 			{
 				return format("%s", mv.name);
 			} else {
-				return format("%s %s", 
+				return format("%s %s",
 					mv.type.typeToLanguage[this.currentTechnology],
 					mv.name
 				);
@@ -348,7 +348,9 @@ class Graphvic3 : Generator {
 
 			if(!mem.description.empty) {
 				foreach(str; wrapLongString(mem.description, 40)) {
-					formattedWrite(app, "<tr><td align=\"left\">%s</td></tr>\n", str);
+					formattedWrite(app, "<tr><td align=\"left\">%s</td></tr>\n",
+						str
+					);
 				}
 			}
 			formattedWrite(app, "<tr><td align=\"left\">");
@@ -361,10 +363,10 @@ class Graphvic3 : Generator {
 
 			const MemberVariable mv = cast(MemberVariable)mem;
 			if(mv !is null) {
-				if(mv.type !is null 
+				if(mv.type !is null
 						&& (this.currentTechnology in mv.type.typeToLanguage))
 				{
-					formattedWrite(app, "%s ", 
+					formattedWrite(app, "%s ",
 						mv.type.typeToLanguage[this.currentTechnology]
 					);
 				}

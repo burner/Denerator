@@ -16,7 +16,7 @@ class Class : ProtectedEntity {
 	StringEntityMap!(string) containerType;
 
 	DynamicArray!(Entity) parents;
-	
+
 	this(in string name) {
 		super(name, null);
 	}
