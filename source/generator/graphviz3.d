@@ -109,7 +109,7 @@ class Graphvic3 : Generator {
 			ConnectedPath[] paths = connectedPaths(fPaths, tPaths);
 			foreach(it; paths) {
 				logf("\n\t%s || %s", it.from, it.to);
-				Edge edge = g.getUnique!Edge(con.name, it.from, it.to);
+				Edge edge = g.getUnique!Edge(con.name ~ it.from ~ it.to, it.from, it.to);
 				if(edge is null) {
 					logf("%s", con.name);
 					return;
