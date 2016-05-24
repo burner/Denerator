@@ -28,10 +28,10 @@ class Graphvic3 : Generator {
 
 	override void generate() {
 		this.generateMakefile();
-		this.generateAll();
-		this.generateSystemContext();
-		this.generateSoftwareSystem();
-		this.generateSystemOnly();
+		//this.generateAll();
+		//this.generateSystemContext();
+		//this.generateSoftwareSystem();
+		//this.generateSystemOnly();
 		this.generateContainerOnly();
 	}
 
@@ -105,13 +105,14 @@ class Graphvic3 : Generator {
 			foreach(const(string) conName, const(Container) con;
 					ss.containers)
 			{
+				logf("\n\n\n<<<<%s>>>>>\n\n", conName);
 				Graph g = new Graph();
 				StringHashSet toKeep;
 				toKeep.insert(ssName);
 				toKeep.insert(conName);
 
 				TheWorld copy = duplicateNodes(this.world);
-				copy.drop(toKeep);
+				//copy.drop(toKeep);
 				removeAll(copy.softwareSystems[ssName].containers, toKeep);
 
 				reAdjustEdges(this.world, copy);
@@ -212,7 +213,7 @@ class Graphvic3 : Generator {
 		} else {
 			auto fromRoot = pathToRoot(con.from);
 			auto toRoot = pathToRoot(con.to);
-			impl(con, fromRoot, toRoot, g);
+			impl(con, fromRoot[0], toRoot[0], g);
 		}
 	}
 
@@ -472,6 +473,8 @@ class Graphvic3 : Generator {
 		auto keys = c.keys();
 		foreach(it; keys) {
 			if(it !in toKeep) {		
+				log(it);
+				c[it].drop();
 				c.remove(it);
 			}
 		}

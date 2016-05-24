@@ -169,6 +169,7 @@ class TheWorld : Entity {
 		auto keys = this.softwareSystems.keys();
 		foreach(key; keys) {
 			if(key !in toKeep) {
+				this.softwareSystems[key].drop();
 				this.softwareSystems.remove(key);
 			}
 		}

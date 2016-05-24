@@ -77,19 +77,29 @@ class Container : Entity {
 		}
 	}
 
-	void drop(in ref StringHashSet toKeep) {
-		auto keys = this.components.keys();
-		foreach(key; keys) {
-			if(key !in toKeep) {
-				this.components.remove(key);
-			}
+	void drop() {
+		import std.experimental.logger;
+
+		foreach(const(string) it, Component con; this.components) {
+			log(it);
+			con.drop();
 		}
 
-		keys = this.classes.keys();
-		foreach(key; keys) {
-			if(key !in toKeep) {
-				this.classes.remove(key);
-			}
+		foreach(it; this.components.keys()) {
+			this.components.remove(it);
 		}
+
+		foreach(const(string) it, Class con; this.classes) {
+			logf("\t%s %s", super.name, it);
+			con.removeParent(this);
+		}
+
+		foreach(it; this.classes.keys()) {
+			this.classes.remove(it);
+		}
+	}
+
+	override string toString() const {
+		return this.name;
 	}
 }

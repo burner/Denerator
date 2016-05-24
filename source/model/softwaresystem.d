@@ -39,6 +39,16 @@ class SoftwareSystem : Entity {
 		);
 	}
 
+	void drop() {
+		foreach(const(string) it, Container con; this.containers) {
+			con.drop();
+		}
+
+		foreach(it; this.containers.keys()) {
+			this.containers.remove(it);
+		}
+	}
+
 	SearchResult holdsEntity(const Entity needle) const {
 		const Entity tmp = holdsEntitySingleImpl(needle, this.containers);
 		if(tmp !is null) {

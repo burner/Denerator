@@ -20,16 +20,7 @@ TheWorld duplicateNodes(in TheWorld old) {
 	ehs.insert(ret);
 
 	foreach(const(string) key, Class cls; classes) {
-		assert(cls.areYouIn(ehs) is ret, cls.name);
-	}
-
-	StringEntityMap!Class classes2;
-
-	foreach(const(string) key, SoftwareSystem ss; ret.softwareSystems) {
-		addClasses(ss, classes);
-	}
-
-	foreach(const(string) key, Class cls; classes2) {
+		logf("%s %s", key, cls.parents);
 		assert(cls.areYouIn(ehs) is ret, cls.name);
 	}
 
@@ -40,12 +31,12 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 	foreach(const(string) key, const(Entity) en; old.connections) {
 		const(ConnectionImpl) con = cast(ConnectionImpl)en;
 
-		string fPath = pathToRoot(con.from);
-		string tPath = pathToRoot(con.to);
+		string[] fPath = pathToRoot(con.from);
+		string[] tPath = pathToRoot(con.to);
 		logf("%s %s", fPath, tPath);
 
-		auto fEn = ne.get(fPath);
-		auto tEn = ne.get(tPath);
+		auto fEn = ne.get(fPath[0]);
+		auto tEn = ne.get(tPath[0]);
 
 		if(fEn is null) continue;
 		if(tEn is null) continue;
@@ -79,7 +70,6 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 			assert(false);
 		}
 	}
-
 }
 
 private {
@@ -125,7 +115,7 @@ private {
 					if(key in com.classes) {
 						com.classes[key] = cls;
 						if(!canFind(cls.parents[], com)) {
-							cls.parents.insert(com);
+							cls.parents ~= com;
 						}
 					}
 				}
@@ -139,7 +129,7 @@ private {
 				if(key in con.classes) {
 					con.classes[key] = cls;
 					if(!canFind(cls.parents[], con)) {
-						cls.parents.insert(con);
+						cls.parents ~= con;
 					}
 				}
 			}

@@ -15,16 +15,20 @@ class Class : ProtectedEntity {
 	StringEntityMap!(Member) members;
 	StringEntityMap!(string) containerType;
 
-	DynamicArray!(Entity) parents;
+	Entity[] parents;
 
 	this(in string name) {
 		super(name, null);
 	}
 
+	~this() {
+		assert(false);
+	}
+
 	this(in Class old, in Entity parent) {
-		super(old, null);	// TODO we need to fix up the parents in a second
+		super(old, null);	
+		// we need to fix up the parents in a second
 		// pass after we have copied TheWorld
-		this.parents.insert(cast(Entity)parent);
 
 		foreach(const(string) key, const(Member) value; old.members) {
 			if(auto mf = cast(const MemberFunction)value) {
@@ -41,6 +45,31 @@ class Class : ProtectedEntity {
 		}
 
 		assert(!this.name.empty);
+	}
+
+	void removeParent(Entity par) {
+		import std.algorithm.mutation : remove;
+		import std.algorithm.searching : countUntil;
+		import std.experimental.logger;
+
+		int getParentIndex(Entity par) {
+			foreach(int idx, it; this.parents) {
+				if(it is par) {
+					return idx;
+				}	
+			}
+			return -1;
+		}
+
+		auto idx = getParentIndex(par);
+
+		if(idx != -1) {
+			logf("%s %s %s", this.name, par.name, this.parents);
+			this.parents = remove(this.parents, idx);
+			logf("%s", this.parents);
+		} else {
+			logf("!%s %s %s", this.name, par.name, this.parents);
+		}
 	}
 
 	S getOrNew(S)(in string name) {
@@ -230,19 +259,19 @@ Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 	foreach(it; stuffThatHoldsClasses) {
 		if(name !in it.classes) {
 			it.classes[name] = cls;
-			cls.parents.insert(it);
+			cls.parents ~= it;
 		}
 	}
 	return cls;
 }
 
-string pathToRoot(in Entity en) {
+string[] pathToRoot(in Entity en) {
 	import std.array : empty;
 	if(auto c = cast(const(Class))en) {
 		string[] paths = c.pathsToRoot();
 		assert(!paths.empty);
-		return paths[0];
+		return paths;
 	} else {
-		return en.pathToRoot();
+		return [en.pathToRoot()];
 	}
 }

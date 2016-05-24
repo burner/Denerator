@@ -58,6 +58,28 @@ class Component : ProtectedEntity {
 		return dummy;
 	}
 
+	void drop() {
+		import std.experimental.logger;
+
+		foreach(string key, Component value; this.subComponents) {
+			log(key);
+			value.drop();
+		}
+
+		foreach(it; this.subComponents.keys()) {
+			this.subComponents.remove(it);
+		}
+
+		foreach(const(string) it, Class con; this.classes) {
+			logf("\t%s %s", super.name, it);
+			con.removeParent(this);
+		}
+
+		foreach(it; this.classes.keys()) {
+			this.classes.remove(it);
+		}
+	}
+
 	override Entity get(string[] path) {
 		if(path.empty) {
 			return this;
@@ -81,19 +103,7 @@ class Component : ProtectedEntity {
 		}
 	}
 
-	void drop(in ref StringHashSet toKeep) {
-		auto keys = this.subComponents.keys();
-		foreach(key; keys) {
-			if(key !in toKeep) {
-				this.subComponents.remove(key);
-			}
-		}
-
-		keys = this.classes.keys();
-		foreach(key; keys) {
-			if(key !in toKeep) {
-				this.classes.remove(key);
-			}
-		}
+	override string toString() const {
+		return this.name;
 	}
 }
