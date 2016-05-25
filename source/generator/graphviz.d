@@ -205,16 +205,9 @@ class Graphvic : Generator {
 		reAdjustEdges(this.world, copy);
 		this.generate(copy, g);
 
-		string prefix;
-		if(auto s = cast(SoftwareSystem)ss) {
-			prefix = "/SoftwareSystems";
-		} else if(auto s = cast(HardwareSystem)ss) {
-			prefix = "/HardwareSystems";
-		}
-
-		assert(createFolder(this.outputDir ~ prefix));
-		auto f = Generator.createFile([this.outputDir ~ prefix, 
-			ss.name ~ ".dot"]
+		assert(createFolder(this.outputDir ~ "/" ~ ss.name));
+		auto f = Generator.createFile([this.outputDir, ss.name,
+			ss.name ~ "_only.dot"]
 		);
 		auto ltw = f.lockingTextWriter();
 		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
