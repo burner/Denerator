@@ -40,8 +40,6 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 		string[] tPath = pathToRoot(con.to);
 		logf("%s %s", fPath, tPath);
 
-		//auto fEn = ne.get(fPath[0]);
-		//auto tEn = ne.get(tPath[0]);
 		auto fEn = getFromSelection(ne, fPath);
 		auto tEn = getFromSelection(ne, tPath);
 
