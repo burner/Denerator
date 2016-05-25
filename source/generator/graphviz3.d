@@ -33,6 +33,7 @@ class Graphvic3 : Generator {
 		this.generateSoftwareSystem();
 		this.generateSystemOnly();
 		this.generateContainerOnly();
+		this.generateTopComponentsOnly();
 	}
 
 	void generateMakefile() {
@@ -95,6 +96,44 @@ class Graphvic3 : Generator {
 			auto f = Generator.createFile([this.outputDir, ssName ~ ".dot"]);
 			auto ltw = f.lockingTextWriter();
 			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		}
+	}
+
+	void generateTopComponentsOnly() {
+		foreach(const(string) ssName, const(SoftwareSystem) ss;
+				this.world.softwareSystems)
+		{
+			foreach(const(string) conName, const(Container) con;
+					ss.containers)
+			{
+				foreach(const(string) comName, const(Component) com;
+						con.components)
+				{
+					logf("\n\n\n<<<<%s>>>>>\n\n", conName);
+					Graph g = new Graph();
+					StringHashSet toKeep;
+					toKeep.insert(ssName);
+					toKeep.insert(conName);
+					toKeep.insert(comName);
+
+					TheWorld copy = duplicateNodes(this.world);
+					copy.drop(toKeep);
+					removeAll(copy.softwareSystems[ssName].containers, toKeep);
+					removeAll(
+						copy.softwareSystems[ssName].containers[conName].components,
+					   	toKeep
+					);
+
+					reAdjustEdges(this.world, copy);
+					this.generate(copy, g);
+
+					auto f = Generator.createFile([this.outputDir, 
+						ssName ~ "_" ~ conName ~ "_" ~ comName ~ "_only.dot"]
+					);
+					auto ltw = f.lockingTextWriter();
+					auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+				}
+			}
 		}
 	}
 
