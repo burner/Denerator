@@ -4,7 +4,8 @@ import std.exception : enforce;
 
 import containers.dynamicarray;
 
-import model.entity : getOrNewEntityImpl, Entity, ProtectedEntity;
+import model.entity : getOrNewEntityImpl, Entity, ProtectedEntity, 
+	   toStringIndent;
 import model.type : Type;
 
 class Class : ProtectedEntity {
@@ -137,6 +138,16 @@ class Class : ProtectedEntity {
 		}
 
 		return ret;
+	}
+
+	void toString(in int indent) const {
+		import std.stdio : writefln;
+		toStringIndent(indent);
+		writefln("Class %s %x", this.name, cast(ulong)cast(void*)this);
+		foreach(par; this.parents) {
+			toStringIndent(indent + 1);
+			writefln("Parent %s %x", par.name, cast(ulong)cast(void*)par);
+		}
 	}
 }
 

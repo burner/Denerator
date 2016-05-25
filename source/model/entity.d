@@ -164,3 +164,10 @@ const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args) {
 
 	return null;
 }
+
+void toStringIndent(in int indent) {
+	import std.stdio : write;
+	foreach(it; 0 .. indent) {
+		write('\t');
+	}
+}

@@ -106,4 +106,16 @@ class Component : ProtectedEntity {
 	override string toString() const {
 		return this.name;
 	}
+
+	void toString(in int indent) const {
+		import std.stdio : writefln;
+		toStringIndent(indent);
+		writefln("Component %s %x", this.name, cast(ulong)cast(void*)this);
+		foreach(const(string) it, const(Class) cls; this.classes) {
+			cls.toString(indent + 1);
+		}
+		foreach(const(string) it, const(Component) com; this.subComponents) {
+			com.toString(indent + 1);
+		}
+	}
 }

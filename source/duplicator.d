@@ -12,8 +12,13 @@ TheWorld duplicateNodes(in TheWorld old) {
 		addClasses(ss, classes);
 	}
 
+	foreach(const(string) key, Class cls; classes) {
+		cls.parents = [];
+	}
+
 	foreach(const(string) key, SoftwareSystem ss; ret.softwareSystems) {
 		modClasses(ss, classes);
+		ss.toString(0);
 	}
 
 	EntityHashSet!Entity ehs;
@@ -105,34 +110,32 @@ private {
 
 	void modClasses(SoftwareSystem ss, ref StringEntityMap!Class classes) {
 		import std.algorithm.searching : canFind;
+		void modClassesImpl(C)(C con, ref StringEntityMap!Class classes)
+		{
+			foreach(const(string) key, Class cls; classes) {
+				if(key in con.classes) {
+					logf("%s %s", con.name, key);
+					con.classes.remove(key);
+					con.classes[key] = cls;
+					cls.parents ~= con;
+				}
+			}
+
+		}
 		void modClasses(Container con, ref StringEntityMap!Class classes) {
 			void modClasses(Component com, ref StringEntityMap!Class classes) {
 				foreach(const(string) key, Component scom; com.subComponents) {
 					modClasses(scom, classes);
 				}
 
-				foreach(const(string) key, Class cls; classes) {
-					if(key in com.classes) {
-						com.classes[key] = cls;
-						if(!canFind(cls.parents[], com)) {
-							cls.parents ~= com;
-						}
-					}
-				}
+				modClassesImpl(com, classes);
 			}
 
 			foreach(const(string) key, Component com; con.components) {
 				modClasses(com, classes);
 			}
 
-			foreach(const(string) key, Class cls; classes) {
-				if(key in con.classes) {
-					con.classes[key] = cls;
-					if(!canFind(cls.parents[], con)) {
-						cls.parents ~= con;
-					}
-				}
-			}
+			modClassesImpl(con, classes);
 		}
 
 		foreach(const(string) key, Container con; ss.containers) {

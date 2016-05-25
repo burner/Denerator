@@ -91,4 +91,14 @@ class SoftwareSystem : Entity {
 			}
 		}
 	}
+
+	void toString(in int indent) const {
+		import std.stdio : writefln;
+		toStringIndent(indent);
+		writefln("SoftwareSystem %s %x", this.name, cast(ulong)cast(void*)this);
+
+		foreach(const(string) it, const(Container) con; this.containers) {
+			con.toString(indent + 1);
+		}
+	}
 }
