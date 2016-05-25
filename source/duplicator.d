@@ -18,7 +18,7 @@ TheWorld duplicateNodes(in TheWorld old) {
 
 	foreach(const(string) key, SoftwareSystem ss; ret.softwareSystems) {
 		modClasses(ss, classes);
-		ss.toString(0);
+		//ss.toString(0);
 	}
 
 	EntityHashSet!Entity ehs;
@@ -40,8 +40,10 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 		string[] tPath = pathToRoot(con.to);
 		logf("%s %s", fPath, tPath);
 
-		auto fEn = ne.get(fPath[0]);
-		auto tEn = ne.get(tPath[0]);
+		//auto fEn = ne.get(fPath[0]);
+		//auto tEn = ne.get(tPath[0]);
+		auto fEn = getFromSelection(ne, fPath);
+		auto tEn = getFromSelection(ne, tPath);
 
 		if(fEn is null) continue;
 		if(tEn is null) continue;
@@ -141,5 +143,16 @@ private {
 		foreach(const(string) key, Container con; ss.containers) {
 			modClasses(con, classes);
 		}
+	}
+
+	Entity getFromSelection(TheWorld w, string[] paths) {
+		foreach(it; paths) {
+			auto ret = w.get(it);
+			if(ret !is null) {
+				return ret;
+			}
+		}
+
+		return null;
 	}
 }

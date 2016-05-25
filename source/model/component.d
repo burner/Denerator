@@ -99,7 +99,7 @@ class Component : ProtectedEntity {
 				}
 			}
 
-			return this;
+			return null;
 		}
 	}
 

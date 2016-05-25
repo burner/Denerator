@@ -73,7 +73,7 @@ class Container : Entity {
 				}
 			}
 
-			return this;
+			return null;
 		}
 	}
 

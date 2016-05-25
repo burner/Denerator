@@ -112,7 +112,7 @@ class Graphvic3 : Generator {
 				toKeep.insert(conName);
 
 				TheWorld copy = duplicateNodes(this.world);
-				//copy.drop(toKeep);
+				copy.drop(toKeep);
 				removeAll(copy.softwareSystems[ssName].containers, toKeep);
 
 				reAdjustEdges(this.world, copy);

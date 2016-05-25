@@ -79,7 +79,7 @@ class SoftwareSystem : Entity {
 				}
 			}
 
-			return this;
+			return null;
 		}
 	}
 
