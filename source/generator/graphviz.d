@@ -99,8 +99,8 @@ class Graphvic : Generator {
 			reAdjustEdges(this.world, copy);
 			this.generate(copy, g);
 
-			assert(createFolder(this.outputDir ~ "/SoftwareSystems"));
-			auto f = Generator.createFile([this.outputDir ~ "/SoftwareSystems",
+			assert(createFolder(this.outputDir ~ "/" ~ ssName));
+			auto f = Generator.createFile([this.outputDir ~ "/" ~ ssName,
 				ssName ~ ".dot"]
 			);
 			auto ltw = f.lockingTextWriter();
@@ -136,9 +136,12 @@ class Graphvic : Generator {
 					reAdjustEdges(this.world, copy);
 					this.generate(copy, g);
 
-					assert(createFolder(this.outputDir ~ "/Components"));
-					auto f = Generator.createFile([this.outputDir ~ "/Components", 
-						ssName ~ "_" ~ conName ~ "_" ~ comName ~ ".dot"]
+					assert(createFolder(this.outputDir ~ "/" ~ ssName
+						~ "/" ~ conName
+					));
+					auto f = Generator.createFile(
+						[this.outputDir, ssName, conName,
+						comName ~ ".dot"]
 					);
 					auto ltw = f.lockingTextWriter();
 					auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
@@ -167,9 +170,9 @@ class Graphvic : Generator {
 				reAdjustEdges(this.world, copy);
 				this.generate(copy, g);
 
-				assert(createFolder(this.outputDir ~ "/Containers"));
-				auto f = Generator.createFile([this.outputDir ~ "/Containers", 
-					ssName ~ "_" ~ conName ~ ".dot"]
+				assert(createFolder(this.outputDir ~ "/" ~ ssName));
+				auto f = Generator.createFile([this.outputDir, 
+					ssName, conName ~ ".dot"]
 				);
 				auto ltw = f.lockingTextWriter();
 				auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
