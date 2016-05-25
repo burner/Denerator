@@ -1,3 +1,3 @@
 all:
 	dub
-	make -C GraphvizOutput3
+	make -C GraphvizOutput
