@@ -79,7 +79,11 @@ class SoftwareSystem : Entity {
 				}
 			}
 
-			return null;
+			if(this.containers.empty) {
+				return this;
+			} else {
+				return null;
+			}
 		}
 	}
 

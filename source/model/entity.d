@@ -94,7 +94,7 @@ class Entity {
 	}
 
 	Entity get(string[] path) {
-		assert(false);
+		return this;
 	}
 }
 

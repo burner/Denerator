@@ -28,10 +28,10 @@ class Graphvic3 : Generator {
 
 	override void generate() {
 		this.generateMakefile();
-		//this.generateAll();
-		//this.generateSystemContext();
-		//this.generateSoftwareSystem();
-		//this.generateSystemOnly();
+		this.generateAll();
+		this.generateSystemContext();
+		this.generateSoftwareSystem();
+		this.generateSystemOnly();
 		this.generateContainerOnly();
 	}
 

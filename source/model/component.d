@@ -99,7 +99,11 @@ class Component : ProtectedEntity {
 				}
 			}
 
-			return null;
+			if(this.subComponents.length == 0 && this.classes.empty) {
+				return this;
+			} else {
+				return null;
+			}
 		}
 	}
 

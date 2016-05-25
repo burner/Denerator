@@ -73,7 +73,11 @@ class Container : Entity {
 				}
 			}
 
-			return null;
+			if(this.components.empty && this.classes.empty) {
+				return this;
+			} else {
+				return null;
+			}
 		}
 	}
 
