@@ -41,7 +41,13 @@ class Graphvic3 : Generator {
 		auto ltw = f.lockingTextWriter();
 
 		ltw.formattedWrite(
-			"all: $(patsubst %%.dot,%%.png,$(wildcard *.dot))\n\n"
+			"DOTFILES= $(shell find . -type f -name '*.dot')\n\n"
+			"DOTFILESPNG= $(patsubst %%.dot,%%.png,$(DOTFILES))\n\n"
+		);
+
+		ltw.formattedWrite(
+			"all: $(DOTFILESPNG)\n\n"
+			"print:\n\techo \"$(DOTFILESPNG)\"\n\techo \"$(DOTFILES)\"\n\n"
 		);
 
 		ltw.formattedWrite("%%.png : %%.dot\n");
@@ -93,7 +99,10 @@ class Graphvic3 : Generator {
 			reAdjustEdges(this.world, copy);
 			this.generate(copy, g);
 
-			auto f = Generator.createFile([this.outputDir, ssName ~ ".dot"]);
+			assert(createFolder(this.outputDir ~ "/SoftwareSystems"));
+			auto f = Generator.createFile([this.outputDir ~ "/SoftwareSystems",
+				ssName ~ ".dot"]
+			);
 			auto ltw = f.lockingTextWriter();
 			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
 		}
@@ -127,8 +136,9 @@ class Graphvic3 : Generator {
 					reAdjustEdges(this.world, copy);
 					this.generate(copy, g);
 
-					auto f = Generator.createFile([this.outputDir, 
-						ssName ~ "_" ~ conName ~ "_" ~ comName ~ "_only.dot"]
+					assert(createFolder(this.outputDir ~ "/Components"));
+					auto f = Generator.createFile([this.outputDir ~ "/Components", 
+						ssName ~ "_" ~ conName ~ "_" ~ comName ~ ".dot"]
 					);
 					auto ltw = f.lockingTextWriter();
 					auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
@@ -157,8 +167,9 @@ class Graphvic3 : Generator {
 				reAdjustEdges(this.world, copy);
 				this.generate(copy, g);
 
-				auto f = Generator.createFile([this.outputDir, 
-					ssName ~ "_" ~ conName ~ "_only.dot"]
+				assert(createFolder(this.outputDir ~ "/Containers"));
+				auto f = Generator.createFile([this.outputDir ~ "/Containers", 
+					ssName ~ "_" ~ conName ~ ".dot"]
 				);
 				auto ltw = f.lockingTextWriter();
 				auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
@@ -191,7 +202,17 @@ class Graphvic3 : Generator {
 		reAdjustEdges(this.world, copy);
 		this.generate(copy, g);
 
-		auto f = Generator.createFile([this.outputDir, ss.name ~ "_only.dot"]);
+		string prefix;
+		if(auto s = cast(SoftwareSystem)ss) {
+			prefix = "/SoftwareSystems";
+		} else if(auto s = cast(HardwareSystem)ss) {
+			prefix = "/HardwareSystems";
+		}
+
+		assert(createFolder(this.outputDir ~ prefix));
+		auto f = Generator.createFile([this.outputDir ~ prefix, 
+			ss.name ~ ".dot"]
+		);
 		auto ltw = f.lockingTextWriter();
 		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
 		
