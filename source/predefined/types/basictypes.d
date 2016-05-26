@@ -1,6 +1,7 @@
 module predefined.types.basictypes;
 
-import model;
+import model.world;
+import model.type;
 
 Type floatType(TheWorld world) {
 	Type lng = world.getOrNewType("Float");
@@ -77,6 +78,58 @@ Type byteType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "TINYINT";
+	return lng;
+}
+
+Type ulongType(TheWorld world) {
+	Type lng = world.getOrNewType("ULong");
+	lng.typeToLanguage["D"] = "ulong";
+	lng.typeToLanguage["C"] = "uint64_t";
+	lng.typeToLanguage["C++"] = "uint64_t";
+	lng.typeToLanguage["Vibe.d"] = "ulong";
+	lng.typeToLanguage["Typescript"] = "number";
+	lng.typeToLanguage["Angular"] = "number";
+	lng.typeToLanguage["Angular2"] = "number";
+	lng.typeToLanguage["MySQL"] = "BIGINT UNSIGNED";
+	return lng;
+}
+
+Type uintType(TheWorld world) {
+	Type lng = world.getOrNewType("UInt");
+	lng.typeToLanguage["D"] = "uint";
+	lng.typeToLanguage["C"] = "uint32_t";
+	lng.typeToLanguage["C++"] = "uint32_t";
+	lng.typeToLanguage["Vibe.d"] = "uint";
+	lng.typeToLanguage["Typescript"] = "number";
+	lng.typeToLanguage["Angular"] = "number";
+	lng.typeToLanguage["Angular2"] = "number";
+	lng.typeToLanguage["MySQL"] = "INT UNSIGNED";
+	return lng;
+}
+
+Type ushortType(TheWorld world) {
+	Type lng = world.getOrNewType("UShort");
+	lng.typeToLanguage["D"] = "ushort";
+	lng.typeToLanguage["C"] = "uint16_t";
+	lng.typeToLanguage["C++"] = "uint16_t";
+	lng.typeToLanguage["Vibe.d"] = "ushort";
+	lng.typeToLanguage["Typescript"] = "number";
+	lng.typeToLanguage["Angular"] = "number";
+	lng.typeToLanguage["Angular2"] = "number";
+	lng.typeToLanguage["MySQL"] = "SMALLINT UNSIGNED";
+	return lng;
+}
+
+Type ubyteType(TheWorld world) {
+	Type lng = world.getOrNewType("UByte");
+	lng.typeToLanguage["D"] = "ubyte";
+	lng.typeToLanguage["C"] = "uint8_t";
+	lng.typeToLanguage["C++"] = "uint8_t";
+	lng.typeToLanguage["Vibe.d"] = "ubyte";
+	lng.typeToLanguage["Typescript"] = "number";
+	lng.typeToLanguage["Angular"] = "number";
+	lng.typeToLanguage["Angular2"] = "number";
+	lng.typeToLanguage["MySQL"] = "TINYINT UNSIGNED";
 	return lng;
 }
 

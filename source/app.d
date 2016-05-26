@@ -97,7 +97,7 @@ void main() {
 	);
 
 	user.containerType["D"] = "struct";
-	user.containerType["class"] = "struct";
+	user.containerType["Angular"] = "struct";
 	user.containerType["MySQL"] = "Table";
 
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
