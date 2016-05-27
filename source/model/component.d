@@ -3,11 +3,11 @@ module model.component;
 //import model.entity : Entity, ProtectedEntity;
 import model.entity;
 import model.classes;
-import model.world : SearchResult;
 
 class Component : ProtectedEntity {
 	import std.array : empty, front;
 	import model.entity : StringEntityMap;
+	import model.world : SearchResult, TheWorld;
 
 	StringEntityMap!(Class) classes;
 	Component[string] subComponents;
@@ -16,15 +16,15 @@ class Component : ProtectedEntity {
 		super(name, parent);
 	}
 
-	this(in Component old, in Entity parent) {
+	this(in Component old, in Entity parent, TheWorld world) {
 		super(old, parent);
 
 		foreach(const(string) key, const(Class) value; old.classes) {
-			this.classes[key] = new Class(value, this);
+			this.classes[key] = new Class(value, this, world);
 		}
 
 		foreach(string key, const(Component) value; old.subComponents) {
-			this.subComponents[key] = new Component(value, this);
+			this.subComponents[key] = new Component(value, this, world);
 		}
 		assert(!this.name.empty);
 	}

@@ -6,7 +6,7 @@ class Container : Entity {
 	import std.array : empty, front;
 	import model.classes;
 	import model.component;
-	import model.world : SearchResult;
+	import model.world : SearchResult, TheWorld;
 
 	string technology;
 	StringEntityMap!(Component) components;
@@ -16,15 +16,15 @@ class Container : Entity {
 		super(name, parent);
 	}
 
-	this(in Container old, in Entity parent) {
+	this(in Container old, in Entity parent, TheWorld world) {
 		super(old, parent);
 		this.technology = old.technology;
 		foreach(const(string) name, const(Component) com; old.components) {
-			this.components[name] = new Component(com, this);
+			this.components[name] = new Component(com, this, world);
 		}
 
 		foreach(const(string) name, const(Class) cls; old.classes) {
-			this.classes[name] = new Class(cls, this);
+			this.classes[name] = new Class(cls, this, world);
 		}
 
 		assert(!this.name.empty);

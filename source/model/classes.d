@@ -8,6 +8,7 @@ import containers.dynamicarray;
 import model.entity : getOrNewEntityImpl, Entity, ProtectedEntity, 
 	   toStringIndent;
 import model.type : Type;
+import model.world : TheWorld;
 
 class Class : ProtectedEntity {
 	import std.array : empty, front;
@@ -27,18 +28,16 @@ class Class : ProtectedEntity {
 		assert(false);
 	}
 
-	this(in Class old, in Entity parent) {
+	this(in Class old, in Entity parent, TheWorld world) {
 		super(old, null);	
 		// we need to fix up the parents in a second
 		// pass after we have copied TheWorld
 
 		foreach(const(string) key, const(Member) value; old.members) {
 			if(auto mf = cast(const MemberFunction)value) {
-				log(mf.name);
-				this.members[key] = new MemberFunction(mf, this);
+				this.members[key] = new MemberFunction(mf, this, world);
 			} else if(auto mv = cast(const MemberVariable)value) {
-				log(mv.name);
-				this.members[key] = new MemberVariable(mv, this);
+				this.members[key] = new MemberVariable(mv, this, world);
 			} else {
 				assert(false);
 			}
@@ -194,7 +193,7 @@ class MemberVariable : Member {
 		super(name, parent);
 	}
 
-	this(in MemberVariable old, in Entity parent) {
+	this(in MemberVariable old, in Entity parent, TheWorld world) {
 		super(old, parent);
 
 		foreach(const(string) key, const(string) value; old.protection) {
@@ -202,7 +201,7 @@ class MemberVariable : Member {
 		}
 
 		if(old.type) {
-			this.type = new Type(old.type, this);
+			this.type = world.getType(old.type.name);
 		}
 	}
 }
@@ -224,7 +223,7 @@ class MemberFunction : Member {
 		super(name, parent);
 	}
 
-	this(in MemberFunction old, in Entity parent) {
+	this(in MemberFunction old, in Entity parent, TheWorld world) {
 		super(old, parent);
 
 		foreach(const(string) key, const(string) value; old.protection) {
@@ -232,11 +231,11 @@ class MemberFunction : Member {
 		}
 
 		if(old.returnType) {
-			this.returnType = new Type(old.returnType, this);
+			this.returnType = world.getType(old.returnType.name);
 		}
 
 		foreach(const(MemberVariable) value; old.parameter) {
-			this.parameter.insert(new MemberVariable(value, this));
+			this.parameter.insert(new MemberVariable(value, this, world));
 		}
 
 		foreach(const(MemberModifier) value; old.modifier) {

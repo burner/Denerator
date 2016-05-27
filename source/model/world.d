@@ -31,20 +31,20 @@ class TheWorld : Entity {
 
 	this(in TheWorld old) {
 		super(old, null);
+		foreach(const(string) name, const(Type) t; old.typeContainerMapping) {
+			this.typeContainerMapping[name] = new Type(t, this);
+		}
+
 		foreach(const(string) name, const(Actor) act; old.actors) {
 			this.actors[name] = new Actor(act, this);
 		}
 
 		foreach(const(string) name, const(SoftwareSystem) ss; old.softwareSystems) {
-			this.softwareSystems[name] = new SoftwareSystem(ss, this);
+			this.softwareSystems[name] = new SoftwareSystem(ss, this, this);
 		}
 
 		foreach(const(string) name, const(HardwareSystem) hw; old.hardwareSystems) {
 			this.hardwareSystems[name] = new HardwareSystem(hw, this);
-		}
-
-		foreach(const(string) name, const(Type) t; old.typeContainerMapping) {
-			this.typeContainerMapping[name] = new Type(t, this);
 		}
 	}
 
@@ -142,6 +142,14 @@ class TheWorld : Entity {
 		return enforce(getOrNewEntityImpl!(Type)(name,
 			this.typeContainerMapping, null
 		));
+	}
+
+	Type getType(in string name) {
+		if(name in this.typeContainerMapping) {
+			return this.typeContainerMapping[name];
+		} else {
+			throw new Exception("Type \"" ~ name ~ "\" does not exists");
+		}
 	}
 
 	override string areYouIn(ref in StringHashSet store) const {

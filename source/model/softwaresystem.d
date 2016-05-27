@@ -17,7 +17,7 @@ private const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg) {
 class SoftwareSystem : Entity {
 	import std.array : empty, front;
 	import model.container : Container;
-	import model.world : SearchResult;
+	import model.world : SearchResult, TheWorld;
 
 	StringEntityMap!(Container) containers;
 	
@@ -25,10 +25,10 @@ class SoftwareSystem : Entity {
 		super(name, parent);
 	}
 
-	this(in SoftwareSystem old, in Entity parent) {
+	this(in SoftwareSystem old, in Entity parent, TheWorld world) {
 		super(old, parent);
 		foreach(const(string) name, const(Container) con; old.containers) {
-			this.containers[name] = new Container(con, this);
+			this.containers[name] = new Container(con, this, world);
 		}
 	}
 
