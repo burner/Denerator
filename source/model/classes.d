@@ -1,6 +1,7 @@
 module model.classes;
 
 import std.exception : enforce;
+import std.experimental.logger;
 
 import containers.dynamicarray;
 
@@ -33,8 +34,10 @@ class Class : ProtectedEntity {
 
 		foreach(const(string) key, const(Member) value; old.members) {
 			if(auto mf = cast(const MemberFunction)value) {
+				log(mf.name);
 				this.members[key] = new MemberFunction(mf, this);
 			} else if(auto mv = cast(const MemberVariable)value) {
+				log(mv.name);
 				this.members[key] = new MemberVariable(mv, this);
 			} else {
 				assert(false);
@@ -198,7 +201,9 @@ class MemberVariable : Member {
 			this.protection[key] = value;
 		}
 
-		this.type = new Type(old.type, this);
+		if(old.type) {
+			this.type = new Type(old.type, this);
+		}
 	}
 }
 
@@ -226,7 +231,9 @@ class MemberFunction : Member {
 			this.protection[key] = value;
 		}
 
-		this.returnType = new Type(old.returnType, this);
+		if(old.returnType) {
+			this.returnType = new Type(old.returnType, this);
+		}
 
 		foreach(const(MemberVariable) value; old.parameter) {
 			this.parameter.insert(new MemberVariable(value, this));

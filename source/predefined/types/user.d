@@ -26,7 +26,8 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 	assert(firstname.type);
 
 	MemberVariable middlename = user.getOrNew!MemberVariable("middlename");
-	firstname.type = world.getOrNewType("String");
+	middlename.type = world.getOrNewType("String");
+	assert(middlename.type);
 
 	MemberVariable lastname = user.getOrNew!MemberVariable("lastname");
 	lastname.type = world.getOrNewType("String");

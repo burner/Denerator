@@ -149,8 +149,6 @@ void main() {
 		postalCode, address
 	);
 
-	auto copy = duplicateNodes(world);
-
 	Graphvic gv = new Graphvic(world, "GraphvizOutput");
 	gv.generate();
 
