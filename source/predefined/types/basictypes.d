@@ -3,6 +3,18 @@ module predefined.types.basictypes;
 import model.world;
 import model.type;
 
+void addBasicTypes(TheWorld world) {
+	auto types = [&floatType, &doubleType, 
+		 &longType, &intType, &shortType, &byteType,
+		 &ulongType, &uintType, &ushortType, &ubyteType,
+		 &stringType, &floatType, &doubleType, &dateTimeType,
+		 &dateType, &timeType, &passwordHashType, &boolType];
+
+	foreach(it; types) {
+		it(world);
+	}
+}
+
 Type floatType(TheWorld world) {
 	Type lng = world.getOrNewType("Float");
 	lng.typeToLanguage["D"] = "float";
@@ -192,5 +204,14 @@ Type dateTimeType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "Date";
 	lng.typeToLanguage["Angular2"] = "Date";
 	lng.typeToLanguage["MySQL"] = "DATETIME";
+	return lng;
+}
+
+Type passwordHashType(TheWorld world) {
+	Type lng = world.getOrNewType("PasswordHash");
+	lng.typeToLanguage["D"] = "ubyte[64]";
+	lng.typeToLanguage["C++"] = "std::vector<uint8_t>";
+	lng.typeToLanguage["Vibe.d"] = "ubyte[64]";
+	lng.typeToLanguage["MySQL"] = "BINARY(64)";
 	return lng;
 }

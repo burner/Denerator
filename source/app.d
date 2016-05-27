@@ -1,13 +1,16 @@
 import std.stdio : writeln;
 
-import model;
-import duplicator;
-import generator.graphviz;
-import generator.mysql;
 import std.stdio : writeln;
 import std.typecons;
 import std.experimental.logger;
 import containers.hashmap;
+
+import model;
+import duplicator;
+import generator.graphviz;
+import generator.mysql;
+import predefined.types.user;
+import predefined.types.basictypes;
 
 class NoTimeLogger : Logger {
 	import std.stdio : writefln;
@@ -29,6 +32,8 @@ class NoTimeLogger : Logger {
 void main() {
 	sharedLog = new NoTimeLogger(LogLevel.all);
 	auto world = new TheWorld("TheWorld");
+	addBasicTypes(world);
+
 	Actor users = world.getOrNewActor("The Users");
 	users.description = "This is a way to long description for something "
 		~ "that should be obvious.";
@@ -92,7 +97,9 @@ void main() {
 	integer.typeToLanguage["Angular"] = "number";
 	integer.typeToLanguage["MySQL"] = "LONG";
 
-	Class user = getOrNewClass("User", frontendUserCtrl,
+	Class user = userClass(world, frontendUserCtrl, serverUserCtrl, database);
+
+	/*Class user = getOrNewClass("User", frontendUserCtrl,
 		serverUserCtrl, database
 	);
 
@@ -108,7 +115,7 @@ void main() {
 	auto userFirstname = user.getOrNew!MemberVariable("firstname");
 	userFirstname.type = str;
 	auto userLastname = user.getOrNew!MemberVariable("lastname");
-	userLastname.type = str;
+	userLastname.type = str;*/
 
 	Class address = getOrNewClass("Address",
 		frontendUserCtrl, serverUserCtrl, database

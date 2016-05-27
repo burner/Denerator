@@ -4,7 +4,7 @@ import predefined.types.basictypes;
 
 import model.world;
 import model.type;
-import model.class;
+import model.classes;
 
 Class userClass(Con...)(TheWorld world, Con cons) {
 	Class user = getOrNewClass("User", cons);
@@ -15,18 +15,26 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
 	userId.type = world.getOrNewType("ULong");
-	userId.protection["D"] = "private";
+	assert(userId.type);
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
+	userId.addLangSpecificAttribute("D", "const");
+	userId.addLangSpecificAttribute("Typescript", "const");
 
 	MemberVariable firstname = user.getOrNew!MemberVariable("firstname");
 	firstname.type = world.getOrNewType("String");
+	assert(firstname.type);
 
 	MemberVariable middlename = user.getOrNew!MemberVariable("middlename");
 	firstname.type = world.getOrNewType("String");
 
 	MemberVariable lastname = user.getOrNew!MemberVariable("lastname");
 	lastname.type = world.getOrNewType("String");
+	assert(lastname.type);
+
+	MemberVariable passwordHash = user.getOrNew!MemberVariable("password");
+	passwordHash.type = world.getOrNewType("PasswordHash");
+	assert(passwordHash.type);
 
 	return user;
 }

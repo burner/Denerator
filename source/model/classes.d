@@ -162,6 +162,7 @@ class MemberModifier : Entity {
 }
 
 class Member : ProtectedEntity {
+	string[][string] langSpecificAttributes;
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
@@ -172,12 +173,19 @@ class Member : ProtectedEntity {
 		foreach(const(string) key, const(string) value; old.protection) {
 			this.protection[key] = value;
 		}
+
+		foreach(key, value; old.langSpecificAttributes) {
+			this.langSpecificAttributes[key] = value.dup;
+		}
+	}
+
+	void addLangSpecificAttribute(string lang, string value) {
+		this.langSpecificAttributes[lang] ~= value;
 	}
 }
 
 class MemberVariable : Member {
 	Type type;
-	string[][string] langSpecificAttributes;
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
@@ -191,14 +199,6 @@ class MemberVariable : Member {
 		}
 
 		this.type = new Type(old.type, this);
-
-		foreach(key, value; old.langSpecificAttributes) {
-			this.langSpecificAttributes[key] = value.dup;
-		}
-	}
-
-	void addLangSpecificAttribute(string lang, string value) {
-		this.langSpecificAttributes[lang] ~= value;
 	}
 }
 
