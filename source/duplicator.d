@@ -17,7 +17,6 @@ TheWorld duplicateNodes(in TheWorld old) {
 
 	foreach(const(string) key, Type[] value; types) {
 		import std.array : front;
-		logf("%s %s", key, value.length);
 		if(value.length > 1) {
 			Type frontType = value.front;
 			foreach(it; value) {
@@ -32,7 +31,6 @@ TheWorld duplicateNodes(in TheWorld old) {
 
 	foreach(const(string) key, SoftwareSystem ss; ret.softwareSystems) {
 		modClasses(ss, classes);
-		//ss.toString(0);
 	}
 
 	EntityHashSet!Entity ehs;
