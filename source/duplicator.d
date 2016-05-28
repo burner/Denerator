@@ -8,8 +8,22 @@ TheWorld duplicateNodes(in TheWorld old) {
 	auto ret = new TheWorld(old);
 	StringEntityMap!Class classes;
 
+	// there should one one instance per type name
+	StringEntityMap!(Type[]) types;
+
 	foreach(const(string) key, SoftwareSystem ss; ret.softwareSystems) {
-		addClasses(ss, classes);
+		addClassesAndTypes(ss, classes, types);
+	}
+
+	foreach(const(string) key, Type[] value; types) {
+		import std.array : front;
+		logf("%s %s", key, value.length);
+		if(value.length > 1) {
+			Type frontType = value.front;
+			foreach(it; value) {
+				assert(it is frontType);
+			}
+		}
 	}
 
 	foreach(const(string) key, Class cls; classes) {
@@ -78,14 +92,58 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 }
 
 private {
-	void addClasses(SoftwareSystem ss, ref StringEntityMap!Class classes) {
-		void addClasses(Container con, ref StringEntityMap!Class classes) {
-			void addClasses(Component com, ref StringEntityMap!Class classes) {
+	void insertType(ref StringEntityMap!(Type[]) types, Type type) {
+		if(type.name !in types) {
+			types[type.name] = new Type[0];
+		}
+		Type[] old = types[type.name];
+		old ~= type;
+		types.remove(type.name);
+		types[type.name] = old;
+	}
+	void addTypes(Class cls, ref StringEntityMap!(Type[]) types) {
+		void addTypes(MemberFunction mf, ref StringEntityMap!(Type[]) types) {
+			foreach(MemberVariable parm; mf.parameter) {
+				if(parm.type) {
+					insertType(types, parm.type);
+				}
+			}
+		}
+
+		foreach(const(string) mName, Member mem; cls.members) {
+			if(auto mf = cast(MemberFunction)mem) {
+				if(mf.returnType) {
+					insertType(types, mf.returnType);
+					addTypes(mf, types);
+				}
+			} else if(auto mv = cast(MemberVariable)mem) {
+				if(mv.type) {
+					insertType(types, mv.type);
+				}
+			} else {
+				assert(false);
+			}
+		}
+
+	}
+	void addClassesAndTypes(SoftwareSystem ss, 
+			ref StringEntityMap!Class classes, 
+			ref StringEntityMap!(Type[]) types) 
+	{
+		void addClassesAndTypes(Container con, 
+				ref StringEntityMap!Class classes, 
+				ref StringEntityMap!(Type[]) types) 
+		{
+			void addClassesAndTypes(Component com, 
+					ref StringEntityMap!Class classes, 
+					ref StringEntityMap!(Type[]) types) 
+			{
 				foreach(const(string) key, Component scom; com.subComponents) {
-					addClasses(scom, classes);
+					addClassesAndTypes(scom, classes, types);
 				}
 
 				foreach(const(string) key, Class cls; com.classes) {
+					addTypes(cls, types);
 					if(key !in classes) {
 						classes[key] = cls;
 					}
@@ -93,10 +151,11 @@ private {
 			}
 
 			foreach(const(string) key, Component com; con.components) {
-				addClasses(com, classes);
+				addClassesAndTypes(com, classes, types);
 			}
 
 			foreach(const(string) key, Class cls; con.classes) {
+				addTypes(cls, types);
 				if(key !in classes) {
 					classes[key] = cls;
 				}
@@ -104,7 +163,7 @@ private {
 		}
 
 		foreach(const(string) key, Container con; ss.containers) {
-			addClasses(con, classes);
+			addClassesAndTypes(con, classes, types);
 		}
 	}
 
