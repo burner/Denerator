@@ -27,13 +27,13 @@ class Graphvic : Generator {
 	}
 
 	override void generate() {
-		this.generateMakefile();
-		this.generateAll();
-		this.generateSystemContext();
-		this.generateSoftwareSystem();
-		this.generateSystemOnly();
-		this.generateContainerOnly();
-		this.generateTopComponentsOnly();
+		//this.generateMakefile();
+		//this.generateAll();
+		//this.generateSystemContext();
+		//this.generateSoftwareSystem();
+		//this.generateSystemOnly();
+		//this.generateContainerOnly();
+		//this.generateTopComponentsOnly();
 		this.generateTopComponentsWorld();
 	}
 
@@ -119,6 +119,46 @@ class Graphvic : Generator {
 				foreach(const(string) comName, const(Component) com;
 						con.components)
 				{
+					logf("\n\n\n<<<<%s>>>>>\n\n", conName);
+					StringHashSet toKeep;
+
+					foreach(const(string) it, const(Entity) eCon;
+							this.world.connections) 
+					{
+						auto con = cast(const ConnectionImpl)eCon;
+						if(con.from is com) {
+							toKeep.insert(con.to.name);
+						} else if(con.to is com) {
+							toKeep.insert(con.from.name);
+						}
+					}
+
+					toKeep.insert(ssName);
+					toKeep.insert(conName);
+					toKeep.insert(comName);
+
+					TheWorld copy = duplicateNodes(this.world);
+					copy.drop(toKeep);
+					removeAll(copy.softwareSystems[ssName].containers, toKeep);
+					removeAll(
+						copy.softwareSystems[ssName].containers[conName].components,
+					   	toKeep
+					);
+
+					reAdjustEdges(this.world, copy);
+
+					Graph g = new Graph();
+					this.generate(copy, g);
+
+					assert(createFolder(this.outputDir ~ "/" ~ ssName
+						~ "/" ~ conName
+					));
+					auto f = Generator.createFile(
+						[this.outputDir, ssName, conName,
+						comName ~ "_world.dot"]
+					);
+					auto ltw = f.lockingTextWriter();
+					auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
 				}
 			}
 		}
@@ -134,9 +174,8 @@ class Graphvic : Generator {
 				foreach(const(string) comName, const(Component) com;
 						con.components)
 				{
-					logf("\n\n\n<<<<%s>>>>>\n\n", conName);
-					Graph g = new Graph();
 					StringHashSet toKeep;
+					Graph g = new Graph();
 					toKeep.insert(ssName);
 					toKeep.insert(conName);
 					toKeep.insert(comName);
