@@ -11,8 +11,8 @@ import graph;
 import writer;
 
 class Graphvic : Generator {
-	import std.array : empty;
-	import std.algorithm.iteration : map, joiner;
+	import std.array : empty, front;
+	import std.algorithm.iteration : map, joiner, splitter;
 	import std.typecons : scoped, Rebindable;
 	import std.format : format, formattedWrite;
 	import std.conv : to;
@@ -34,7 +34,7 @@ class Graphvic : Generator {
 		//this.generateSystemOnly();
 		//this.generateContainerOnly();
 		//this.generateTopComponentsOnly();
-		this.generateTopComponentsWorld();
+		this.generateClasses();
 	}
 
 	void generateMakefile() {
@@ -109,61 +109,6 @@ class Graphvic : Generator {
 		}
 	}
 
-	void generateTopComponentsWorld() {
-		foreach(const(string) ssName, const(SoftwareSystem) ss;
-				this.world.softwareSystems)
-		{
-			foreach(const(string) conName, const(Container) con;
-					ss.containers)
-			{
-				foreach(const(string) comName, const(Component) com;
-						con.components)
-				{
-					logf("\n\n\n<<<<%s>>>>>\n\n", conName);
-					StringHashSet toKeep;
-
-					foreach(const(string) it, const(Entity) eCon;
-							this.world.connections) 
-					{
-						auto con = cast(const ConnectionImpl)eCon;
-						if(con.from is com) {
-							toKeep.insert(con.to.name);
-						} else if(con.to is com) {
-							toKeep.insert(con.from.name);
-						}
-					}
-
-					toKeep.insert(ssName);
-					toKeep.insert(conName);
-					toKeep.insert(comName);
-
-					TheWorld copy = duplicateNodes(this.world);
-					copy.drop(toKeep);
-					removeAll(copy.softwareSystems[ssName].containers, toKeep);
-					removeAll(
-						copy.softwareSystems[ssName].containers[conName].components,
-					   	toKeep
-					);
-
-					reAdjustEdges(this.world, copy);
-
-					Graph g = new Graph();
-					this.generate(copy, g);
-
-					assert(createFolder(this.outputDir ~ "/" ~ ssName
-						~ "/" ~ conName
-					));
-					auto f = Generator.createFile(
-						[this.outputDir, ssName, conName,
-						comName ~ "_world.dot"]
-					);
-					auto ltw = f.lockingTextWriter();
-					auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
-				}
-			}
-		}
-	}
-
 	void generateTopComponentsOnly() {
 		foreach(const(string) ssName, const(SoftwareSystem) ss;
 				this.world.softwareSystems)
@@ -233,6 +178,9 @@ class Graphvic : Generator {
 				auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
 			}
 		}
+	}
+
+	void generateClasses() {
 	}
 
 	void generateSystemOnly() {
