@@ -34,6 +34,7 @@ class Graphvic : Generator {
 		this.generateSystemOnly();
 		this.generateContainerOnly();
 		this.generateTopComponentsOnly();
+		this.generateTopComponentsWorld();
 	}
 
 	void generateMakefile() {
@@ -105,6 +106,21 @@ class Graphvic : Generator {
 			);
 			auto ltw = f.lockingTextWriter();
 			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		}
+	}
+
+	void generateTopComponentsWorld() {
+		foreach(const(string) ssName, const(SoftwareSystem) ss;
+				this.world.softwareSystems)
+		{
+			foreach(const(string) conName, const(Container) con;
+					ss.containers)
+			{
+				foreach(const(string) comName, const(Component) com;
+						con.components)
+				{
+				}
+			}
 		}
 	}
 
