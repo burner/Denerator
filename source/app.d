@@ -10,6 +10,7 @@ import duplicator;
 import generator.graphviz;
 import generator.mysql;
 import predefined.types.user;
+import predefined.types.address;
 import predefined.types.basictypes;
 
 class NoTimeLogger : Logger {
@@ -99,38 +100,15 @@ void main() {
 
 	Class user = userClass(world, frontendUserCtrl, serverUserCtrl, database);
 
-	/*Class user = getOrNewClass("User", frontendUserCtrl,
-		serverUserCtrl, database
-	);
-
-	user.containerType["D"] = "struct";
-	user.containerType["Angular"] = "struct";
-	user.containerType["MySQL"] = "Table";
-
-	MemberVariable userId = user.getOrNew!MemberVariable("id");
-	userId.type = integer;
-	userId.protection["D"] = "private";
-	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
-	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
-	auto userFirstname = user.getOrNew!MemberVariable("firstname");
-	userFirstname.type = str;
-	auto userLastname = user.getOrNew!MemberVariable("lastname");
-	userLastname.type = str;*/
-
-	Class address = getOrNewClass("Address",
+	Class address = addressClass(world,
 		frontendUserCtrl, serverUserCtrl, database
 	);
-	address.containerType["MySQL"] = "Table";
 
 	MemberFunction func = address.getOrNew!MemberFunction("func");
 	func.returnType = integer;
 
 	func.getOrNew!MemberVariable("a").type = integer;
 	func.getOrNew!MemberVariable("b").type = str;
-
-	MemberVariable addressId = address.getOrNew!MemberVariable("id");
-	addressId.type = integer;
-	addressId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 
 	Aggregation userAddress = world.getOrNew!Aggregation("addressUser",
 		address, user

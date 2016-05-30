@@ -27,13 +27,13 @@ class Graphvic : Generator {
 	}
 
 	override void generate() {
-		//this.generateMakefile();
-		//this.generateAll();
-		//this.generateSystemContext();
-		//this.generateSoftwareSystem();
-		//this.generateSystemOnly();
-		//this.generateContainerOnly();
-		//this.generateTopComponentsOnly();
+		this.generateMakefile();
+		this.generateAll();
+		this.generateSystemContext();
+		this.generateSoftwareSystem();
+		this.generateSystemOnly();
+		this.generateContainerOnly();
+		this.generateTopComponentsOnly();
 		this.generateClasses();
 	}
 

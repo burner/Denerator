@@ -9,52 +9,52 @@ import model.classes;
 Class addressClass(Con...)(TheWorld world, Con cons) {
 	Class address = getOrNewClass("Address", cons);
 
-	user.containerType["D"] = "struct";
-	user.containerType["Angular"] = "struct";
-	user.containerType["MySQL"] = "Table";
+	address.containerType["D"] = "struct";
+	address.containerType["Angular"] = "struct";
+	address.containerType["MySQL"] = "Table";
 
-	MemberVariable userId = user.getOrNew!MemberVariable("id");
-	userId.type = world.getOrNewType("ULong");
-	assert(userId.type);
-	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
-	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
-	userId.addLangSpecificAttribute("D", "const");
-	userId.addLangSpecificAttribute("Typescript", "const");
+	MemberVariable addressId = address.getOrNew!MemberVariable("id");
+	addressId.type = world.getOrNewType("ULong");
+	assert(addressId.type);
+	addressId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
+	addressId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
+	addressId.addLangSpecificAttribute("D", "const");
+	addressId.addLangSpecificAttribute("Typescript", "const");
 
-	MemberVariable streetName = user.getOrNew!MemberVariable("streetname");
-	firstname.type = world.getOrNewType("String");
-	assert(streeName.type);
+	MemberVariable streetName = address.getOrNew!MemberVariable("streetname");
+	streetName.type = world.getOrNewType("String");
+	assert(streetName.type);
 
-	MemberVariable streetNumber = user.getOrNew!MemberVariable("streetnumber");
+	MemberVariable streetNumber = address.getOrNew!MemberVariable("streetnumber");
 	streetNumber.type = world.getOrNewType("String");
 	assert(streetNumber.type);
 
-	MemberVariable apartment = user.getOrNew!MemberVariable("apartment");
-	state.type = world.getOrNewType("String");
+	MemberVariable apartment = address.getOrNew!MemberVariable("apartment");
+	apartment.type = world.getOrNewType("String");
 	assert(apartment.type);
 
-	MemberVariable city = user.getOrNew!MemberVariable("city");
-	streetNumber.type = world.getOrNewType("String");
+	MemberVariable city = address.getOrNew!MemberVariable("city");
+	city.type = world.getOrNewType("String");
 	assert(city.type);
 
-	MemberVariable postalcode = user.getOrNew!MemberVariable("postalcode");
-	streetNumber.type = world.getOrNewType("String");
+	MemberVariable postalcode = address.getOrNew!MemberVariable("postalcode");
+	postalcode.type = world.getOrNewType("String");
 	assert(postalcode.type);
 
-	MemberVariable country = user.getOrNew!MemberVariable("country");
-	streetNumber.type = world.getOrNewType("String");
+	MemberVariable country = address.getOrNew!MemberVariable("country");
+	country.type = world.getOrNewType("String");
 	assert(country.type);
 
-	MemberVariable state = user.getOrNew!MemberVariable("state");
+	MemberVariable state = address.getOrNew!MemberVariable("state");
 	state.type = world.getOrNewType("String");
 	assert(state.type);
 
-	MemberVariable district = user.getOrNew!MemberVariable("district");
-	state.type = world.getOrNewType("String");
+	MemberVariable district = address.getOrNew!MemberVariable("district");
+	district.type = world.getOrNewType("String");
 	assert(district.type);
 
-	MemberVariable organisation = user.getOrNew!MemberVariable("organisation");
-	state.type = world.getOrNewType("String");
+	MemberVariable organisation = address.getOrNew!MemberVariable("organisation");
+	organisation.type = world.getOrNewType("String");
 	assert(organisation.type);
 
 	return address;
