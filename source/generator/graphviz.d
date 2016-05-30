@@ -181,6 +181,29 @@ class Graphvic : Generator {
 	}
 
 	void generateClasses() {
+		void genComponent(const(Component) com, ref DynamicArray arr) {
+			arr.insert(com.name);
+			scope(exit) arr.remove(arr.length-1);
+
+			foreach(it; subCom, com.subComponents) {
+				genComponent(subCon, arr);
+			}
+
+			foreach(const(string) clsKey, const(Class) cls; com.classes) {
+				Graph g = new Graph();
+				this.generate(cls, g);
+			}
+		}
+
+		foreach(const(string) ssName, const(SoftwareSystem) ss;
+				this.world.softwareSystems)
+		{
+			foreach(const(string) conName, const(Container) con;
+					ss.containers)
+			{
+				this.currentTechnology = container.technology;
+			}
+		}
 	}
 
 	void generateSystemOnly() {
