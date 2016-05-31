@@ -10,7 +10,7 @@ enum GenerateLevel {
 }
 
 abstract class Generator {
-	import std.file : exists, isDir, mkdir;
+	import std.file : exists, isDir, mkdirRecurse;
 	import std.stdio : File;
 
 	string genFolder;
@@ -28,7 +28,7 @@ abstract class Generator {
 		} else if(exists(foldername) && !isDir(foldername)) {
 			return false;
 		} else {
-			mkdir(foldername);
+			mkdirRecurse(foldername);
 			return exists(foldername) && isDir(foldername);
 		}
 	}

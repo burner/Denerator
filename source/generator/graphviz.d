@@ -11,7 +11,7 @@ import graph;
 import writer;
 
 class Graphvic : Generator {
-	import std.array : empty, front;
+	import std.array : array, empty, front;
 	import std.algorithm.iteration : map, joiner, splitter;
 	import std.typecons : scoped, Rebindable;
 	import std.format : format, formattedWrite;
@@ -181,27 +181,63 @@ class Graphvic : Generator {
 	}
 
 	void generateClasses() {
-		void genComponent(const(Component) com, ref DynamicArray arr) {
-			arr.insert(com.name);
-			scope(exit) arr.remove(arr.length-1);
+		void genClass(const(Class) cls, 
+				ref const(Entity)[] path) 
+		{
+			Graph g = new Graph();
+			generate(cls, g);
 
-			foreach(it; subCom, com.subComponents) {
-				genComponent(subCon, arr);
+			assert(path.length >= 2);
+			string folderName = this.outputDir ~ "/" ~ path[0].name ~ "/" 
+				~ path[1].name;
+
+			auto name = path[2 .. $].map!(a => cast(string)a.name);
+			string fileName = folderName ~ "/" ~ to!string(name.joiner("_"))
+				~ "_" ~ cls.name ~ "_class.dot";
+
+			assert(createFolder(folderName));
+			auto f = Generator.createFile([fileName]);
+			auto ltw = f.lockingTextWriter();
+			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		}
+
+		void genComponent(const(Component) com, 
+				ref const(Entity)[] path) 
+		{
+			path ~= com;
+			scope(exit) path =  path[0 .. $ -1];
+
+			foreach(it, subCom; com.subComponents) {
+				genComponent(subCom, path);
 			}
 
 			foreach(const(string) clsKey, const(Class) cls; com.classes) {
-				Graph g = new Graph();
-				this.generate(cls, g);
+				genClass(cls, path);
 			}
 		}
 
 		foreach(const(string) ssName, const(SoftwareSystem) ss;
 				this.world.softwareSystems)
 		{
+			const(Entity)[] path;
+			path ~= ss;
 			foreach(const(string) conName, const(Container) con;
 					ss.containers)
 			{
-				this.currentTechnology = container.technology;
+				path ~= con;
+				scope(exit) path =  path[0 .. $ -1];
+
+				this.currentTechnology = con.technology;
+
+				foreach(const(string) comName, const(Component) com;
+						con.components) 
+				{
+					genComponent(com, path);
+				}
+
+				foreach(const(string) clsKey, const(Class) cls; con.classes) {
+					genClass(cls, path);
+				}
 			}
 		}
 	}
@@ -516,9 +552,15 @@ class Graphvic : Generator {
 				}
 			}
 
+			const MemberFunction mf = cast(MemberFunction)mem;
+			if(mf !is null && mf.returnType) {
+				formattedWrite(app, "%s ",
+					mf.returnType.typeToLanguage[this.currentTechnology]
+				);
+			}
+
 			formattedWrite(app, "%s", mem.name);
 
-			const MemberFunction mf = cast(MemberFunction)mem;
 			if(mf !is null) {
 				logf("%s", mf.parameter.length);
 				formattedWrite(app, "(%s)",
