@@ -8,7 +8,7 @@ import containers.hashmap;
 import model;
 import duplicator;
 import generator.graphviz;
-import generator.mysql;
+import generator.mysql2;
 import predefined.types.user;
 import predefined.types.address;
 import predefined.types.basictypes;
@@ -127,9 +127,9 @@ void main() {
 		postalCode, address
 	);
 
-	Graphvic gv = new Graphvic(world, "GraphvizOutput");
-	gv.generate();
+	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	//gv.generate();
 
-	//MySQL mysql = new MySQL(world, "MySQL");
-	//mysql.generate(database);
+	MySQL2 mysql = new MySQL2(world, "MySQL2");
+	mysql.generate(database);
 }

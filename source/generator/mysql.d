@@ -37,7 +37,6 @@ class MySQL : Generator {
 		}
 	}
 	private void generateAggregation(Aggregation agg) {
-
 		SearchResult fromSR = this.currentContainer.holdsEntity(agg.from);
 		SearchResult toSR = this.currentContainer.holdsEntity(agg.to);
 
@@ -78,7 +77,7 @@ class MySQL : Generator {
 		auto ltw = f.lockingTextWriter();
 		//auto ltw = stdout.lockingTextWriter();
 
-		format(ltw, 0, "CREATE TABLE %s {\n", cls.name);
+		format(ltw, 0, "CREATE TABLE %s (\n", cls.name);
 
 		bool first = true;
 		foreach(it; cls.members.keys()) {
@@ -164,6 +163,5 @@ class MySQL : Generator {
 		}
 
 		return ret;
-
 	}
 }
