@@ -9,6 +9,7 @@ import model;
 import duplicator;
 import generator.graphviz;
 import generator.mysql2;
+import generator.vibed;
 import predefined.types.user;
 import predefined.types.address;
 import predefined.types.basictypes;
@@ -130,6 +131,9 @@ void main() {
 	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
 	//gv.generate();
 
-	MySQL2 mysql = new MySQL2(world, "MySQL2");
-	mysql.generate(database);
+	//MySQL2 mysql = new MySQL2(world, "MySQL2");
+	//mysql.generate(database);
+
+	auto vibed = new VibeD(world, "vibed");
+	vibed.generate(server);
 }
