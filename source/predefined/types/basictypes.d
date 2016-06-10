@@ -4,11 +4,18 @@ import model.world;
 import model.type;
 
 void addBasicTypes(TheWorld world) {
-	auto types = [&floatType, &doubleType, 
-		 &longType, &intType, &shortType, &byteType,
-		 &ulongType, &uintType, &ushortType, &ubyteType,
-		 &stringType, &floatType, &doubleType, &dateTimeType,
-		 &dateType, &timeType, &passwordHashType, &boolType];
+	auto types = [
+		&floatType, &doubleType, 
+		&longType, &intType, &shortType, &byteType,
+		&ulongType, &uintType, &ushortType, &ubyteType,
+		&stringType, &floatType, &doubleType, &dateTimeType,
+		&dateType, &timeType, 
+		&cfloatType, &cdoubleType, 
+		&clongType, &cintType, &cshortType, &cbyteType,
+		&culongType, &cuintType, &cushortType, &cubyteType,
+		&cstringType, &cfloatType, &cdoubleType, &cdateTimeType,
+		&cdateType, &ctimeType, 
+		&passwordHashType, &boolType];
 
 	foreach(it; types) {
 		it(world);
@@ -203,6 +210,198 @@ Type dateTimeType(TheWorld world) {
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
 	lng.typeToLanguage["Angular2"] = "Date";
+	lng.typeToLanguage["MySQL"] = "DATETIME";
+	return lng;
+}
+
+Type cfloatType(TheWorld world) {
+	Type lng = world.getOrNewType("const Float");
+	lng.typeToLanguage["D"] = "const(float)";
+	lng.typeToLanguage["C"] = "const float";
+	lng.typeToLanguage["C++"] = "float const";
+	lng.typeToLanguage["Vibe.d"] = "const(float)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "FLOAT";
+	return lng;
+}
+
+Type cdoubleType(TheWorld world) {
+	Type lng = world.getOrNewType("const Double");
+	lng.typeToLanguage["D"] = "const(double)";
+	lng.typeToLanguage["C"] = "const double";
+	lng.typeToLanguage["C++"] = "double const";
+	lng.typeToLanguage["Vibe.d"] = "const(double)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "DOUBLE";
+	return lng;
+}
+
+Type clongType(TheWorld world) {
+	Type lng = world.getOrNewType("const Long");
+	lng.typeToLanguage["D"] = "const(long)";
+	lng.typeToLanguage["C"] = "const int64_t";
+	lng.typeToLanguage["C++"] = "int64_t const";
+	lng.typeToLanguage["Vibe.d"] = "const(long)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "BIGINT";
+	return lng;
+}
+
+Type cintType(TheWorld world) {
+	Type lng = world.getOrNewType("const Int");
+	lng.typeToLanguage["D"] = "const(int)";
+	lng.typeToLanguage["C"] = "const int32_t";
+	lng.typeToLanguage["C++"] = "int32_t const";
+	lng.typeToLanguage["Vibe.d"] = "const(int)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "INT";
+	return lng;
+}
+
+Type cshortType(TheWorld world) {
+	Type lng = world.getOrNewType("const Short");
+	lng.typeToLanguage["D"] = "const(short)";
+	lng.typeToLanguage["C"] = "const int16_t";
+	lng.typeToLanguage["C++"] = "int16_t const";
+	lng.typeToLanguage["Vibe.d"] = "const(short)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "SMALLINT";
+	return lng;
+}
+
+Type cbyteType(TheWorld world) {
+	Type lng = world.getOrNewType("const Byte");
+	lng.typeToLanguage["D"] = "const(byte)";
+	lng.typeToLanguage["C"] = "const int8_t";
+	lng.typeToLanguage["C++"] = "int8_t const";
+	lng.typeToLanguage["Vibe.d"] = "const(byte)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "TINYINT";
+	return lng;
+}
+
+Type culongType(TheWorld world) {
+	Type lng = world.getOrNewType("const ULong");
+	lng.typeToLanguage["D"] = "const(ulong)";
+	lng.typeToLanguage["C"] = "const uint64_t";
+	lng.typeToLanguage["C++"] = "uint64_t const";
+	lng.typeToLanguage["Vibe.d"] = "const(ulong)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "BIGINT UNSIGNED";
+	return lng;
+}
+
+Type cuintType(TheWorld world) {
+	Type lng = world.getOrNewType("const UInt");
+	lng.typeToLanguage["D"] = "const(uint)";
+	lng.typeToLanguage["C"] = "const uint32_t";
+	lng.typeToLanguage["C++"] = "uint32_t const";
+	lng.typeToLanguage["Vibe.d"] = "const(uint)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "INT UNSIGNED";
+	return lng;
+}
+
+Type cushortType(TheWorld world) {
+	Type lng = world.getOrNewType("const UShort");
+	lng.typeToLanguage["D"] = "const(ushort)";
+	lng.typeToLanguage["C"] = "const uint16_t";
+	lng.typeToLanguage["C++"] = "uint16_t const";
+	lng.typeToLanguage["Vibe.d"] = "const(ushort)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "SMALLINT UNSIGNED";
+	return lng;
+}
+
+Type cubyteType(TheWorld world) {
+	Type lng = world.getOrNewType("const UByte");
+	lng.typeToLanguage["D"] = "const(ubyte)";
+	lng.typeToLanguage["C"] = "const uint8_t";
+	lng.typeToLanguage["C++"] = "uint8_t const";
+	lng.typeToLanguage["Vibe.d"] = "const(ubyte)";
+	lng.typeToLanguage["Typescript"] = "const number";
+	lng.typeToLanguage["Angular"] = "const number";
+	lng.typeToLanguage["Angular2"] = "const number";
+	lng.typeToLanguage["MySQL"] = "TINYINT UNSIGNED";
+	return lng;
+}
+
+Type cboolType(TheWorld world) {
+	Type lng = world.getOrNewType("const Bool");
+	lng.typeToLanguage["D"] = "const(bool)";
+	lng.typeToLanguage["C"] = "const bool";
+	lng.typeToLanguage["C++"] = "bool const";
+	lng.typeToLanguage["Vibe.d"] = "const(bool)";
+	lng.typeToLanguage["Typescript"] = "const boolean";
+	lng.typeToLanguage["Angular"] = "const boolean";
+	lng.typeToLanguage["Angular2"] = "const boolean";
+	lng.typeToLanguage["MySQL"] = "BIT(1)";
+	return lng;
+}
+
+Type cstringType(TheWorld world) {
+	Type lng = world.getOrNewType("const String");
+	lng.typeToLanguage["D"] = "const(string)";
+	lng.typeToLanguage["C"] = "const char const*";
+	lng.typeToLanguage["C++"] = "std::string const";
+	lng.typeToLanguage["Vibe.d"] = "const(string)";
+	lng.typeToLanguage["Typescript"] = "const string";
+	lng.typeToLanguage["Angular"] = "const string";
+	lng.typeToLanguage["Angular2"] = "const string";
+	lng.typeToLanguage["MySQL"] = "TEXT";
+	return lng;
+}
+
+Type cdateType(TheWorld world) {
+	Type lng = world.getOrNewType("const Date");
+	lng.typeToLanguage["D"] = "const(Date)";
+	lng.typeToLanguage["C++"] = "std::time_point const";
+	lng.typeToLanguage["Vibe.d"] = "const(Date)";
+	lng.typeToLanguage["Typescript"] = "const Date";
+	lng.typeToLanguage["Angular"] = "const Date";
+	lng.typeToLanguage["Angular2"] = "const Date";
+	lng.typeToLanguage["MySQL"] = "Date";
+	return lng;
+}
+
+Type ctimeType(TheWorld world) {
+	Type lng = world.getOrNewType("const Time");
+	lng.typeToLanguage["D"] = "const(TimeOfDay)";
+	lng.typeToLanguage["C++"] = "std::time_point const";
+	lng.typeToLanguage["Vibe.d"] = "const(TimeOfDay)";
+	lng.typeToLanguage["Typescript"] = "const Date";
+	lng.typeToLanguage["Angular"] = "const Date";
+	lng.typeToLanguage["Angular2"] = "const Date";
+	lng.typeToLanguage["MySQL"] = "TIME";
+	return lng;
+}
+
+Type cdateTimeType(TheWorld world) {
+	Type lng = world.getOrNewType("const DateTime");
+	lng.typeToLanguage["D"] = "const(DateTime)";
+	lng.typeToLanguage["C++"] = "std::time_point const";
+	lng.typeToLanguage["Vibe.d"] = "const(TimeOfDay)";
+	lng.typeToLanguage["Typescript"] = "const Date";
+	lng.typeToLanguage["Angular"] = "const Date";
+	lng.typeToLanguage["Angular2"] = "const Date";
 	lng.typeToLanguage["MySQL"] = "DATETIME";
 	return lng;
 }

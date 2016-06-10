@@ -7,7 +7,7 @@ import containers.dynamicarray;
 
 import model.entity : getOrNewEntityImpl, Entity, ProtectedEntity, 
 	   toStringIndent;
-import model.type : Type, TypeModifier;
+import model.type : Type;
 import model.world : TheWorld;
 
 class Class : ProtectedEntity {
@@ -178,7 +178,6 @@ class Member : ProtectedEntity {
 
 class MemberVariable : Member {
 	Type type;
-	TypeModifier typeMod;
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
@@ -194,10 +193,6 @@ class MemberVariable : Member {
 		if(old.type) {
 			this.type = world.getType(old.type.name);
 		}
-
-		if(old.typeMod) {
-			this.typeMod = new TypeModifier(old.typeMod, world);
-		}
 	}
 }
 
@@ -211,7 +206,6 @@ unittest {
 
 class MemberFunction : Member {
 	Type returnType;
-	TypeModifier returntypeMod;
 
 	DynamicArray!MemberVariable parameter;
 
@@ -228,10 +222,6 @@ class MemberFunction : Member {
 
 		if(old.returnType) {
 			this.returnType = world.getType(old.returnType.name);
-		}
-
-		if(old.returntypeMod) {
-			this.returntypeMod = new TypeModifier(old.returntypeMod, world);
 		}
 
 		foreach(const(MemberVariable) value; old.parameter) {

@@ -14,7 +14,7 @@ Class addressClass(Con...)(TheWorld world, Con cons) {
 	address.containerType["MySQL"] = "Table";
 
 	MemberVariable addressId = address.getOrNew!MemberVariable("id");
-	addressId.type = world.getOrNewType("ULong");
+	addressId.type = world.getOrNewType("const ULong");
 	assert(addressId.type);
 	addressId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	addressId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
