@@ -4,7 +4,6 @@ import generator;
 import model;
 import std.array : empty, front;
 
-
 class VibeD : Generator {
 	import std.exception : enforce;
 
@@ -48,7 +47,7 @@ class VibeD : Generator {
 			cls.name
 		);
 
-		auto mvs = MemRange!(const(MemberVariable))(cls.members);
+		auto mvs = MemRange!(const(MemberVariable))(&cls.members);
 		foreach(mv; mvs) {
 			this.generate(ltw, cast(const(ProtectedEntity))(mv), 1);
 			this.generate(ltw, cast(const(Type))(mv.type));
@@ -76,11 +75,7 @@ class VibeD : Generator {
 }
 
 struct MemRange(T) {
-<<<<<<< c2c6296f60bbacb815ab2ac2f0aba66bed057d6d
 	const(StringEntityMap!(Member))* mem;
-=======
-	const(StringEntityMap!(Member)*) mem;
->>>>>>> some changes
 	string[] names;
 	string curName;
 
@@ -93,12 +88,11 @@ struct MemRange(T) {
 	}
 
 	void step() {
-		import std.array : empty;
+		import std.array : empty, front;
 		while(!this.names.empty) {
-<<<<<<< c2c6296f60bbacb815ab2ac2f0aba66bed057d6d
-			string n = this.names[0];
+			this.curName = this.names.front;
 			this.names = this.names[1 .. $];
-			if(cast(T)(mem.get(n,null))) {
+			if(cast(T)(mem.get(this.curName,null))) {
 				break;
 			} 
 		}
@@ -108,26 +102,9 @@ struct MemRange(T) {
 		return this.names.empty;
 	}
 
-	T front() @property {
-		return cast(T)(this.mem.get(this.names.front,null));
-=======
-			this.curName = this.names[0];
-			this.names = this.names[1 .. $];
-			if(cast(T)(mem.get(this.curName, null))) {
-				break;
-			}
-		}
-	}
-
-	@property bool empty() const nothrow {
-		import std.array : empty;
-		return this.names.empty;
-	}
-
 	@property T front() {
 		import std.array : front;
 		return cast(T)(this.mem.get(this.curName, null));
->>>>>>> some changes
 	}
 
 	void popFront() {

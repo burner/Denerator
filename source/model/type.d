@@ -35,7 +35,10 @@ class TypeModifier : Entity {
 	}
 
 	void addTypeMod(in string lang, in string mod) {
-		string[] mods = this.typeModsLang[lang];
+		string[] mods;
+		if(lang in this.typeModsLang) {
+			mods = this.typeModsLang[lang];
+		}
 		mods ~= mod;
 		this.typeModsLang[lang] = mods;
 	}
