@@ -134,6 +134,6 @@ void main() {
 	MySQL2 mysql = new MySQL2(world, "MySQL2");
 	mysql.generate(database);
 
-	auto vibed = new VibeD(world, "vibed");
-	vibed.generate(server);
+	//auto vibed = new VibeD(world, "vibed");
+	//vibed.generate(server);
 }

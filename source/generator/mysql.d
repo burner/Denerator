@@ -18,9 +18,10 @@ class MySQL : Generator {
 		enforce(Generator.createFolder(outputDir));
 	}
 
-	override void generate() {}	
+	override void generate() { }	
 
 	void generate(Container con) {
+		deleteFolder(this.outputDir);
 		assert(con.technology == "MySQL");
 		this.currentContainer = con;
 

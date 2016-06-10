@@ -33,16 +33,24 @@ abstract class Generator {
 		}
 	}
 
-	static File createFile(in string filename) {
-		auto ret = File(filename, "w");
+	static File createFile(in string filename, in string openType = "w") {
+		auto ret = File(filename, openType);
 		assert(ret.isOpen());
 		return ret;
 	}
 
-	static File createFile(string[] filenames) {
+	static File createFile(string[] filenames, in string openType = "w") {
 		import std.algorithm.iteration : joiner;
 		import std.conv : to;
-		return createFile(filenames.joiner("/").to!string());
+		return createFile(filenames.joiner("/").to!string(), openType);
+	}
+
+	static void deleteFolder(string dir) {
+		import std.file : rmdirRecurse;
+		if(exists(dir)) {
+			rmdirRecurse(dir);
+		}
+		assert(!exists(dir), dir);
 	}
 }
 

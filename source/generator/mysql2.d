@@ -16,6 +16,7 @@ class MySQL2 : Generator {
 	this(in TheWorld world, in string outputDir) {
 		super(world);
 		this.outputDir = outputDir;
+		deleteFolder(this.outputDir);
 		enforce(Generator.createFolder(outputDir));
 	}
 
@@ -61,8 +62,15 @@ class MySQL2 : Generator {
 		);
 	}
 
-	void generateAlterTables(Out)(ref Out ltw) {
-
+	void generateAlterTables(in Class to, in Class from, in MemberVariable mv) {
+		auto f = Generator.createFile([this.outputDir, 
+			from.name ~ "_alter.sql"], "a"
+		);
+		auto ltw = f.lockingTextWriter();
+		format(ltw, 0, 
+			"ALTER TABLE %s ADD FOREIGN KEY(%s_%s) REFERENCE %s(%s);\n",
+			from.name, to.name, mv.name, to.name, mv.name
+		);
 	}
 
 	void generateClass(in Class cls) {
@@ -92,12 +100,16 @@ class MySQL2 : Generator {
 		}
 
 		foreach(it; this.world.connections.keys()) {
-			Composition com = cast(Composition)this.world.connections[it];
+			auto com = cast(const Composition)this.world.connections[it];
 			if(com !is null && com.from is cls) {
 				const(MemberVariable)[] foreignKeys = 
 					this.getPrivateKeyFromMemberVariable(cast(const Class)com.to);
-				foreach(const MemberVariable jt; foreignKeys) {
+				writefln("\t%s", com.to.name);
+				foreach(const(MemberVariable) jt; foreignKeys) {
 					generateMember(ltw, first, jt, com.to.name);
+					generateAlterTables(cast(const Class)com.to, 
+						cast(const Class)com.from, jt
+					);
 				}
 			}
 		}
