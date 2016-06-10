@@ -7,7 +7,7 @@ import containers.dynamicarray;
 
 import model.entity : getOrNewEntityImpl, Entity, ProtectedEntity, 
 	   toStringIndent;
-import model.type : Type;
+import model.type : Type, TypeModifier;
 import model.world : TheWorld;
 
 class Class : ProtectedEntity {
@@ -153,16 +153,6 @@ class Class : ProtectedEntity {
 	}
 }
 
-class MemberModifier : Entity {
-	this(in string name, in Entity parent) {
-		super(name, parent);
-	}
-
-	this(in MemberModifier old, in Entity parent) {
-		super(old, parent);
-	}
-}
-
 class Member : ProtectedEntity {
 	string[][string] langSpecificAttributes;
 	this(in string name, in Entity parent) {
@@ -188,6 +178,7 @@ class Member : ProtectedEntity {
 
 class MemberVariable : Member {
 	Type type;
+	TypeModifier typeMod;
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
@@ -203,6 +194,10 @@ class MemberVariable : Member {
 		if(old.type) {
 			this.type = world.getType(old.type.name);
 		}
+
+		if(old.typeMod) {
+			this.typeMod = new TypeModifier(old.typeMod, world);
+		}
 	}
 }
 
@@ -216,8 +211,9 @@ unittest {
 
 class MemberFunction : Member {
 	Type returnType;
+	TypeModifier returntypeMod;
+
 	DynamicArray!MemberVariable parameter;
-	DynamicArray!MemberModifier modifier;
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
@@ -234,12 +230,12 @@ class MemberFunction : Member {
 			this.returnType = world.getType(old.returnType.name);
 		}
 
-		foreach(const(MemberVariable) value; old.parameter) {
-			this.parameter.insert(new MemberVariable(value, this, world));
+		if(old.returntypeMod) {
+			this.returntypeMod = new TypeModifier(old.returntypeMod, world);
 		}
 
-		foreach(const(MemberModifier) value; old.modifier) {
-			this.modifier.insert(new MemberModifier(value, this));
+		foreach(const(MemberVariable) value; old.parameter) {
+			this.parameter.insert(new MemberVariable(value, this, world));
 		}
 	}
 

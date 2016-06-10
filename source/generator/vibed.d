@@ -48,9 +48,11 @@ class VibeD : Generator {
 			cls.name
 		);
 
-		auto mvs = MemRange!(MemberVariable)(&cls.members);
+		auto mvs = MemRange!(const(MemberVariable))(cls.members);
 		foreach(mv; mvs) {
-			format(ltw, 1, "%s\n", mv.name);
+			this.generate(ltw, cast(const(ProtectedEntity))(mv), 1);
+			this.generate(ltw, cast(const(Type))(mv.type));
+			format(ltw, 0, "%s;\n", mv.name);
 		}
 
 		format(ltw, 0, "}\n");
@@ -59,13 +61,28 @@ class VibeD : Generator {
 	void generate(Out)(ref Out ltw, in ProtectedEntity pe, in int indent = 0) {
 		if("D" in pe.protection) {
 			format(ltw, indent, "%s ", pe.protection["D"]);
+		} else if(indent > 0) {
+			format(ltw, indent, "");
+		}
+	}
+
+	void generate(Out)(ref Out ltw, in Type type, in int indent = 0) {
+		if("D" in type.typeToLanguage) {
+			format(ltw, indent, "%s ", type.typeToLanguage["D"]);
+		} else if(indent > 0) {
+			format(ltw, indent, "");
 		}
 	}
 }
 
 struct MemRange(T) {
+<<<<<<< c2c6296f60bbacb815ab2ac2f0aba66bed057d6d
 	const(StringEntityMap!(Member))* mem;
+=======
+	const(StringEntityMap!(Member)*) mem;
+>>>>>>> some changes
 	string[] names;
+	string curName;
 
 	static auto opCall(const(StringEntityMap!(Member))* m) {
 		MemRange!(T) ret;
@@ -76,7 +93,9 @@ struct MemRange(T) {
 	}
 
 	void step() {
+		import std.array : empty;
 		while(!this.names.empty) {
+<<<<<<< c2c6296f60bbacb815ab2ac2f0aba66bed057d6d
 			string n = this.names[0];
 			this.names = this.names[1 .. $];
 			if(cast(T)(mem.get(n,null))) {
@@ -91,6 +110,24 @@ struct MemRange(T) {
 
 	T front() @property {
 		return cast(T)(this.mem.get(this.names.front,null));
+=======
+			this.curName = this.names[0];
+			this.names = this.names[1 .. $];
+			if(cast(T)(mem.get(this.curName, null))) {
+				break;
+			}
+		}
+	}
+
+	@property bool empty() const nothrow {
+		import std.array : empty;
+		return this.names.empty;
+	}
+
+	@property T front() {
+		import std.array : front;
+		return cast(T)(this.mem.get(this.curName, null));
+>>>>>>> some changes
 	}
 
 	void popFront() {

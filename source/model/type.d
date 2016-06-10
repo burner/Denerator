@@ -1,10 +1,9 @@
 module model.type;
 
+import model.entity : StringEntityMap;
 import model.entity : Entity;
 
 class Type : Entity {
-	import model.entity : StringEntityMap;
-
 	StringEntityMap!(string) typeToLanguage;
 
 	this(in string name, in Entity parent) {
@@ -20,11 +19,24 @@ class Type : Entity {
 	}
 }
 
-/* This class maps types from one language to other languages
+/** Stuff like const, immutable, final */
+class TypeModifier : Entity {
+	StringEntityMap!(string[]) typeModsLang;
 
-For instance, a D string may becomes a LONGTEXT in MySQL
-*/
-class TypeMapping {
-	import model.entity : StringEntityMap;
-	StringEntityMap!(Type) equivalencies;
+	this(in string name, in Entity parent) {
+		super(name, parent);
+	}
+
+	this(in TypeModifier old, in Entity parent) {
+		super(old, parent);
+		foreach(const(string) lang, const(string[]) mods; old.typeModsLang) {
+			this.typeModsLang[lang] = mods.dup;
+		}
+	}
+
+	void addTypeMod(in string lang, in string mod) {
+		string[] mods = this.typeModsLang[lang];
+		mods ~= mod;
+		this.typeModsLang[lang] = mods;
+	}
 }

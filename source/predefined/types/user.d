@@ -15,6 +15,8 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
 	userId.type = world.getOrNewType("ULong");
+	userId.typeMod = new TypeMod("const");
+	userId.typeMod.addTypeMod("D", "const);
 	assert(userId.type);
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
