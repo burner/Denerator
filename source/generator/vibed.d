@@ -46,13 +46,15 @@ class VibeD : Generator {
 			cls.name
 		);
 
-		auto mvs = MemRange!(MemberVariable)(cls.members);
+		auto mvs = MemRange!(MemberVariable)(&cls.members);
 		//static assert(isInputRange!(typeof(mvs)));
 		pragma(msg, typeof(mvs));
+		auto f = mvs.front();
+		pragma(msg, typeof(f));
 		//foreach(mv; mvs) {
-		for(auto mv = mvs.front; !mv.empty; mv.popFront()) {
-			format(ltw, 1, "%s\n", mv.name);
-		}
+		//for(auto mv = mvs.front; !mvs.empty; mvs.popFront()) {
+		//	format(ltw, 1, "%s\n", mv.name);
+		//}
 
 		format(ltw, 0, "}\n");
 	}
@@ -67,11 +69,11 @@ class VibeD : Generator {
 struct MemRange(T) {
 	import std.array : empty, front;
 
-	const(StringEntityMap!(Member)*) mem;
+	const(StringEntityMap!(Member))* mem;
 	string[] names;
 
-	this(ref in StringEntityMap!(Member) m) {
-		this.mem = &m;
+	this(const(StringEntityMap!(Member))* m) {
+		this.mem = m;
 		this.names = this.mem.keys();
 		this.step();
 	}

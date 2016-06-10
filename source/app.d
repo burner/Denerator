@@ -8,7 +8,7 @@ import containers.hashmap;
 import model;
 import duplicator;
 import generator.graphviz;
-import generator.mysql2;
+//import generator.mysql2;
 import generator.vibed;
 import predefined.types.user;
 import predefined.types.address;
