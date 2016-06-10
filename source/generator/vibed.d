@@ -2,6 +2,8 @@ module generator.vibed;
 
 import generator;
 import model;
+import std.array : empty, front;
+
 
 class VibeD : Generator {
 	import std.exception : enforce;
@@ -47,14 +49,9 @@ class VibeD : Generator {
 		);
 
 		auto mvs = MemRange!(MemberVariable)(&cls.members);
-		//static assert(isInputRange!(typeof(mvs)));
-		pragma(msg, typeof(mvs));
-		auto f = mvs.front();
-		pragma(msg, typeof(f));
-		//foreach(mv; mvs) {
-		//for(auto mv = mvs.front; !mvs.empty; mvs.popFront()) {
-		//	format(ltw, 1, "%s\n", mv.name);
-		//}
+		foreach(mv; mvs) {
+			format(ltw, 1, "%s\n", mv.name);
+		}
 
 		format(ltw, 0, "}\n");
 	}
@@ -67,33 +64,32 @@ class VibeD : Generator {
 }
 
 struct MemRange(T) {
-	import std.array : empty, front;
-
 	const(StringEntityMap!(Member))* mem;
 	string[] names;
 
-	this(const(StringEntityMap!(Member))* m) {
-		this.mem = m;
-		this.names = this.mem.keys();
-		this.step();
+	static auto opCall(const(StringEntityMap!(Member))* m) {
+		MemRange!(T) ret;
+		ret.mem = m;
+		ret.names = ret.mem.keys();
+		ret.step();
+		return ret;
 	}
 
 	void step() {
 		while(!this.names.empty) {
 			string n = this.names[0];
+			this.names = this.names[1 .. $];
 			if(cast(T)(mem.get(n,null))) {
 				break;
-			} else {
-				this.names = this.names[1 .. $];
-			}
+			} 
 		}
 	}
 
-	@property bool empty() const nothrow {
+	bool empty() @property const nothrow {
 		return this.names.empty;
 	}
 
-	@property T front() {
+	T front() @property {
 		return cast(T)(this.mem.get(this.names.front,null));
 	}
 
