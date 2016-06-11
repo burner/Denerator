@@ -54,7 +54,87 @@ class VibeD : Generator {
 			format(ltw, 0, "%s;\n", mv.name);
 		}
 
+		format(ltw, 0, "\n");
+		generateCtor(ltw, cls);
+		generateToStr(ltw, cls);
+
 		format(ltw, 0, "}\n");
+	}
+
+	void generateCtor(Out)(ref Out ltw, in Class cls) {
+		import std.array : appender;
+		auto app = appender!string();
+		bool first = true;
+		bool wrap = false;
+		format(app, 1, "this(");
+		foreach(mv; MemRange!(const MemberVariable)(&cls.members)) {
+			if(app.data.length + parameterLength(mv) > 80) {
+				format(ltw, 0, "%s\n", app.data);
+				app = appender!string();
+				format(app, 3, "");
+				wrap = true;
+			} 
+			if(!first) {
+				format(app, 0, ", ");
+			}
+			generate(app, mv.type);
+			format(app, 0, "%s", mv.name);
+			first = false;
+		}
+
+		if(wrap) {
+			format(ltw, 0, "%s)\n", app.data);
+			format(ltw, 1, "{\n");
+		} else {
+			format(ltw, 0, "%s) {\n", app.data);
+		}
+
+		foreach(mv; MemRange!(const MemberVariable)(&cls.members)) {
+			format(ltw, 2, "this.%s = %s;\n", mv.name, mv.name);
+		}
+		format(ltw, 1, "}\n\n");
+	}
+
+	void generateToStr(Out)(ref Out ltw, in Class cls) {
+		foreach(it; 0 .. 3) {
+			if(it == 0) {
+				format(ltw, 1, "string toString() {\n");
+				format(ltw, 2, "import std.array : appender\n");
+				format(ltw, 2, "auto sink = appender!string()\n");
+			} else if(it == 1) {
+				format(ltw, 1, 
+					"void toString(scope void delegate(const(char)[]) sink) {\n"
+				);
+			} else if(it == 2) {
+				format(ltw, 1, 
+					"void toString(scope void delegate(const(char)[]) " ~
+					"@trusted sink) {\n"
+				);
+			} else {
+				assert(false);
+			}
+
+			format(ltw, 2, "import std.format : formattedWrite;\n");
+			format(ltw, 2, "formattedWrite(sink, \"%s(\");\n", cls.name);
+
+			bool first = true;
+			foreach(mv; MemRange!(const MemberVariable)(&cls.members)) {
+				if(!first) {
+					format(ltw, 2, "formattedWrite(sink, \",\");\n");
+				}
+				first = false;
+				format(ltw, 2, "formattedWrite(sink, \"%s='%%s'\", this.%s);\n", 
+					mv.name, mv.name
+				);
+			}
+			format(ltw, 2, "formattedWrite(sink, \")\");\n");
+
+			if(it == 0) {
+				format(ltw, 2, "return sink.data\n");
+			}
+
+			format(ltw, 1, "}\n\n");
+		}
 	}
 
 	void generate(Out)(ref Out ltw, in ProtectedEntity pe, in int indent = 0) {
@@ -70,6 +150,14 @@ class VibeD : Generator {
 			format(ltw, indent, "%s ", type.typeToLanguage["D"]);
 		} else if(indent > 0) {
 			format(ltw, indent, "");
+		}
+	}
+
+	size_t parameterLength(in MemberVariable mv) {
+		if(mv.type && "D" in mv.type.typeToLanguage) {
+			return mv.type.typeToLanguage["D"].length + mv.name.length + 2;
+		} else {
+			return mv.name.length + 2;
 		}
 	}
 }

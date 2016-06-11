@@ -70,8 +70,9 @@ string prepareName(string name) {
 }
 
 void generateIndent(O)(ref O output, int indent) {
+	indent *= 4;
 	for(; indent > 0; --indent) {
-		output.put("\t");
+		output.put(" ");
 	}
 }
 
