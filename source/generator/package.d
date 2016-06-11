@@ -81,3 +81,42 @@ void format(O,Args...)(ref O output, int indent, in string str, Args args) {
 	output.generateIndent(indent);
 	output.formattedWrite(str, args);
 }
+
+struct MemRange(T) {
+	const(StringEntityMap!(Member))* mem;
+	string[] names;
+	string curName;
+
+	static auto opCall(const(StringEntityMap!(Member))* m) {
+		MemRange!(T) ret;
+		ret.mem = m;
+		ret.names = ret.mem.keys();
+		ret.step();
+		return ret;
+	}
+
+	void step() {
+		import std.array : empty, front;
+		while(!this.names.empty) {
+			this.curName = this.names.front;
+			this.names = this.names[1 .. $];
+			if(cast(T)(mem.get(this.curName,null))) {
+				break;
+			} 
+		}
+	}
+
+	bool empty() @property const nothrow {
+		import std.array : empty;
+		return this.names.empty;
+	}
+
+	@property T front() {
+		import std.array : front;
+		return cast(T)(this.mem.get(this.curName, null));
+	}
+
+	void popFront() {
+		this.step();
+	}
+}

@@ -8,7 +8,7 @@ import containers.hashmap;
 import model;
 import duplicator;
 import generator.graphviz;
-import generator.mysql2;
+import generator.mysql;
 import generator.vibed;
 import predefined.types.user;
 import predefined.types.address;
@@ -131,7 +131,7 @@ void main() {
 	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
 	//gv.generate();
 
-	MySQL2 mysql = new MySQL2(world, "MySQL2");
+	MySQL mysql = new MySQL(world, "MySQL");
 	mysql.generate(database);
 
 	//auto vibed = new VibeD(world, "vibed");
