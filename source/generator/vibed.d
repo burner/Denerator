@@ -50,7 +50,9 @@ class VibeD : Generator {
 		auto mvs = MemRange!(const(MemberVariable))(&cls.members);
 		foreach(mv; mvs) {
 			this.generate(ltw, cast(const(ProtectedEntity))(mv), 1);
-			this.generate(ltw, cast(const(Type))(mv.type));
+			chain!Exception(this.generate(ltw, cast(const(Type))(mv.type)),
+				"In Class with name", cls.name, "."
+			);
 			format(ltw, 0, "%s;\n", mv.name);
 		}
 
@@ -146,18 +148,22 @@ class VibeD : Generator {
 	}
 
 	void generate(Out)(ref Out ltw, in Type type, in int indent = 0) {
-		if("D" in type.typeToLanguage) {
-			format(ltw, indent, "%s ", type.typeToLanguage["D"]);
-		} else if(indent > 0) {
-			format(ltw, indent, "");
-		}
+		expect!Exception(type, "MemberVariable of name", type.name, 
+			" has no type"
+		);
+		expect!Exception("D" in type.typeToLanguage, "Variable type",
+			"has no typeToLanguage entry for key", "D"
+		);
+		format(ltw, indent, "%s ", type.typeToLanguage["D"]);
 	}
 
 	size_t parameterLength(in MemberVariable mv) {
-		if(mv.type && "D" in mv.type.typeToLanguage) {
-			return mv.type.typeToLanguage["D"].length + mv.name.length + 2;
-		} else {
-			return mv.name.length + 2;
-		}
+		expect!Exception(mv.type, "MemberVariable of name", mv.name, 
+			" has no type"
+		);
+		expect!Exception("D" in mv.type.typeToLanguage, "MemberVariable.type",
+			"has no entry for key", "D"
+		);
+		return mv.type.typeToLanguage["D"].length + mv.name.length + 2;
 	}
 }
