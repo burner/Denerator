@@ -122,7 +122,7 @@ struct MemRange(T) {
 	}
 }
 
-auto chain(ET, F, int line = __LINE__, string file = __FILE__, Args...)
+auto chain(ET = Exception, F, int line = __LINE__, string file = __FILE__, Args...)
 		(lazy F exp, lazy Args args)
 {
 	try {
@@ -132,7 +132,7 @@ auto chain(ET, F, int line = __LINE__, string file = __FILE__, Args...)
 	}
 }
 
-void expect(ET, F, int line = __LINE__, string file = __FILE__, Args...)
+void expect(ET = Exception, F, int line = __LINE__, string file = __FILE__, Args...)
 		(lazy F exp, lazy Args args)
 {
 	if(!exp) {
