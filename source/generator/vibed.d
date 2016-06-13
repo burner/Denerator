@@ -50,9 +50,14 @@ class VibeD : Generator {
 		auto mvs = MemRange!(const(MemberVariable))(&cls.members);
 		foreach(mv; mvs) {
 			this.generate(ltw, cast(const(ProtectedEntity))(mv), 1);
-			chain!Exception(this.generate(ltw, cast(const(Type))(mv.type)),
+			chain!Exception(
+				chain!Exception(
+					this.generate(ltw, cast(const(Type))(mv.type)),
+					"In Member with name", mv.name, "."
+				),
 				"In Class with name", cls.name, "."
 			);
+
 			format(ltw, 0, "%s;\n", mv.name);
 		}
 
@@ -148,9 +153,7 @@ class VibeD : Generator {
 	}
 
 	void generate(Out)(ref Out ltw, in Type type, in int indent = 0) {
-		expect!Exception(type, "MemberVariable of name", type.name, 
-			" has no type"
-		);
+		expect!Exception(type, "MemberVariable has no type");
 		expect!Exception("D" in type.typeToLanguage, "Variable type",
 			"has no typeToLanguage entry for key", "D"
 		);
