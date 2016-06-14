@@ -4,14 +4,18 @@ import generator;
 import model;
 import std.array : empty, front;
 
+import containers.dynamicarray;
+
 class VibeD : Generator {
 	import std.exception : enforce;
 
 	const(string) outputDir;
+	DynamicArray!string outDirPath;
 
 	this(in TheWorld world, in string outputDir) {
 		super(world);
 		this.outputDir = outputDir;
+		this.outDirPath.insert(outputDir);
 		enforce(Generator.createFolder(outputDir));
 	}
 
