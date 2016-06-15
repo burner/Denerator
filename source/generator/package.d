@@ -1,5 +1,7 @@
 module generator;
 
+import containers.dynamicarray;
+
 import model;
 
 enum GenerateLevel {
@@ -11,7 +13,7 @@ enum GenerateLevel {
 
 abstract class Generator {
 	import std.file : exists, isDir, mkdirRecurse;
-	import std.stdio : File;
+	import std.stdio : File, writef, writeln;
 
 	string genFolder;
 	const(TheWorld) world;
@@ -21,6 +23,13 @@ abstract class Generator {
 	}
 
 	abstract void generate();
+
+	static void createFolder(ref DynamicArray!string foldernames) {
+		foreach(it; foldernames) {
+			writef("%s ", it);
+		}
+		writeln();
+	}
 
 	static bool createFolder(in string foldername) {
 		if(exists(foldername) && isDir(foldername)) {
@@ -149,4 +158,8 @@ string joinElem(Args...)(lazy Args args) {
 		formattedWrite(app, "%s ", arg);
 	}
 	return app.data;
+}
+
+void removeBack(T)(ref DynamicArray!T stack) {
+	stack.remove(stack.length -1);
 }

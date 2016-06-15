@@ -35,6 +35,10 @@ class VibeD : Generator {
 	}
 
 	void generate(Out)(ref Out ltw, in Component com) {
+		this.outDirPath.insert(com.name);
+		scope(exit) removeBack(this.outDirPath);
+		createFolder(this.outDirPath);
+
 		foreach(const(string) cn, const(Component) scom; com.subComponents) {
 			this.generate(ltw, scom);
 		}
