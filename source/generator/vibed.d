@@ -1,5 +1,6 @@
 module generator.vibed;
 
+import std.experimental.logger;
 import generator;
 import model;
 import std.array : empty, front;
@@ -8,9 +9,12 @@ import containers.dynamicarray;
 
 class VibeD : Generator {
 	import std.exception : enforce;
+	import std.typecons : Rebindable;
 
 	const(string) outputDir;
 	DynamicArray!string outDirPath;
+	EntityHashSet!Entity con;
+	Rebindable!(const Container) curCon;
 
 	this(in TheWorld world, in string outputDir) {
 		super(world);
@@ -24,6 +28,10 @@ class VibeD : Generator {
 
 	void generate(in Container con) {
 		import std.stdio : stdout;
+		this.curCon = con;
+		this.con.clear();
+		this.con.insert(cast(Entity)con);
+
 		auto ltw = stdout.lockingTextWriter();
 		foreach(const(string) cn, const(Component) com; con.components) {
 			this.generate(ltw, com);
@@ -48,8 +56,27 @@ class VibeD : Generator {
 		}
 	}
 
+	void generateImports(Out)(ref Out ltw, in Class cls) {
+		foreach(const(string) key, const(Entity) con; this.world.connections)
+		{
+			auto cImpl = cast(const ConnectionImpl)con;
+			if(cImpl.from is cls && (cast(const Dependency)con 
+					|| cast(const Composition)con
+					|| cast(const Realization)con))
+			{
+				auto tCls = cast(const Class)cImpl.to;
+				format(ltw, 0, "import %s;\n", 
+					holdsContainerNameTrim(tCls.pathsToRoot())
+				);
+			}
+		}
+	}
+
 	void generate(Out)(ref Out ltw, in Class cls) {
+		expect(cls !is null, "Class must not be null.");
 		import std.range : isInputRange;
+		generateImports(ltw, cls);
+
 		generate(ltw, cast(ProtectedEntity)cls);
 		format(ltw, 0, "%s %s {\n", cls.containerType.get("D", "class"), 
 			cls.name
@@ -174,5 +201,20 @@ class VibeD : Generator {
 			"has no entry for key", "D"
 		);
 		return mv.type.typeToLanguage["D"].length + mv.name.length + 2;
+	}
+
+	string holdsContainerNameTrim(string[] paths) {
+		import std.string : indexOf;
+
+		foreach(string str; paths) {
+			if(str.indexOf(this.curCon.name) != -1) {
+				auto dot = str.indexOf('.');
+				if(dot != -1) {
+					return str[dot + 1 .. $];
+				}
+			}
+		}
+
+		return "";
 	}
 }
