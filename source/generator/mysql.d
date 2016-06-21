@@ -141,7 +141,7 @@ class MySQL : Generator {
 		format(ltw, 0, "CREATE TABLE %s (\n", cls.name);
 
 		bool first = true;
-		foreach(mv; MemRange!(const MemberVariable)(&cls.members)) {
+		foreach(mv; MemRange!(const MemberVariable)(cls.members)) {
 			generateMember(ltw, first, mv);
 
 			if(mv && 
@@ -180,7 +180,7 @@ class MySQL : Generator {
 
 		const(MemberVariable)[] ret;
 
-		foreach(mv; MemRange!(const MemberVariable)(&cls.members)) {
+		foreach(mv; MemRange!(const MemberVariable)(cls.members)) {
 			if(this.currentContainer.technology in mv.langSpecificAttributes
 				&& mv.langSpecificAttributes[this.currentContainer.technology]
 					.canFind("PRIMARY KEY"))

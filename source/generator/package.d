@@ -93,37 +93,37 @@ void format(O,Args...)(ref O output, int indent, in string str, Args args) {
 }
 
 struct MemRange(T) {
-	const(StringEntityMap!(Member))* mem;
-	string[] names;
-	string curName;
+	import std.typecons : Rebindable;
+	const(Member)[] mem;
+	Rebindable!(const(Member)) curMem;
 
-	static auto opCall(const(StringEntityMap!(Member))* m) {
+	static auto opCall(const(Member)[] m) {
 		MemRange!(T) ret;
 		ret.mem = m;
-		ret.names = ret.mem.keys();
 		ret.step();
 		return ret;
 	}
 
 	void step() {
 		import std.array : empty, front;
-		while(!this.names.empty) {
-			this.curName = this.names.front;
-			this.names = this.names[1 .. $];
-			if(cast(T)(mem.get(this.curName,null))) {
-				break;
+		while(!this.mem.empty) {
+			this.curMem = this.mem.front;
+			this.mem = this.mem[1 .. $];
+			if(cast(T)(this.curMem)) {
+				return;
 			} 
 		}
+		this.curMem = null;
 	}
 
 	bool empty() @property const nothrow {
 		import std.array : empty;
-		return this.names.empty;
+		return this.mem.empty && this.curMem is null;
 	}
 
 	@property T front() {
 		import std.array : front;
-		return cast(T)(this.mem.get(this.curName, null));
+		return cast(T)this.curMem;
 	}
 
 	void popFront() {

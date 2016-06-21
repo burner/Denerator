@@ -505,7 +505,7 @@ class Graphvic : Generator {
 		node.shape = "box";
 	}
 
-	string genClassMember(in ref StringEntityMap!Member member) {
+	string genClassMember(in ref Member[] member) {
 		import std.array : appender;
 		string buildParameter(in MemberVariable mv) {
 			if(mv.type is null
@@ -522,7 +522,7 @@ class Graphvic : Generator {
 
 		auto app = appender!string();
 
-		foreach(const(string) memName, const(Entity) value; member) {
+		foreach(const(Entity) value; member) {
 			auto mem = cast(Member)value;
 			assert(mem !is null);
 

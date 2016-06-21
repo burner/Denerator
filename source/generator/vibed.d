@@ -9,7 +9,7 @@ import containers.dynamicarray;
 
 class VibeD : Generator {
 	import std.exception : enforce;
-	import std.typecons : Rebindable;
+	import std.typecons : Rebindable, Flag;
 
 	const(string) outputDir;
 	DynamicArray!string outDirPath;
@@ -82,7 +82,7 @@ class VibeD : Generator {
 			cls.name
 		);
 
-		auto mvs = MemRange!(const(MemberVariable))(&cls.members);
+		auto mvs = MemRange!(const(MemberVariable))(cls.members);
 		foreach(mv; mvs) {
 			this.generate(ltw, cast(const(ProtectedEntity))(mv), 1);
 			chain(
@@ -97,19 +97,35 @@ class VibeD : Generator {
 		}
 
 		format(ltw, 0, "\n");
-		generateCtor(ltw, cls);
+		generateCtor(ltw, cls, FilterConst.no);
+		generateCtor(ltw, cls, FilterConst.yes);
 		generateToStr(ltw, cls);
 
 		format(ltw, 0, "}\n");
 	}
 
-	void generateCtor(Out)(ref Out ltw, in Class cls) {
+	bool isConst(in Member mem) {
+		import std.algorithm.searching : canFind;
+		if("D" in mem.langSpecificAttributes) {
+			const(string[]) att = mem.langSpecificAttributes["D"];
+			return canFind(att, "const");
+		} else {
+			return false;
+		}
+	}
+
+	alias FilterConst = Flag!"FilterConst";
+
+	void generateCtor(Out)(ref Out ltw, in Class cls, const FilterConst fc) {
 		import std.array : appender;
 		auto app = appender!string();
 		bool first = true;
 		bool wrap = false;
 		format(app, 1, "this(");
-		foreach(mv; MemRange!(const MemberVariable)(&cls.members)) {
+		foreach(mv; MemRange!(const MemberVariable)(cls.members)) {
+			if(fc == FilterConst.yes && isConst(mv)) {
+				continue;
+			}
 			if(app.data.length + parameterLength(mv) > 80) {
 				format(ltw, 0, "%s\n", app.data);
 				app = appender!string();
@@ -131,7 +147,10 @@ class VibeD : Generator {
 			format(ltw, 0, "%s) {\n", app.data);
 		}
 
-		foreach(mv; MemRange!(const MemberVariable)(&cls.members)) {
+		foreach(mv; MemRange!(const MemberVariable)(cls.members)) {
+			if(fc == FilterConst.yes && isConst(mv)) {
+				continue;
+			}
 			format(ltw, 2, "this.%s = %s;\n", mv.name, mv.name);
 		}
 		format(ltw, 1, "}\n\n");
@@ -160,7 +179,7 @@ class VibeD : Generator {
 			format(ltw, 2, "formattedWrite(sink, \"%s(\");\n", cls.name);
 
 			bool first = true;
-			foreach(mv; MemRange!(const MemberVariable)(&cls.members)) {
+			foreach(mv; MemRange!(const MemberVariable)(cls.members)) {
 				if(!first) {
 					format(ltw, 2, "formattedWrite(sink, \",\");\n");
 				}

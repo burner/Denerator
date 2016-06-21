@@ -15,7 +15,7 @@ class Class : ProtectedEntity {
 	import model.entity : Entity, EntityHashSet, StringEntityMap, StringHashSet;
 	import model.type : Type;
 
-	StringEntityMap!(Member) members;
+	Member[] members;
 	StringEntityMap!(string) containerType;
 
 	Entity[] parents;
@@ -33,11 +33,11 @@ class Class : ProtectedEntity {
 		// we need to fix up the parents in a second
 		// pass after we have copied TheWorld
 
-		foreach(const(string) key, const(Member) value; old.members) {
+		foreach(const(Member) value; old.members) {
 			if(auto mf = cast(const MemberFunction)value) {
-				this.members[key] = new MemberFunction(mf, this, world);
+				this.members ~= new MemberFunction(mf, this, world);
 			} else if(auto mv = cast(const MemberVariable)value) {
-				this.members[key] = new MemberVariable(mv, this, world);
+				this.members ~= new MemberVariable(mv, this, world);
 			} else {
 				assert(false);
 			}
@@ -76,7 +76,16 @@ class Class : ProtectedEntity {
 	}
 
 	S getOrNew(S)(in string name) {
-		return enforce(getOrNewEntityImpl!(Member,S)(name, this.members, this));
+		import std.array : back;
+		//return enforce(getOrNewEntityImpl!(Member,S)(name, this.members, this));
+		foreach(mem; this.members) {
+			if(name == mem.name) {
+				return cast(S)mem;
+			}
+		}
+
+		this.members ~= new S(name, this);
+		return cast(S)this.members.back();
 	}
 
 	override string areYouIn(ref in StringHashSet store) const {
@@ -119,8 +128,8 @@ class Class : ProtectedEntity {
 			immutable fr = path.front;
 			path = path[1 .. $];
 
-			foreach(const(string) name, Member mem; this.members) {
-				if(name == fr) {
+			foreach(Member mem; this.members) {
+				if(mem.name == fr) {
 					return mem.get(path);
 				}
 			}

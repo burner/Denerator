@@ -108,7 +108,7 @@ private {
 			}
 		}
 
-		foreach(const(string) mName, Member mem; cls.members) {
+		foreach(Member mem; cls.members) {
 			if(auto mf = cast(MemberFunction)mem) {
 				if(mf.returnType) {
 					insertType(types, mf.returnType);
