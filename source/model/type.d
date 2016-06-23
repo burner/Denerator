@@ -1,9 +1,9 @@
 module model.type;
 
 import model.entity : StringEntityMap;
-import model.entity : Entity;
+import model.entity : Entity, ProtectedEntity;
 
-class Type : Entity {
+class Type : ProtectedEntity {
 	StringEntityMap!(string) typeToLanguage;
 
 	this(in string name, in Entity parent) {

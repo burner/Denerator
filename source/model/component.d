@@ -8,6 +8,7 @@ class Component : ProtectedEntity {
 	import std.array : empty, front;
 	import model.entity : StringEntityMap;
 	import model.world : SearchResult, TheWorld;
+	import util;
 
 	StringEntityMap!(Class) classes;
 	Component[string] subComponents;
@@ -19,8 +20,14 @@ class Component : ProtectedEntity {
 	this(in Component old, in Entity parent, TheWorld world) {
 		super(old, parent);
 
-		foreach(const(string) key, const(Class) value; old.classes) {
-			this.classes[key] = new Class(value, this, world);
+		foreach(const(string) name, const(Class) value; old.classes) {
+			auto cls = world.getOrNewClass(name);
+			expect(cls !is null, "While copying ", this.name, "class ", name,
+				"could not be found as type in TheWorld"
+			);
+
+			cls.parents ~= this;
+			this.classes[name] = cls;
 		}
 
 		foreach(string key, const(Component) value; old.subComponents) {

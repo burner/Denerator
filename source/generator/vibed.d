@@ -10,6 +10,7 @@ import containers.dynamicarray;
 class VibeD : Generator {
 	import std.exception : enforce;
 	import std.typecons : Rebindable, Flag;
+	import util;
 
 	const(string) outputDir;
 	DynamicArray!string outDirPath;

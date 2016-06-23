@@ -7,7 +7,7 @@ import model.type;
 import model.classes;
 
 Class addressClass(Con...)(TheWorld world, Con cons) {
-	Class address = getOrNewClass("Address", cons);
+	Class address = world.getOrNewClass("Address", cons);
 
 	address.containerType["D"] = "struct";
 	address.containerType["Angular"] = "struct";

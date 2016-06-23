@@ -115,7 +115,7 @@ void main() {
 		address, user
 	);
 
-	Class postalCode = getOrNewClass("PostalCode", database);
+	Class postalCode = world.getOrNewClass("PostalCode", database);
 	postalCode.containerType["MySQL"] = "Table";
 	MemberVariable pcID = postalCode.getOrNew!MemberVariable("id");
 	pcID.type = integer;
@@ -128,8 +128,8 @@ void main() {
 		postalCode, address
 	);
 
-	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
-	//gv.generate();
+	Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	gv.generate();
 
 	//MySQL mysql = new MySQL(world, "MySQL");
 	//mysql.generate(database);

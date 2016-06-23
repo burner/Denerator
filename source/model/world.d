@@ -14,10 +14,12 @@ class TheWorld : Entity {
 	import model.container : Container;
 	import model.world : SearchResult;
 	import model.actor : Actor;
+	import model.classes : Class;
 	import model.softwaresystem : SoftwareSystem;
 	import model.hardwaresystem : HardwareSystem;
 	import model.type : Type;
 	import model.connections;
+	import util;
 
 	StringEntityMap!(Actor) actors;
 	StringEntityMap!(SoftwareSystem) softwareSystems;
@@ -32,7 +34,11 @@ class TheWorld : Entity {
 	this(in TheWorld old) {
 		super(old, null);
 		foreach(const(string) name, const(Type) t; old.typeContainerMapping) {
-			this.typeContainerMapping[name] = new Type(t, this);
+			if(auto c = cast(const(Class))t) {
+				this.typeContainerMapping[name] = new Class(name);
+			} else {
+				this.typeContainerMapping[name] = new Type(t, this);
+			}
 		}
 
 		foreach(const(string) name, const(Actor) act; old.actors) {
@@ -150,6 +156,34 @@ class TheWorld : Entity {
 		} else {
 			throw new Exception("Type \"" ~ name ~ "\" does not exists");
 		}
+	}
+
+	/** Gets a class from one of the containers and adds them to all other
+	containers. If the Class can't be find by its name it is created and added
+	to all containers.
+	*/
+	Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
+		import std.experimental.logger;
+		Class ret;
+		if(name in this.typeContainerMapping) {
+			logf("cls.name %s", name);
+			ret = cast(Class)this.typeContainerMapping[name];
+		} else {
+			logf("cls.name %s", name);
+			this.typeContainerMapping[name] = new Class(name);
+			ret = cast(Class)this.typeContainerMapping[name];
+		}
+
+		foreach(it; stuffThatHoldsClasses) {
+			if(name !in it.classes) {
+				it.classes[name] = ret;
+				ret.parents ~= it;
+			} else {
+				expect(false, "Class ", name, "is already in ", it, ".");	
+			}
+		}
+		log();
+		return ret;
 	}
 
 	override string areYouIn(ref in StringHashSet store) const {

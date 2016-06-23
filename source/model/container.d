@@ -17,14 +17,24 @@ class Container : Entity {
 	}
 
 	this(in Container old, in Entity parent, TheWorld world) {
+		import util : expect;
+
 		super(old, parent);
 		this.technology = old.technology;
 		foreach(const(string) name, const(Component) com; old.components) {
+			assert(name == com.name);
 			this.components[name] = new Component(com, this, world);
 		}
 
 		foreach(const(string) name, const(Class) cls; old.classes) {
-			this.classes[name] = new Class(cls, this, world);
+			assert(name == cls.name);
+			auto nCls = world.getOrNewClass(name);
+			expect(cls !is null, "While copying ", this.name, "class ", name,
+				"could not be found as type in TheWorld"
+			);
+
+			nCls.parents ~= this;
+			this.classes[name] = nCls;
 		}
 
 		assert(!this.name.empty);

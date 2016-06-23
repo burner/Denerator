@@ -7,7 +7,7 @@ import model.type;
 import model.classes;
 
 Class userClass(Con...)(TheWorld world, Con cons) {
-	Class user = getOrNewClass("User", cons);
+	Class user = world.getOrNewClass("User", cons);
 
 	user.containerType["D"] = "struct";
 	user.containerType["Angular"] = "struct";

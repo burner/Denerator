@@ -6,40 +6,18 @@ import model;
 // Does only duplicate Nodes, no edges
 TheWorld duplicateNodes(in TheWorld old) {
 	auto ret = new TheWorld(old);
-	StringEntityMap!Class classes;
 
-	// there should one one instance per type name
-	StringEntityMap!(Type[]) types;
-
-	foreach(const(string) key, SoftwareSystem ss; ret.softwareSystems) {
-		addClassesAndTypes(ss, classes, types);
-	}
-
-	foreach(const(string) key, Type[] value; types) {
-		import std.array : front;
-		if(value.length > 1) {
-			Type frontType = value.front;
-			foreach(it; value) {
-				assert(it is frontType);
+	foreach(const(string) name, Type type; ret.typeContainerMapping) {
+		if(Class cls = cast(Class)type) {
+			logf("%s", name);
+			const(Class) oldCls = cast(const Class)old.typeContainerMapping[name];
+			if(oldCls) {
+				logf("%s", name);
+				cls.realCCtor(oldCls, ret);
 			}
 		}
 	}
-
-	foreach(const(string) key, Class cls; classes) {
-		cls.parents = [];
-	}
-
-	foreach(const(string) key, SoftwareSystem ss; ret.softwareSystems) {
-		modClasses(ss, classes);
-	}
-
-	EntityHashSet!Entity ehs;
-	ehs.insert(ret);
-
-	foreach(const(string) key, Class cls; classes) {
-		logf("%s %s", key, cls.parents);
-		assert(cls.areYouIn(ehs) is ret, cls.name);
-	}
+	StringEntityMap!Class classes;
 
 	return ret;
 }
@@ -89,125 +67,13 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 	}
 }
 
-private {
-	void insertType(ref StringEntityMap!(Type[]) types, Type type) {
-		if(type.name !in types) {
-			types[type.name] = new Type[0];
-		}
-		Type[] old = types[type.name];
-		old ~= type;
-		types.remove(type.name);
-		types[type.name] = old;
-	}
-	void addTypes(Class cls, ref StringEntityMap!(Type[]) types) {
-		void addTypes(MemberFunction mf, ref StringEntityMap!(Type[]) types) {
-			foreach(MemberVariable parm; mf.parameter) {
-				if(parm.type) {
-					insertType(types, parm.type);
-				}
-			}
-		}
-
-		foreach(Member mem; cls.members) {
-			if(auto mf = cast(MemberFunction)mem) {
-				if(mf.returnType) {
-					insertType(types, mf.returnType);
-					addTypes(mf, types);
-				}
-			} else if(auto mv = cast(MemberVariable)mem) {
-				if(mv.type) {
-					insertType(types, mv.type);
-				}
-			} else {
-				assert(false);
-			}
-		}
-
-	}
-	void addClassesAndTypes(SoftwareSystem ss, 
-			ref StringEntityMap!Class classes, 
-			ref StringEntityMap!(Type[]) types) 
-	{
-		void addClassesAndTypes(Container con, 
-				ref StringEntityMap!Class classes, 
-				ref StringEntityMap!(Type[]) types) 
-		{
-			void addClassesAndTypes(Component com, 
-					ref StringEntityMap!Class classes, 
-					ref StringEntityMap!(Type[]) types) 
-			{
-				foreach(const(string) key, Component scom; com.subComponents) {
-					addClassesAndTypes(scom, classes, types);
-				}
-
-				foreach(const(string) key, Class cls; com.classes) {
-					addTypes(cls, types);
-					if(key !in classes) {
-						classes[key] = cls;
-					}
-				}
-			}
-
-			foreach(const(string) key, Component com; con.components) {
-				addClassesAndTypes(com, classes, types);
-			}
-
-			foreach(const(string) key, Class cls; con.classes) {
-				addTypes(cls, types);
-				if(key !in classes) {
-					classes[key] = cls;
-				}
-			}
-		}
-
-		foreach(const(string) key, Container con; ss.containers) {
-			addClassesAndTypes(con, classes, types);
+private Entity getFromSelection(TheWorld w, string[] paths) {
+	foreach(it; paths) {
+		auto ret = w.get(it);
+		if(ret !is null) {
+			return ret;
 		}
 	}
 
-	void modClasses(SoftwareSystem ss, ref StringEntityMap!Class classes) {
-		import std.algorithm.searching : canFind;
-		void modClassesImpl(C)(C con, ref StringEntityMap!Class classes)
-		{
-			foreach(const(string) key, Class cls; classes) {
-				if(key in con.classes) {
-					logf("%s %s", con.name, key);
-					con.classes.remove(key);
-					con.classes[key] = cls;
-					cls.parents ~= con;
-				}
-			}
-
-		}
-		void modClasses(Container con, ref StringEntityMap!Class classes) {
-			void modClasses(Component com, ref StringEntityMap!Class classes) {
-				foreach(const(string) key, Component scom; com.subComponents) {
-					modClasses(scom, classes);
-				}
-
-				modClassesImpl(com, classes);
-			}
-
-			foreach(const(string) key, Component com; con.components) {
-				modClasses(com, classes);
-			}
-
-			modClassesImpl(con, classes);
-		}
-
-		foreach(const(string) key, Container con; ss.containers) {
-			modClasses(con, classes);
-		}
-	}
-
-	Entity getFromSelection(TheWorld w, string[] paths) {
-		foreach(it; paths) {
-			auto ret = w.get(it);
-			if(ret !is null) {
-				return ret;
-			}
-		}
-
-		return null;
-	}
+	return null;
 }

@@ -10,7 +10,7 @@ import model.entity : getOrNewEntityImpl, Entity, ProtectedEntity,
 import model.type : Type;
 import model.world : TheWorld;
 
-class Class : ProtectedEntity {
+class Class : Type {
 	import std.array : empty, front;
 	import model.entity : Entity, EntityHashSet, StringEntityMap, StringHashSet;
 	import model.type : Type;
@@ -24,20 +24,21 @@ class Class : ProtectedEntity {
 		super(name, null);
 	}
 
+	// Dummy Copy Constructor member are copied in a second step
+	this(in Class old, in Entity) {
+		super(name, null);
+	}
+
 	~this() {
 		assert(false);
 	}
 
-	this(in Class old, in Entity parent, TheWorld world) {
-		super(old, null);	
-		// we need to fix up the parents in a second
-		// pass after we have copied TheWorld
-
+	void realCCtor(in Class old, TheWorld newWorld) {
 		foreach(const(Member) value; old.members) {
 			if(auto mf = cast(const MemberFunction)value) {
-				this.members ~= new MemberFunction(mf, this, world);
+				this.members ~= new MemberFunction(mf, this, newWorld);
 			} else if(auto mv = cast(const MemberVariable)value) {
-				this.members ~= new MemberVariable(mv, this, world);
+				this.members ~= new MemberVariable(mv, this, newWorld);
 			} else {
 				assert(false);
 			}
@@ -249,32 +250,6 @@ class MemberFunction : Member {
 			);
 		}
 	}
-}
-
-/** Gets a class from one of the containers and adds them to all other
-containers. If the Class can't be find by its name it is created and added
-to all containers.
-*/
-Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
-	Class cls;
-	foreach(it; stuffThatHoldsClasses) {
-		if(name in it.classes) {
-			cls = it.classes[name];
-			break;
-		}
-	}
-
-	if(cls is null) {
-		cls = new Class(name);
-	}
-
-	foreach(it; stuffThatHoldsClasses) {
-		if(name !in it.classes) {
-			it.classes[name] = cls;
-			cls.parents ~= it;
-		}
-	}
-	return cls;
 }
 
 string[] pathToRoot(in Entity en) {
