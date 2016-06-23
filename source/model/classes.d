@@ -68,9 +68,7 @@ class Class : Type {
 		auto idx = getParentIndex(par);
 
 		if(idx != -1) {
-			logf("%s %s %s", this.name, par.name, this.parents);
 			this.parents = remove(this.parents, idx);
-			logf("%s", this.parents);
 		} else {
 			logf("!%s %s %s", this.name, par.name, this.parents);
 		}

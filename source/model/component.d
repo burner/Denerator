@@ -69,7 +69,6 @@ class Component : ProtectedEntity {
 		import std.experimental.logger;
 
 		foreach(string key, Component value; this.subComponents) {
-			log(key);
 			value.drop();
 		}
 
@@ -78,7 +77,6 @@ class Component : ProtectedEntity {
 		}
 
 		foreach(const(string) it, Class con; this.classes) {
-			logf("\t%s %s", super.name, it);
 			con.removeParent(this);
 		}
 

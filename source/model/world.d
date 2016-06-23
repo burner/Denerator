@@ -166,10 +166,8 @@ class TheWorld : Entity {
 		import std.experimental.logger;
 		Class ret;
 		if(name in this.typeContainerMapping) {
-			logf("cls.name %s", name);
 			ret = cast(Class)this.typeContainerMapping[name];
 		} else {
-			logf("cls.name %s", name);
 			this.typeContainerMapping[name] = new Class(name);
 			ret = cast(Class)this.typeContainerMapping[name];
 		}
@@ -182,7 +180,6 @@ class TheWorld : Entity {
 				expect(false, "Class ", name, "is already in ", it, ".");	
 			}
 		}
-		log();
 		return ret;
 	}
 

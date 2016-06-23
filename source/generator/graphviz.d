@@ -157,7 +157,6 @@ class Graphvic : Generator {
 			foreach(const(string) conName, const(Container) con;
 					ss.containers)
 			{
-				logf("\n\n\n<<<<%s>>>>>\n\n", conName);
 				Graph g = new Graph();
 				StringHashSet toKeep;
 				toKeep.insert(ssName);
@@ -296,7 +295,6 @@ class Graphvic : Generator {
 		foreach(const(string) key, const(Entity) value; world.connections) {
 			ConnectionImpl con = cast(ConnectionImpl)value;
 			assert(con !is null);
-			logf("%s %s", con.from.name, con.to.name);
 			generate(con, g);
 		}
 	}
@@ -305,12 +303,10 @@ class Graphvic : Generator {
 		void impl(in ConnectionImpl con, string from, string to,
 				Graph g)
 		{
-			logf("\n\t%s || %s", from, to);
 			Edge edge = g.getUnique!Edge(con.name ~ from ~ to,
 				 from, to
 			);
 			if(edge is null) {
-				logf("%s", con.name);
 				return;
 			} else {
 				generate(con, edge);
@@ -323,7 +319,6 @@ class Graphvic : Generator {
 		if(fromCls !is null && toCls !is null) {
 			string[] fPaths = fromCls.pathsToRoot();
 			string[] tPaths = toCls.pathsToRoot();
-			logf("%s %s", fPaths, tPaths);
 			ConnectedPath[] paths = connectedPaths(fPaths, tPaths);
 			foreach(it; paths) {
 				impl(con, it.from, it.to, g);
@@ -562,7 +557,6 @@ class Graphvic : Generator {
 			formattedWrite(app, "%s", mem.name);
 
 			if(mf !is null) {
-				logf("%s", mf.parameter.length);
 				formattedWrite(app, "(%s)",
 					mf.parameter[].map!(a => buildParameter(a))().joiner(", ")
 				);
@@ -597,7 +591,6 @@ class Graphvic : Generator {
 		auto keys = c.keys();
 		foreach(it; keys) {
 			if(it !in toKeep) {		
-				log(it);
 				c[it].drop();
 				c.remove(it);
 			}

@@ -95,7 +95,6 @@ class Container : Entity {
 		import std.experimental.logger;
 
 		foreach(const(string) it, Component con; this.components) {
-			log(it);
 			con.drop();
 		}
 
@@ -104,7 +103,6 @@ class Container : Entity {
 		}
 
 		foreach(const(string) it, Class con; this.classes) {
-			logf("\t%s %s", super.name, it);
 			con.removeParent(this);
 		}
 

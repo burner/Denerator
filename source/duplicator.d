@@ -9,10 +9,8 @@ TheWorld duplicateNodes(in TheWorld old) {
 
 	foreach(const(string) name, Type type; ret.typeContainerMapping) {
 		if(Class cls = cast(Class)type) {
-			logf("%s", name);
 			const(Class) oldCls = cast(const Class)old.typeContainerMapping[name];
 			if(oldCls) {
-				logf("%s", name);
 				cls.realCCtor(oldCls, ret);
 			}
 		}
@@ -28,7 +26,7 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 
 		string[] fPath = pathToRoot(con.from);
 		string[] tPath = pathToRoot(con.to);
-		logf("%s %s", fPath, tPath);
+		//logf("%s %s", fPath, tPath);
 
 		auto fEn = getFromSelection(ne, fPath);
 		auto tEn = getFromSelection(ne, tPath);
@@ -36,16 +34,16 @@ void reAdjustEdges(in TheWorld old, TheWorld ne) {
 		if(fEn is null) continue;
 		if(tEn is null) continue;
 
-		logf("%s\n\t%s %s\n\t%s %s", con.name, con.from.name, con.to.name,
+		/*logf("%s\n\t%s %s\n\t%s %s", con.name, con.from.name, con.to.name,
 			fEn.name, tEn.name
-		);
+		);*/
 
 		// no selfconnecting edges
 		if(fEn is tEn) {
 			continue;
 		}
 
-		logf("%s %s %s", con.name, fEn.name, tEn.name);
+		//logf("%s %s %s", con.name, fEn.name, tEn.name);
 
 		if(auto c = cast(Realization)(con)) {
 			ne.getOrNew!Realization(c, fEn, tEn);
