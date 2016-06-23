@@ -509,7 +509,7 @@ class Graphvic : Generator {
 				return format("%s", mv.name);
 			} else {
 				return format("%s %s",
-					mv.type.typeToLanguage[this.currentTechnology],
+					mv.type.typeToLang(this.currentTechnology),
 					mv.name
 				);
 			}
@@ -542,7 +542,7 @@ class Graphvic : Generator {
 						&& (this.currentTechnology in mv.type.typeToLanguage))
 				{
 					formattedWrite(app, "%s ",
-						mv.type.typeToLanguage[this.currentTechnology]
+						mv.type.typeToLang(this.currentTechnology)
 					);
 				}
 			}
@@ -550,7 +550,7 @@ class Graphvic : Generator {
 			const MemberFunction mf = cast(MemberFunction)mem;
 			if(mf !is null && mf.returnType) {
 				formattedWrite(app, "%s ",
-					mf.returnType.typeToLanguage[this.currentTechnology]
+					mf.returnType.typeToLang(this.currentTechnology)
 				);
 			}
 

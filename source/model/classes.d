@@ -150,6 +150,10 @@ class Class : Type {
 		return ret;
 	}
 
+	override string typeToLang(string lang) const {
+		return this.name;
+	}	
+
 	void toString(in int indent) const {
 		import std.stdio : writefln;
 		toStringIndent(indent);
@@ -247,6 +251,13 @@ class MemberFunction : Member {
 				this.modifer, this)
 			);
 		}
+	}
+
+	MemberVariable addParameter(in string name, Type type) {
+		auto np = new MemberVariable(name, this);
+		np.type = type;
+		this.parameter.insert(np);
+		return np;
 	}
 }
 

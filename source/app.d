@@ -13,6 +13,7 @@ import generator.vibed;
 import predefined.types.user;
 import predefined.types.address;
 import predefined.types.basictypes;
+import predefined.ctrl.userctrl;
 
 class NoTimeLogger : Logger {
 	import std.stdio : writefln;
@@ -82,6 +83,8 @@ void main() {
 
 	auto serverUserSub = serverUserCtrl.getOrNewSubComponent("utils").
 		description = "Best component name ever!";
+
+	userCtrl(world, server);
 
 	auto database = system.getOrNewContainer("Database");
 	database.technology = "MySQL";

@@ -17,4 +17,12 @@ class Type : ProtectedEntity {
 			this.typeToLanguage[key] = value;
 		}
 	}
+
+	string typeToLang(string lang) const {
+		if(lang in this.typeToLanguage) {
+			return this.typeToLanguage[lang];
+		} else {
+			return "\"" ~ lang ~ "no found\"";
+		}
+	}
 }
