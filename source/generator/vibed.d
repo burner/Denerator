@@ -73,9 +73,28 @@ class VibeD : Generator {
 		}
 	}
 
+	void generateModuleDecl(Out)(ref Out ltw, in Class cls) {
+		import std.uni : toLower;
+		format(ltw, 0, "module ");
+		bool first = true;
+		if(this.outDirPath.length > 0) {
+			foreach(it; this.outDirPath[1 .. $]) {
+				if(first) {
+					first = false;
+					format(ltw, 0, "%s", it);
+				} else {
+					format(ltw, 0, ".%s", it);
+				}
+			}
+		}
+		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(cls.name));
+	}
+
 	void generate(Out)(ref Out ltw, in Class cls) {
-		expect(cls !is null, "Class must not be null.");
 		import std.range : isInputRange;
+
+		expect(cls !is null, "Class must not be null.");
+		generateModuleDecl(ltw, cls);
 		generateImports(ltw, cls);
 
 		generate(ltw, cast(ProtectedEntity)cls);
