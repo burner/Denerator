@@ -13,13 +13,5 @@ Class userCtrl(Container)(TheWorld world, Container cons) {
 
 	createUser.addParameter("userData", world.getOrNewClass("User"));
 
-	MemberVariable userId = user.getOrNew!MemberVariable("id");
-	userId.type = world.getOrNewType("const ULong");
-	assert(userId.type);
-	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
-	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
-	userId.addLangSpecificAttribute("D", "const");
-	userId.addLangSpecificAttribute("Typescript", "const");
-
 	return user;
 }
