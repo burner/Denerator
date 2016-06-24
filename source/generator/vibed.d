@@ -119,6 +119,23 @@ class VibeD : Generator {
 
 	void generateCtor(Out)(ref Out ltw, in Class cls, const FilterConst fc) {
 		import std.array : appender;
+		import std.algorithm.iteration : filter;
+		import std.range.primitives : walkLength;
+
+		size_t wl = 0;
+		if(fc == FilterConst.yes) {
+			wl = MemRange!(const MemberVariable)(cls.members)
+					.filter!(a => !isConst(a))
+					.walkLength;
+		} else if(fc == FilterConst.no) {
+			wl = MemRange!(const MemberVariable)(cls.members)
+					.walkLength;
+		}
+
+		if(wl == 0) {
+			return;
+		}
+
 		auto app = appender!string();
 		bool first = true;
 		bool wrap = false;
@@ -170,7 +187,7 @@ class VibeD : Generator {
 			} else if(it == 2) {
 				format(ltw, 1, 
 					"void toString(scope void delegate(const(char)[]) " ~
-					"@trusted sink) {\n"
+					"@trusted sink) @trusted {\n"
 				);
 			} else {
 				assert(false);
