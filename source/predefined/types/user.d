@@ -10,7 +10,7 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 	Class user = world.getOrNewClass("User", cons);
 
 	user.containerType["D"] = "struct";
-	user.containerType["Angular"] = "struct";
+	user.containerType["Angular"] = "class";
 	user.containerType["MySQL"] = "Table";
 
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
