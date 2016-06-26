@@ -11,6 +11,7 @@ import generator.graphviz;
 import generator.mysql;
 import generator.vibed;
 import predefined.types.user;
+import predefined.types.group;
 import predefined.types.address;
 import predefined.types.basictypes;
 import predefined.ctrl.userctrl;
@@ -103,6 +104,7 @@ void main() {
 	integer.typeToLanguage["MySQL"] = "LONG";
 
 	Class user = userClass(world, frontendUserCtrl, serverUserCtrl, database);
+	Class group = groupClass(world, frontendUserCtrl, serverUserCtrl, database);
 
 	Class address = addressClass(world,
 		frontendUserCtrl, serverUserCtrl, database

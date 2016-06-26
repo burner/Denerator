@@ -1,19 +1,20 @@
-module predefined.types;
+module predefined.types.group;
 
 import predefined.types.basictypes;
 
 import model.world;
 import model.type;
 import model.classes;
+import model.connections;
 
 Class groupClass(Con...)(TheWorld world, Con cons) {
 	Class group = world.getOrNewClass("Group", cons);
 
-	user.containerType["D"] = "struct";
-	user.containerType["Angular"] = "class";
-	user.containerType["MySQL"] = "Table";
+	group.containerType["D"] = "struct";
+	group.containerType["Angular"] = "class";
+	group.containerType["MySQL"] = "Table";
 
-	MemberVariable userId = user.getOrNew!MemberVariable("id");
+	MemberVariable userId = group.getOrNew!MemberVariable("id");
 	userId.type = world.getOrNewType("const ULong");
 	assert(userId.type);
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
@@ -21,9 +22,18 @@ Class groupClass(Con...)(TheWorld world, Con cons) {
 	userId.addLangSpecificAttribute("D", "const");
 	userId.addLangSpecificAttribute("Typescript", "const");
 
-	MemberVariable groupname = user.getOrNew!MemberVariable("name");
+	MemberVariable groupname = group.getOrNew!MemberVariable("name");
 	groupname.type = world.getOrNewType("String");
 	assert(groupname.type);
+
+	auto user = world.getOrNewClass("User");
+	Aggregation groupAdmin = world.getOrNew!Aggregation("GroupAdmin",
+		user, group
+	);
+
+	Aggregation groupMember = world.getOrNew!Aggregation("GroupMember",
+		user, group
+	);
 
 	return group;
 }
