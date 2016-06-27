@@ -136,9 +136,9 @@ void main() {
 	Graphvic gv = new Graphvic(world, "GraphvizOutput");
 	gv.generate();
 
-	//MySQL mysql = new MySQL(world, "MySQL");
-	//mysql.generate(database);
+	MySQL mysql = new MySQL(world, "MySQL");
+	mysql.generate(database);
 
 	auto vibed = new VibeD(world, "vibed");
-	vibed.generate(server);
+	vibed.generate();
 }

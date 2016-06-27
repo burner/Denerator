@@ -332,7 +332,8 @@ class Graphvic : Generator {
 
 	void generate(in ConnectionImpl con, Edge e) {
 		e.label = format(
-			"<<table border=\"0\" cellborder=\"0\">\n%s</table>>",
+			"<<table border=\"0\" cellborder=\"0\">\n<tr><td>%s</td></tr>\n%s</table>>",
+			con.name,
 			buildLabelFromDescription(con)
 		);
 		if(auto c = cast(const Dependency)con) {

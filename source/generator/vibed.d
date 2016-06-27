@@ -10,6 +10,7 @@ import containers.dynamicarray;
 class VibeD : Generator {
 	import std.exception : enforce;
 	import std.typecons : Rebindable, Flag;
+	import std.stdio : stdout;
 	import util;
 
 	const(string) outputDir;
@@ -25,10 +26,31 @@ class VibeD : Generator {
 	}
 
 	override void generate() {
+		foreach(const(string) ssK, const(SoftwareSystem) ss;
+				this.world.softwareSystems) 
+		{
+			foreach(const(string) conK, const(Container) con; ss.containers) {
+				if(con.technology == "D") {
+					this.generate(con);
+				}
+			}
+		}
+
+		foreach(const(string) conK, const(Entity) con; this.world.connections)
+		{
+			if(auto agg = cast(const(Aggregation))con) {
+				auto ltw = stdout.lockingTextWriter();
+				this.generate(ltw, agg);
+			}
+		}
+	}
+
+	void generate(Out)(ref Out ltw, in Aggregation agg) {
+		this.generateModuleDecl(ltw, agg);
+
 	}
 
 	void generate(in Container con) {
-		import std.stdio : stdout;
 		this.curCon = con;
 		this.con.clear();
 		this.con.insert(cast(Entity)con);
@@ -73,7 +95,7 @@ class VibeD : Generator {
 		}
 	}
 
-	void generateModuleDecl(Out)(ref Out ltw, in Class cls) {
+	void generateModuleDecl(Out)(ref Out ltw, in Entity en) {
 		import std.uni : toLower;
 		format(ltw, 0, "module ");
 		bool first = true;
@@ -87,7 +109,7 @@ class VibeD : Generator {
 				}
 			}
 		}
-		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(cls.name));
+		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(en.name));
 	}
 
 	void generate(Out)(ref Out ltw, in Class cls) {
