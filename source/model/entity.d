@@ -96,6 +96,10 @@ class Entity {
 	Entity get(string[] path) {
 		return this;
 	}
+
+	const(Entity) get(string[] path) const {
+		return this;
+	}
 }
 
 // e.g. [D] = "protected"

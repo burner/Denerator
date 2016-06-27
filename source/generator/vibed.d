@@ -11,6 +11,7 @@ class VibeD : Generator {
 	import std.exception : enforce;
 	import std.typecons : Rebindable, Flag;
 	import std.stdio : stdout;
+	import std.uni : toLower;
 	import util;
 
 	const(string) outputDir;
@@ -47,7 +48,8 @@ class VibeD : Generator {
 
 	void generate(Out)(ref Out ltw, in Aggregation agg) {
 		this.generateModuleDecl(ltw, agg);
-
+		this.generateImport(ltw, cast(const(Class))agg.from);
+		this.generateImport(ltw, cast(const(Class))agg.to);
 	}
 
 	void generate(in Container con) {
@@ -87,16 +89,18 @@ class VibeD : Generator {
 					|| cast(const Composition)con
 					|| cast(const Realization)con))
 			{
-				auto tCls = cast(const Class)cImpl.to;
-				format(ltw, 0, "import %s;\n", 
-					holdsContainerNameTrim(tCls.pathsToRoot())
-				);
+				this.generateImport(ltw, cast(const(Class))cImpl.to);
 			}
 		}
 	}
 
+	void generateImport(Out)(ref Out ltw, in Class cls) {
+		format(ltw, 0, "import %s;\n", 
+			toLower(holdsContainerNameTrim(cls.pathsToRoot()))
+		);
+	}
+
 	void generateModuleDecl(Out)(ref Out ltw, in Entity en) {
-		import std.uni : toLower;
 		format(ltw, 0, "module ");
 		bool first = true;
 		if(this.outDirPath.length > 0) {
@@ -295,4 +299,22 @@ class VibeD : Generator {
 
 		return "";
 	}
+
+	/*string pathToVibeRoot(string[] paths) {
+		import std.algorithm.iteration : splitter;
+		import std.array : array;
+		foreach(it; paths) {
+			string[] sp = it.splitter(".").array;
+			logf("%s, %s", it, sp);
+			if(sp.length > 1) {
+				auto en = this.world.get(sp[0 .. 2]);
+				if(auto con = cast(const(Container))en) {
+					if(con.technology == "D") {
+						return it;
+					}	
+				}
+			}
+		}
+		return "";
+	}*/
 }

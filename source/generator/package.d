@@ -4,13 +4,6 @@ import containers.dynamicarray;
 
 import model;
 
-enum GenerateLevel {
-	Context,
-	Entity,
-	Container,
-	Component,
-}
-
 abstract class Generator {
 	import std.file : exists, isDir, mkdirRecurse;
 	import std.stdio : File, writef, writeln;

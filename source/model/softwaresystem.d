@@ -66,14 +66,22 @@ class SoftwareSystem : Entity {
 		return dummy;
 	}
 
+	override const(Entity) get(string[] path) const {
+		return this.getImpl(path);
+	}
+
 	override Entity get(string[] path) {
+		return cast(Entity)this.getImpl(path);
+	}
+
+	const(Entity) getImpl(string[] path) const {
 		if(path.empty) {
 			return this;
 		} else {
 			immutable fr = path.front;
 			path = path[1 .. $];
 
-			foreach(const(string) name, Container con; this.containers) {
+			foreach(const(string) name, const(Container) con; this.containers) {
 				if(name == fr) {
 					return con.get(path);
 				}

@@ -120,14 +120,22 @@ class Class : Type {
 		}
 	}
 
+	override const(Entity) get(string[] path) const {
+		return this.getImpl(path);
+	}
+
 	override Entity get(string[] path) {
+		return cast(Entity)this.getImpl(path);
+	}
+
+	const(Entity) getImpl(string[] path) const {
 		if(path.empty) {
 			return this;
 		} else {
 			immutable fr = path.front;
 			path = path[1 .. $];
 
-			foreach(Member mem; this.members) {
+			foreach(const(Member) mem; members) {
 				if(mem.name == fr) {
 					return mem.get(path);
 				}
