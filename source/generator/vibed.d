@@ -50,6 +50,15 @@ class VibeD : Generator {
 		this.generateModuleDecl(ltw, agg);
 		this.generateImport(ltw, cast(const(Class))agg.from);
 		this.generateImport(ltw, cast(const(Class))agg.to);
+
+		format(ltw, 0, "\nstruct %s {\n", agg.name);
+		format(ltw, 1, "%s from;\n", agg.from.name);
+		format(ltw, 1, "%s to;\n\n", agg.to.name);
+		format(ltw, 1, "this(%s from, %s to) {\n", agg.from.name, agg.to.name);
+		format(ltw, 2, "this.from = from;\n");
+		format(ltw, 2, "this.to = to;\n");
+		format(ltw, 1, "}\n");
+		format(ltw, 0, "}\n");
 	}
 
 	void generate(in Container con) {

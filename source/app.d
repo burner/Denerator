@@ -116,7 +116,7 @@ void main() {
 	func.getOrNew!MemberVariable("a").type = integer;
 	func.getOrNew!MemberVariable("b").type = str;
 
-	Aggregation userAddress = world.getOrNew!Aggregation("addressUser",
+	Aggregation userAddress = world.getOrNew!Aggregation("AddressUser",
 		address, user
 	);
 
