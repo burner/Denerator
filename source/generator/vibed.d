@@ -52,9 +52,12 @@ class VibeD : Generator {
 		this.generateImport(ltw, cast(const(Class))agg.to);
 
 		format(ltw, 0, "\nstruct %s {\n", agg.name);
+		format(ltw, 1, "long %s_id;\n", agg.name);
 		format(ltw, 1, "%s from;\n", agg.from.name);
 		format(ltw, 1, "%s to;\n\n", agg.to.name);
-		format(ltw, 1, "this(%s from, %s to) {\n", agg.from.name, agg.to.name);
+		format(ltw, 1, "this(long %s_id, %s from, %s to) {\n", agg.name, 
+			agg.from.name, agg.to.name);
+		format(ltw, 2, "this.%s_id = %s_id;\n", agg.name, agg.name);
 		format(ltw, 2, "this.from = from;\n");
 		format(ltw, 2, "this.to = to;\n");
 		format(ltw, 1, "}\n");

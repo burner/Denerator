@@ -46,14 +46,15 @@ class MySQL : Generator {
 	void generateAggregation(Aggregation agg) {
 		writeln(agg.name);
 		auto f = Generator.createFile([this.outputDir, 
-			std.format.format("%s_%s.sql", agg.from.name, agg.to.name)
+			std.format.format("%s.sql", agg.name)
 		]);
 		auto ltw = f.lockingTextWriter();
-		format(ltw, 0, "CREATE TABLE %s_%s {\n", 
-			agg.from.name, agg.to.name
+		format(ltw, 0, "CREATE TABLE %s {\n", agg.name);
+		format(ltw, 1, "%s_id BIGINT UNSIGNED NOT NULL PRIMARY KEY",
+			agg.name
 		);
 
-		bool first = true;
+		bool first = false;
 
 		const(MemberVariable)[] foreignKeys = 
 			this.getPrivateKeyFromMemberVariable(cast(Class)agg.to);
