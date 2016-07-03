@@ -166,9 +166,40 @@ class VibeD : Generator {
 		format(ltw, 0, "\n");
 		generateCtor(ltw, cls, FilterConst.no);
 		generateCtor(ltw, cls, FilterConst.yes);
+		generateMemberFunction(ltw, cls);
 		generateToStr(ltw, cls);
 
 		format(ltw, 0, "}\n");
+	}
+
+	void generateMemberFunction(Out)(ref Out ltw, in Class cls) {
+		expect(cls !is null, "Class must not be null.");
+
+		foreach(mv; MemRange!(const(MemberFunction))(cls.members)) {
+			format(ltw, 1, "");
+			chain(
+				chain(
+					this.generate(ltw, cast(const(Type))(mv.returnType)),
+					"In Member with name", mv.name, "."
+				),
+				"In Class with name", cls.name, "."
+			);
+
+			format(ltw, 0, "%s(", mv.name);
+			bool first = true;
+			foreach(pa; mv.parameter) {
+				chain(
+					chain(
+						this.generate(ltw, cast(const(Type))(pa.type)),
+						"In Member with name", mv.name, "."
+					),
+					"In Class with name", cls.name, "."
+				);
+				format(ltw, 0, "%s%s", !first ? "," : "", pa.name);
+				first = false;
+			}
+			format(ltw, 0, ");\n\n");
+		}
 	}
 
 	bool isConst(in Member mem) {
@@ -292,10 +323,14 @@ class VibeD : Generator {
 
 	void generate(Out)(ref Out ltw, in Type type, in int indent = 0) {
 		expect(type, "MemberVariable has no type");
-		expect("D" in type.typeToLanguage, "Variable type",
-			"has no typeToLanguage entry for key", "D"
-		);
-		format(ltw, indent, "%s ", type.typeToLanguage["D"]);
+		if(auto cls = cast(const(Class))type) {
+			format(ltw, indent, "%s ", cls.name);
+		} else {
+			expect("D" in type.typeToLanguage, "Variable type\"",
+				type.name, "\"has no typeToLanguage entry for key", "D"
+			);
+			format(ltw, indent, "%s ", type.typeToLanguage["D"]);
+		}
 	}
 
 	size_t parameterLength(in MemberVariable mv) {
