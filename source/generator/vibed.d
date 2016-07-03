@@ -52,12 +52,17 @@ class VibeD : Generator {
 		this.generateImport(ltw, cast(const(Class))agg.to);
 
 		format(ltw, 0, "\nstruct %s {\n", agg.name);
-		format(ltw, 1, "long %s_id;\n", agg.name);
+		format(ltw, 1, "const long %s_id;\n", agg.name);
 		format(ltw, 1, "%s from;\n", agg.from.name);
 		format(ltw, 1, "%s to;\n\n", agg.to.name);
 		format(ltw, 1, "this(long %s_id, %s from, %s to) {\n", agg.name, 
 			agg.from.name, agg.to.name);
 		format(ltw, 2, "this.%s_id = %s_id;\n", agg.name, agg.name);
+		format(ltw, 2, "this.from = from;\n");
+		format(ltw, 2, "this.to = to;\n");
+		format(ltw, 1, "}\n\n");
+
+		format(ltw, 1, "this(%s from, %s to) {\n", agg.from.name, agg.to.name);
 		format(ltw, 2, "this.from = from;\n");
 		format(ltw, 2, "this.to = to;\n");
 		format(ltw, 1, "}\n");
@@ -107,9 +112,13 @@ class VibeD : Generator {
 	}
 
 	void generateImport(Out)(ref Out ltw, in Class cls) {
-		format(ltw, 0, "import %s;\n", 
-			toLower(holdsContainerNameTrim(cls.pathsToRoot()))
-		);
+		import std.string : indexOf;
+		auto name = holdsContainerNameTrim(cls.pathsToRoot());
+		auto dot = name.indexOf('.');
+		if(dot != -1) {
+			name = name[dot+1 .. $];
+		}
+		format(ltw, 0, "import %s;\n", toLower(name));
 	}
 
 	void generateModuleDecl(Out)(ref Out ltw, in Entity en) {
@@ -119,9 +128,9 @@ class VibeD : Generator {
 			foreach(it; this.outDirPath[1 .. $]) {
 				if(first) {
 					first = false;
-					format(ltw, 0, "%s", it);
+					format(ltw, 0, "%s", toLower(it));
 				} else {
-					format(ltw, 0, ".%s", it);
+					format(ltw, 0, ".%s", toLower(it));
 				}
 			}
 		}
