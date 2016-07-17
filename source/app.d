@@ -132,6 +132,7 @@ void main() {
 	auto addressPC = world.getOrNew!Composition("addressPostalCode",
 		postalCode, address
 	);
+	addressPC.fromType = world.getOrNewType("PostalCode[]");
 
 	Graphvic gv = new Graphvic(world, "GraphvizOutput");
 	gv.generate();

@@ -37,10 +37,10 @@ class Aggregation : ConnectionImpl {
 	ConnectionCount toCnt;
 
 	// a MemberVariable that stores fromCnt instances of from
-	MemberVariable fromStore; 
+	//MemberVariable fromStore; 
 
 	// a MemberVariable that stores toCnt instances of to
-	MemberVariable toStore; 
+	//MemberVariable toStore; 
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
@@ -54,10 +54,12 @@ class Aggregation : ConnectionImpl {
 
 // from can not exists without to
 class Composition : ConnectionImpl {
+	import model.type;
 	ConnectionCount fromCnt; // to count is always 1 for Composition
 
 	// a MemberVariable that stores fromCnt instances of from
-	MemberVariable fromStore; 
+	Type fromType; 
+
 	this(in string name, in Entity parent) {
 		super(name, parent);
 		fromCnt.low = -1;

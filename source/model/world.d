@@ -143,11 +143,11 @@ class TheWorld : Entity {
 		static if(is(T == Aggregation)) {
 			con.fromCnt = toCopy.fromCnt;
 			con.toCnt = toCopy.toCnt;
-			con.fromStore = toCopy.fromStore;
-			con.toStore = toCopy.toStore;
+			//con.fromType = toCopy.fromType;
+			//con.toStore = toCopy.toStore;
 		} else static if(is(T == Composition)) {
 			con.fromCnt = toCopy.fromCnt;
-			con.fromStore = toCopy.fromStore;
+			con.fromType = toCopy.fromType;
 		}
 		return con;
 	}
