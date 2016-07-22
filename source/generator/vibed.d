@@ -137,12 +137,25 @@ class VibeD : Generator {
 		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(en.name));
 	}
 
+	void generateCompositionImports(Out)(ref Out ltw, in Class cls) {
+		foreach(const(string) key, const(Entity) con; this.world.connections)
+		{
+			if(auto cImpl = cast(const Composition)con) {
+				if(cImpl.to is cls) {
+					//logf("%s %s", cls.name, cImpl.from.name);
+					this.generateImport(ltw, cast(const Class)cImpl.from);
+				}
+			}
+		}
+	}
+
 	void generate(Out)(ref Out ltw, in Class cls) {
 		import std.range : isInputRange;
 
 		expect(cls !is null, "Class must not be null.");
 		generateModuleDecl(ltw, cls);
 		generateImports(ltw, cls);
+		generateCompositionImports(ltw, cls);
 
 		generate(ltw, cast(ProtectedEntity)cls);
 		format(ltw, 0, "%s %s {\n", cls.containerType.get("D", "class"), 

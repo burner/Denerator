@@ -120,7 +120,8 @@ void main() {
 		address, user
 	);
 
-	Class postalCode = world.getOrNewClass("PostalCode", database);
+	Class postalCode = world.getOrNewClass("PostalCode", database,
+			serverUserCtrl);
 	postalCode.containerType["MySQL"] = "Table";
 	MemberVariable pcID = postalCode.getOrNew!MemberVariable("id");
 	pcID.type = integer;
