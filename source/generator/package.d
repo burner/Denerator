@@ -137,13 +137,16 @@ struct EntityRange(T,S) {
 		ret.curIdx = 0;
 		ret.source = source;	
 		ret.names = source.keys();
+
+		ret.prepareStep();
+		ret.curFront = ret.step();
 		ret.isEmpty = ret.prepareStep();
 		return ret;
 	}
 
 	bool prepareStep() {
 		while(this.curIdx < names.length) {
-			if(cast(T)(this.source[this.names[this.curIdx]]))) {
+			if(cast(T)(this.source[this.names[this.curIdx]])) {
 				return true;
 			} else {
 				++curIdx;
@@ -154,11 +157,11 @@ struct EntityRange(T,S) {
 
 	void step() {
 		import std.array : empty, front;
-		this.isEmpty = this.prepareStep();
 		if(this.isEmpty) {
 			this.curMem = null;
 		} else {
 			this.curMem = this.source[this.names[this.curIdx]];
+			this.isEmpty = this.prepareStep();
 		}
 	}
 

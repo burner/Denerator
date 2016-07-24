@@ -102,7 +102,7 @@ class VibeD : Generator {
 		assert(cls !is null);
 		EntityHashSet!(Class) allreadyImported;
 
-		foreach(const(string) key, const(Entity) con; this.world.connections)
+		/*foreach(const(string) key, const(Entity) con; this.world.connections)
 		{
 			auto cImpl = cast(const ConnectionImpl)con;
 			auto dep = cast(const Dependency)con;
@@ -122,6 +122,13 @@ class VibeD : Generator {
 					allreadyImported.insert(from);
 				}
 			}
+		}*/
+		alias ConnectionRange(T) 
+			= EntityRange!(T,StringEntityMap!(const(Entity)));
+		foreach(con;
+				ConnectionRange!(const(Dependency))(&this.world.connections))
+		{
+
 		}
 	}
 
