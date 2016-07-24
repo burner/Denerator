@@ -124,6 +124,59 @@ struct MemRange(T) {
 	}
 }
 
+struct EntityRange(T,S) {
+	import std.typecons : Rebindable, Unique;
+	Rebindable!(T) curFront;
+	bool isEmpty;
+	Unique!(string[]) names;
+	size_t curIdx;
+	S* source;
+
+	static auto opCall(S)(S* source) {
+		EntityRange!(T,S) ret;
+		ret.curIdx = 0;
+		ret.source = source;	
+		ret.names = source.keys();
+		ret.isEmpty = ret.prepareStep();
+		return ret;
+	}
+
+	bool prepareStep() {
+		while(this.curIdx < names.length) {
+			if(cast(T)(this.source[this.names[this.curIdx]]))) {
+				return true;
+			} else {
+				++curIdx;
+			}
+		}
+		return false;
+	}
+
+	void step() {
+		import std.array : empty, front;
+		this.isEmpty = this.prepareStep();
+		if(this.isEmpty) {
+			this.curMem = null;
+		} else {
+			this.curMem = this.source[this.names[this.curIdx]];
+		}
+	}
+
+	bool empty() @property const nothrow {
+		import std.array : empty;
+		return this.isEmpty && this.curMem is null;
+	}
+
+	@property T front() {
+		import std.array : front;
+		return cast(T)this.curMem;
+	}
+
+	void popFront() {
+		this.step();
+	}
+}
+
 void removeBack(T)(ref DynamicArray!T stack) {
 	stack.remove(stack.length -1);
 }

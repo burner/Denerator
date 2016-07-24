@@ -99,14 +99,28 @@ class VibeD : Generator {
 	}
 
 	void generateImports(Out)(ref Out ltw, in Class cls) {
+		assert(cls !is null);
+		EntityHashSet!(Class) allreadyImported;
+
 		foreach(const(string) key, const(Entity) con; this.world.connections)
 		{
 			auto cImpl = cast(const ConnectionImpl)con;
-			if(cImpl.from is cls && (cast(const Dependency)con 
-					|| cast(const Composition)con
-					|| cast(const Realization)con))
-			{
-				this.generateImport(ltw, cast(const(Class))cImpl.to);
+			auto dep = cast(const Dependency)con;
+			auto com = cast(const Composition)con;
+			auto rel = cast(const Realization)con;
+			if(cImpl !is null && cImpl.to is cls
+				&& (cImpl !is null || dep !is null || com !is null 
+					|| rel !is null
+				)
+			) {
+				auto from = cast(Class)(cImpl.from);
+				if(from !is null && from !in allreadyImported) {
+					logf("%s %s %s %s", cls.name, key, cImpl.from !is null,
+						cImpl.from !is null ? cImpl.from.name : ""
+					);
+					this.generateImport(ltw, from);
+					allreadyImported.insert(from);
+				}
 			}
 		}
 	}
@@ -155,7 +169,7 @@ class VibeD : Generator {
 		expect(cls !is null, "Class must not be null.");
 		generateModuleDecl(ltw, cls);
 		generateImports(ltw, cls);
-		generateCompositionImports(ltw, cls);
+		//generateCompositionImports(ltw, cls);
 
 		generate(ltw, cast(ProtectedEntity)cls);
 		format(ltw, 0, "%s %s {\n", cls.containerType.get("D", "class"), 
