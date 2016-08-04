@@ -128,7 +128,7 @@ struct EntityRange(T,S) {
 	import std.typecons : Rebindable, Unique;
 	Rebindable!(T) curFront;
 	bool isEmpty;
-	Unique!(string[]) names;
+	string[] names;
 	size_t curIdx;
 	S* source;
 
@@ -139,7 +139,7 @@ struct EntityRange(T,S) {
 		ret.names = source.keys();
 
 		ret.prepareStep();
-		ret.curFront = ret.step();
+		ret.step();
 		ret.isEmpty = ret.prepareStep();
 		return ret;
 	}
@@ -158,21 +158,21 @@ struct EntityRange(T,S) {
 	void step() {
 		import std.array : empty, front;
 		if(this.isEmpty) {
-			this.curMem = null;
+			this.curFront = null;
 		} else {
-			this.curMem = this.source[this.names[this.curIdx]];
+			this.curFront = (*this.source)[this.names[this.curIdx]];
 			this.isEmpty = this.prepareStep();
 		}
 	}
 
 	bool empty() @property const nothrow {
 		import std.array : empty;
-		return this.isEmpty && this.curMem is null;
+		return this.isEmpty && this.curFront is null;
 	}
 
 	@property T front() {
 		import std.array : front;
-		return cast(T)this.curMem;
+		return cast(T)this.curFront;
 	}
 
 	void popFront() {
