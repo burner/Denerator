@@ -123,11 +123,7 @@ class VibeD : Generator {
 				}
 			}
 		}*/
-		alias ConnectionRange(T) 
-			= EntityRange!(T,StringEntityMap!(const(Entity)));
-		foreach(con;
-				ConnectionRange!(const(Dependency))(&this.world.connections))
-		{
+		foreach(con; entityRange!(const(Dependency))(&this.world.connections)) {
 
 		}
 	}

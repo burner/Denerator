@@ -124,6 +124,11 @@ struct MemRange(T) {
 	}
 }
 
+auto entityRange(T,S)(S* src) {
+	auto ret = EntityRange!(T,S)(src);
+	return ret;
+}
+
 struct EntityRange(T,S) {
 	import std.typecons : Rebindable, Unique;
 	Rebindable!(T) curFront;
@@ -146,7 +151,8 @@ struct EntityRange(T,S) {
 
 	bool prepareStep() {
 		while(this.curIdx < names.length) {
-			if(cast(T)(this.source[this.names[this.curIdx]])) {
+			string idx = this.names[this.curIdx];
+			if(cast(T)((*this.source)[idx])) {
 				return true;
 			} else {
 				++curIdx;
@@ -160,7 +166,7 @@ struct EntityRange(T,S) {
 		if(this.isEmpty) {
 			this.curFront = null;
 		} else {
-			this.curFront = (*this.source)[this.names[this.curIdx]];
+			this.curFront = cast(T)(*this.source)[this.names[this.curIdx]];
 			this.isEmpty = this.prepareStep();
 		}
 	}
