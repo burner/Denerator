@@ -1,5 +1,7 @@
 module generator;
 
+import std.experimental.logger;
+
 import containers.dynamicarray;
 
 import model;
@@ -130,10 +132,10 @@ auto entityRange(T,S)(S* src) {
 }
 
 struct EntityRange(T,S) {
-	import std.typecons : Rebindable, Unique;
+	import std.typecons : Rebindable, Unique, RefCounted;
 	Rebindable!(T) curFront;
 	bool isEmpty;
-	string[] names;
+	RefCounted!(string[]) names;
 	size_t curIdx;
 	S* source;
 
@@ -143,7 +145,8 @@ struct EntityRange(T,S) {
 		ret.source = source;	
 		ret.names = source.keys();
 
-		ret.prepareStep();
+		ret.isEmpty = ret.prepareStep();
+		//logf("%s", ret.isEmpty);
 		ret.step();
 		ret.isEmpty = ret.prepareStep();
 		return ret;
@@ -153,12 +156,12 @@ struct EntityRange(T,S) {
 		while(this.curIdx < names.length) {
 			string idx = this.names[this.curIdx];
 			if(cast(T)((*this.source)[idx])) {
-				return true;
+				return false;
 			} else {
 				++curIdx;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	void step() {
@@ -166,7 +169,12 @@ struct EntityRange(T,S) {
 		if(this.isEmpty) {
 			this.curFront = null;
 		} else {
-			this.curFront = cast(T)(*this.source)[this.names[this.curIdx]];
+			size_t cIdx = this.curIdx;
+			//logf("%s %s", cIdx, this.names.length);
+			string idx = this.names[cIdx];
+			//logf(idx);
+			this.curFront = cast(T)(*this.source)[idx];
+			++this.curIdx;
 			this.isEmpty = this.prepareStep();
 		}
 	}
@@ -183,6 +191,7 @@ struct EntityRange(T,S) {
 
 	void popFront() {
 		this.step();
+		//logf("%s %s empty %s", this.curIdx, this.names.length, this.isEmpty);
 	}
 }
 

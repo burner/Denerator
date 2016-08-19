@@ -4,6 +4,7 @@ import std.experimental.logger;
 import generator;
 import model;
 import std.array : empty, front;
+import std.meta : AliasSeq;
 
 import containers.dynamicarray;
 
@@ -102,29 +103,20 @@ class VibeD : Generator {
 		assert(cls !is null);
 		EntityHashSet!(Class) allreadyImported;
 
-		/*foreach(const(string) key, const(Entity) con; this.world.connections)
+		foreach(EdgeType; AliasSeq!(const(Dependency), const(Composition),
+					const(Realization), const(Aggregation)))
 		{
-			auto cImpl = cast(const ConnectionImpl)con;
-			auto dep = cast(const Dependency)con;
-			auto com = cast(const Composition)con;
-			auto rel = cast(const Realization)con;
-			if(cImpl !is null && cImpl.to is cls
-				&& (cImpl !is null || dep !is null || com !is null 
-					|| rel !is null
-				)
-			) {
-				auto from = cast(Class)(cImpl.from);
-				if(from !is null && from !in allreadyImported) {
-					logf("%s %s %s %s", cls.name, key, cImpl.from !is null,
-						cImpl.from !is null ? cImpl.from.name : ""
-					);
-					this.generateImport(ltw, from);
-					allreadyImported.insert(from);
+			//logf("%s", EdgeType.stringof);
+			foreach(con; entityRange!(EdgeType)(&this.world.connections)) {
+				auto to = cast(Class)(con.to);
+				if(to !is null && to !in allreadyImported && to !is cls) {
+					//logf("%s %s %s", cls.name, con.from !is null,
+					//	con.from !is null ? con.from.name : ""
+					//);
+					this.generateImport(ltw, to);
+					allreadyImported.insert(to);
 				}
 			}
-		}*/
-		foreach(con; entityRange!(const(Dependency))(&this.world.connections)) {
-
 		}
 	}
 
@@ -172,7 +164,7 @@ class VibeD : Generator {
 		expect(cls !is null, "Class must not be null.");
 		generateModuleDecl(ltw, cls);
 		generateImports(ltw, cls);
-		//generateCompositionImports(ltw, cls);
+		format(ltw, 0, "\n");
 
 		generate(ltw, cast(ProtectedEntity)cls);
 		format(ltw, 0, "%s %s {\n", cls.containerType.get("D", "class"), 

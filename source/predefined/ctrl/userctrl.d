@@ -6,7 +6,7 @@ import model.classes;
 Class userCtrl(Container)(TheWorld world, Container cons) {
 	Class user = world.getOrNewClass("UserCtrl", cons);
 
-	user.containerType["D"] = "class";
+	user.containerType["D"] = "abstract class";
 
 	MemberFunction createUser = user.getOrNew!MemberFunction("createUser");
 	createUser.returnType = world.getOrNewClass("User");
