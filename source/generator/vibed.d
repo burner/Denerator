@@ -167,9 +167,27 @@ class VibeD : Generator {
 		format(ltw, 0, "\n");
 
 		generate(ltw, cast(ProtectedEntity)cls);
-		format(ltw, 0, "%s %s {\n", cls.containerType.get("D", "class"), 
+		format(ltw, 0, "%s %s", cls.containerType.get("D", "class"), 
 			cls.name
 		);
+
+		bool first = true;
+		foreach(EdgeType; AliasSeq!(const(Composition), const(Realization)))
+		{
+			foreach(con; entityRange!(EdgeType)(&this.world.connections)) {
+				if(con.from is cls) {
+					if(first) {
+						format(ltw, 0, " : ");
+						first = false;
+					} else {
+						format(ltw, 0, ", ");
+					}
+					format(ltw, 0, con.to.name);
+				}
+			}
+		}
+
+		format(ltw, 0, "\n");
 
 		auto mvs = MemRange!(const(MemberVariable))(cls.members);
 		foreach(mv; mvs) {
@@ -188,17 +206,34 @@ class VibeD : Generator {
 		format(ltw, 0, "\n");
 		generateCtor(ltw, cls, FilterConst.no);
 		generateCtor(ltw, cls, FilterConst.yes);
+
+		if(cls.containerType.get("D", "abstract class")) {
+			foreach(con; entityRange!(const(Realization))(&this.world.connections)) 
+			{
+				if(con.from is cls) {
+					generateMemberFunction(ltw, 
+						cast(const(Class))(con.to)
+					);
+				}
+			}
+		}
 		generateMemberFunction(ltw, cls);
 		generateToStr(ltw, cls);
 
 		format(ltw, 0, "}\n");
 	}
 
-	void generateMemberFunction(Out)(ref Out ltw, in Class cls) {
+	void generateMemberFunction(Out)(ref Out ltw, in Class cls, 
+			string prefix = "") 
+	{
 		expect(cls !is null, "Class must not be null.");
 
 		foreach(mv; MemRange!(const(MemberFunction))(cls.members)) {
-			format(ltw, 1, "");
+			if(cls.containerType.get("D", "class") == "abstract class") {
+				format(ltw, 1, "abstract ");
+			} else {
+				format(ltw, 1, "%s", prefix);
+			}
 			chain(
 				chain(
 					this.generate(ltw, cast(const(Type))(mv.returnType)),
@@ -277,6 +312,10 @@ class VibeD : Generator {
 			first = false;
 		}
 
+		if(cls.containerType.get("D", "class") == "interface") {
+			format(ltw, 0, "%s);", app.data);
+		}
+
 		if(wrap) {
 			format(ltw, 0, "%s)\n", app.data);
 			format(ltw, 1, "{\n");
@@ -294,9 +333,18 @@ class VibeD : Generator {
 	}
 
 	void generateToStr(Out)(ref Out ltw, in Class cls) {
+		if(cls.containerType.get("D", "class") == "interface") {
+			return;
+		}
 		foreach(it; 0 .. 3) {
 			if(it == 0) {
-				format(ltw, 1, "string toString() {\n");
+				if("D" in cls.containerType 
+						&& cls.containerType["D"] == "struct")
+				{
+					format(ltw, 1, "string toString() {\n");
+				} else {
+					format(ltw, 1, "override string toString() {\n");
+				}
 				format(ltw, 2, "import std.array : appender\n");
 				format(ltw, 2, "auto sink = appender!string()\n");
 			} else if(it == 1) {
