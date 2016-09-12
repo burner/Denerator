@@ -1,0 +1,12 @@
+{
+	"name": "TestProject",
+	"authors": [
+		"burner"
+	],
+	"dependencies": {
+		"vibe-d": "~>0.7.29"
+	},
+	"description": "A Degenerator Test Project",
+	"copyright": "Copyright © 2016, burner",
+	"license": "proprietary"
+}

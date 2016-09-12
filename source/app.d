@@ -127,11 +127,12 @@ void main() {
 	pcID.type = integer;
 	pcID.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	pcID.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
+	pcID.addLangSpecificAttribute("D", "const");
 	MemberVariable pcCode = postalCode.getOrNew!MemberVariable("code");
 	pcCode.type = integer;
 
 	auto addressPC = world.getOrNew!Composition("addressPostalCode",
-		postalCode, address
+		address, postalCode
 	);
 	addressPC.fromType = world.getOrNewType("PostalCode[]");
 
@@ -141,6 +142,6 @@ void main() {
 	MySQL mysql = new MySQL(world, "MySQL");
 	mysql.generate(database);
 
-	auto vibed = new VibeD(world, "vibed");
+	auto vibed = new VibeD(world, "TestProject");
 	vibed.generate();
 }

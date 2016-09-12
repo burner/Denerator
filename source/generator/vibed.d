@@ -3,7 +3,7 @@ module generator.vibed;
 import std.experimental.logger;
 import generator;
 import model;
-import std.array : empty, front;
+import std.array;
 import std.meta : AliasSeq;
 
 import containers.dynamicarray;
@@ -13,17 +13,21 @@ class VibeD : Generator {
 	import std.typecons : Rebindable, Flag;
 	import std.stdio : stdout;
 	import std.uni : toLower;
+	import std.container.array : Array;
+	import std.file : getcwd;
 	import util;
 
 	const(string) outputDir;
-	DynamicArray!string outDirPath;
+	Array!string outDirPath;
 	EntityHashSet!Entity con;
 	Rebindable!(const Container) curCon;
 
 	this(in TheWorld world, in string outputDir) {
 		super(world);
 		this.outputDir = outputDir;
-		this.outDirPath.insert(outputDir);
+		this.outDirPath.insertBack(outputDir);
+		this.outDirPath.insertBack("source");
+		logf("%s [%(%s %)]", getcwd(), this.outDirPath[]);
 		enforce(Generator.createFolder(outputDir));
 	}
 
@@ -71,35 +75,41 @@ class VibeD : Generator {
 	}
 
 	void generate(in Container con) {
+		createFolder(this.outDirPath[]);
 		this.curCon = con;
 		this.con.clear();
 		this.con.insert(cast(Entity)con);
 
-		auto ltw = stdout.lockingTextWriter();
 		foreach(const(string) cn, const(Component) com; con.components) {
-			this.generate(ltw, com);
+			this.generate(com);
 		}
 
 		foreach(const(string) cn, const(Class) cls; con.classes) {
+			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
+			auto ltw = f.lockingTextWriter();
 			this.generate(ltw, cls);
 		}
 	}
 
-	void generate(Out)(ref Out ltw, in Component com) {
-		this.outDirPath.insert(com.name);
-		scope(exit) removeBack(this.outDirPath);
-		createFolder(this.outDirPath);
+	void generate(in Component com) {
+		this.outDirPath.insertBack(toLower(com.name));
+		scope(exit) this.outDirPath.removeBack();
+
+		enforce(createFolder(this.outDirPath[]));
+		logf("%(%s %)", this.outDirPath[]);
 
 		foreach(const(string) cn, const(Component) scom; com.subComponents) {
-			this.generate(ltw, scom);
+			this.generate(scom);
 		}
 
 		foreach(const(string) cn, const(Class) cls; com.classes) {
+			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
+			auto ltw = f.lockingTextWriter();
 			this.generate(ltw, cls);
 		}
 	}
 
-	void generateImports(Out)(ref Out ltw, in Class cls) {
+	void generateImports(Out)(auto ref Out ltw, in Class cls) {
 		assert(cls !is null);
 		EntityHashSet!(Class) allreadyImported;
 
@@ -134,7 +144,7 @@ class VibeD : Generator {
 		format(ltw, 0, "module ");
 		bool first = true;
 		if(this.outDirPath.length > 0) {
-			foreach(it; this.outDirPath[1 .. $]) {
+			foreach(it; this.outDirPath[2 .. $]) {
 				if(first) {
 					first = false;
 					format(ltw, 0, "%s", toLower(it));
@@ -172,7 +182,7 @@ class VibeD : Generator {
 		);
 
 		bool first = true;
-		foreach(EdgeType; AliasSeq!(const(Composition), const(Realization)))
+		foreach(EdgeType; AliasSeq!(const(Generalization), const(Realization)))
 		{
 			foreach(con; entityRange!(EdgeType)(&this.world.connections)) {
 				if(con.from is cls) {
@@ -187,7 +197,7 @@ class VibeD : Generator {
 			}
 		}
 
-		format(ltw, 0, "\n");
+		format(ltw, 0, " { \n");
 
 		auto mvs = MemRange!(const(MemberVariable))(cls.members);
 		foreach(mv; mvs) {
@@ -245,6 +255,7 @@ class VibeD : Generator {
 			format(ltw, 0, "%s(", mv.name);
 			bool first = true;
 			foreach(pa; mv.parameter) {
+				format(ltw, 0, "%s", first ? "" : ", ");
 				chain(
 					chain(
 						this.generate(ltw, cast(const(Type))(pa.type)),
@@ -252,7 +263,7 @@ class VibeD : Generator {
 					),
 					"In Class with name", cls.name, "."
 				);
-				format(ltw, 0, "%s%s", !first ? "," : "", pa.name);
+				format(ltw, 0, "%s", pa.name);
 				first = false;
 			}
 			format(ltw, 0, ");\n\n");
@@ -345,8 +356,8 @@ class VibeD : Generator {
 				} else {
 					format(ltw, 1, "override string toString() {\n");
 				}
-				format(ltw, 2, "import std.array : appender\n");
-				format(ltw, 2, "auto sink = appender!string()\n");
+				format(ltw, 2, "import std.array : appender;\n");
+				format(ltw, 2, "auto sink = appender!string();\n");
 			} else if(it == 1) {
 				format(ltw, 1, 
 					"void toString(scope void delegate(const(char)[]) sink) {\n"
@@ -376,7 +387,7 @@ class VibeD : Generator {
 			format(ltw, 2, "formattedWrite(sink, \")\");\n");
 
 			if(it == 0) {
-				format(ltw, 2, "return sink.data\n");
+				format(ltw, 2, "return sink.data;\n");
 			}
 
 			format(ltw, 1, "}\n\n");

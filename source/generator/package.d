@@ -9,6 +9,9 @@ import model;
 abstract class Generator {
 	import std.file : exists, isDir, mkdirRecurse;
 	import std.stdio : File, writef, writeln;
+	import std.algorithm.iteration : joiner;
+	import std.conv : to;
+	import std.uni : toLower;
 
 	string genFolder;
 	const(TheWorld) world;
@@ -19,14 +22,12 @@ abstract class Generator {
 
 	abstract void generate();
 
-	static void createFolder(ref DynamicArray!string foldernames) {
-		foreach(it; foldernames) {
-			writef("%s ", it);
-		}
-		writeln();
+	static bool createFolder(Strs)(auto ref Strs foldernames) {
+		return createFolder(joiner(foldernames, "/").to!string());
 	}
 
-	static bool createFolder(in string foldername) {
+	static bool createFolder(string foldername) {
+		//foldername = toLower(foldername);	
 		if(exists(foldername) && isDir(foldername)) {
 			return true;
 		} else if(exists(foldername) && !isDir(foldername)) {
@@ -37,20 +38,24 @@ abstract class Generator {
 		}
 	}
 
-	static File createFile(in string filename, in string openType = "w") {
+	static File createFile(string filename, in string openType = "w") {
+		//filename = toLower(filename);
 		auto ret = File(filename, openType);
 		assert(ret.isOpen());
 		return ret;
 	}
 
 	static File createFile(string[] filenames, in string openType = "w") {
-		import std.algorithm.iteration : joiner;
-		import std.conv : to;
 		return createFile(filenames.joiner("/").to!string(), openType);
+	}
+
+	static File createFile(Strs)(auto ref Strs filenames, string filename, in string openType = "w") {
+		return createFile(filenames.joiner("/").to!string() ~ "/" ~ filename, openType);
 	}
 
 	static void deleteFolder(string dir) {
 		import std.file : rmdirRecurse;
+		//dir = toLower(dir);
 		if(exists(dir)) {
 			rmdirRecurse(dir);
 		}
