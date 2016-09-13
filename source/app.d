@@ -135,6 +135,7 @@ void main() {
 		address, postalCode
 	);
 	addressPC.fromType = world.getOrNewType("PostalCode[]");
+	addressPC.fromType.typeToLanguage["D"] = "PostalCode[]";
 
 	Graphvic gv = new Graphvic(world, "GraphvizOutput");
 	gv.generate();

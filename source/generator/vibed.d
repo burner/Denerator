@@ -156,18 +156,6 @@ class VibeD : Generator {
 		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(en.name));
 	}
 
-	void generateCompositionImports(Out)(ref Out ltw, in Class cls) {
-		foreach(const(string) key, const(Entity) con; this.world.connections)
-		{
-			if(auto cImpl = cast(const Composition)con) {
-				if(cImpl.to is cls) {
-					//logf("%s %s", cls.name, cImpl.from.name);
-					this.generateImport(ltw, cast(const Class)cImpl.from);
-				}
-			}
-		}
-	}
-
 	void generate(Out)(ref Out ltw, in Class cls) {
 		import std.range : isInputRange;
 
@@ -177,6 +165,7 @@ class VibeD : Generator {
 		format(ltw, 0, "\n");
 
 		generate(ltw, cast(ProtectedEntity)cls);
+		logf("%s %s", cls.containerType.get("D", "class"), cls.name);
 		format(ltw, 0, "%s %s", cls.containerType.get("D", "class"), 
 			cls.name
 		);
@@ -213,6 +202,19 @@ class VibeD : Generator {
 			format(ltw, 0, "%s;\n", mv.name);
 		}
 
+		foreach(con; entityRange!(const(Composition))(&this.world.connections)) {
+			if(con.from is cls) {
+				chain(
+					chain(
+						this.generate(ltw, cast(const(Type))(con.fromType), 1),
+						"In Member with name", con.name, "."
+					),
+					"In Class with name", cls.name, "."
+				);
+				format(ltw, 0, "%s;\n", con.name);
+			}
+		}
+
 		format(ltw, 0, "\n");
 		generateCtor(ltw, cls, FilterConst.no);
 		generateCtor(ltw, cls, FilterConst.yes);
@@ -222,7 +224,7 @@ class VibeD : Generator {
 			{
 				if(con.from is cls) {
 					generateMemberFunction(ltw, 
-						cast(const(Class))(con.to)
+						cast(const(Class))(con.to), "abstract " 
 					);
 				}
 			}
@@ -237,8 +239,10 @@ class VibeD : Generator {
 			string prefix = "") 
 	{
 		expect(cls !is null, "Class must not be null.");
+		logf("%s %s", cls.containerType.get("D", "class"), cls.name);
 
 		foreach(mv; MemRange!(const(MemberFunction))(cls.members)) {
+			logf("%s %s", cls.containerType.get("D", "class"), cls.name);
 			if(cls.containerType.get("D", "class") == "abstract class") {
 				format(ltw, 1, "abstract ");
 			} else {
@@ -323,6 +327,29 @@ class VibeD : Generator {
 			first = false;
 		}
 
+		foreach(con; entityRange!(const(Composition))(&this.world.connections)) {
+			if(con.from is cls) {
+				if(app.data.length + parameterLength(con) > 80) {
+					format(ltw, 0, "%s\n", app.data);
+					app = appender!string();
+					format(app, 3, "");
+					wrap = true;
+				} 
+				if(!first) {
+					format(app, 0, ", ");
+				}
+				chain(
+					chain(
+						generate(app, cast(const(Type))(con.fromType)),
+						"In Member with name", con.name, "."
+					),
+					"In Class with name", cls.name, "."
+				);
+				format(app, 0, "%s", con.name);
+				first = false;
+			}
+		}
+
 		if(cls.containerType.get("D", "class") == "interface") {
 			format(ltw, 0, "%s);", app.data);
 		}
@@ -339,6 +366,11 @@ class VibeD : Generator {
 				continue;
 			}
 			format(ltw, 2, "this.%s = %s;\n", mv.name, mv.name);
+		}
+		foreach(con; entityRange!(const(Composition))(&this.world.connections)) {
+			if(con.from is cls) {
+				format(ltw, 2, "this.%s = %1$s;\n", con.name);
+			}
 		}
 		format(ltw, 1, "}\n\n");
 	}
@@ -421,6 +453,15 @@ class VibeD : Generator {
 		);
 		return mv.type.typeToLanguage["D"].length + mv.name.length + 2;
 	}
+
+	size_t parameterLength(in Composition mv) {
+		expect(mv.fromType, "Composition of name", mv.name, " has no type");
+		expect("D" in mv.fromType.typeToLanguage, "Composition.fromType",
+			"has no entry for key", "D"
+		);
+		return mv.fromType.typeToLanguage["D"].length + mv.name.length + 2;
+	}
+
 
 	string holdsContainerNameTrim(string[] paths) {
 		import std.string : indexOf;

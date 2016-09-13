@@ -55,7 +55,7 @@ class Aggregation : ConnectionImpl {
 // from can not exists without to
 class Composition : ConnectionImpl {
 	import model.type;
-	ConnectionCount fromCnt; // to count is always 1 for Composition
+	ConnectionCount fromCnt; // the "to" count is always 1 for Composition
 
 	// a MemberVariable that stores fromCnt instances of from
 	Type fromType; 
