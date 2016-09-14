@@ -5,13 +5,15 @@ import generator;
 import model;
 import std.array;
 import std.meta : AliasSeq;
+import std.stdio;
 
 import containers.dynamicarray;
+
+alias LTW = File.LockingTextWriter;
 
 class VibeD : Generator {
 	import std.exception : enforce;
 	import std.typecons : Rebindable, Flag;
-	import std.stdio : stdout;
 	import std.uni : toLower;
 	import std.container.array : Array;
 	import std.file : getcwd;
@@ -51,7 +53,7 @@ class VibeD : Generator {
 		}
 	}
 
-	void generate(Out)(ref Out ltw, in Aggregation agg) {
+	void generate(LTW ltw, in Aggregation agg) {
 		this.generateModuleDecl(ltw, agg);
 		this.generateImport(ltw, cast(const(Class))agg.from);
 		this.generateImport(ltw, cast(const(Class))agg.to);
@@ -109,7 +111,7 @@ class VibeD : Generator {
 		}
 	}
 
-	void generateImports(Out)(auto ref Out ltw, in Class cls) {
+	void generateImports(LTW ltw, in Class cls) {
 		assert(cls !is null);
 		EntityHashSet!(Class) allreadyImported;
 
@@ -130,7 +132,7 @@ class VibeD : Generator {
 		}
 	}
 
-	void generateImport(Out)(ref Out ltw, in Class cls) {
+	void generateImport(LTW ltw, in Class cls) {
 		import std.string : indexOf;
 		auto name = holdsContainerNameTrim(cls.pathsToRoot());
 		auto dot = name.indexOf('.');
@@ -140,7 +142,7 @@ class VibeD : Generator {
 		format(ltw, 0, "import %s;\n", toLower(name));
 	}
 
-	void generateModuleDecl(Out)(ref Out ltw, in Entity en) {
+	void generateModuleDecl(LTW ltw, in Entity en) {
 		format(ltw, 0, "module ");
 		bool first = true;
 		if(this.outDirPath.length > 0) {
@@ -156,7 +158,7 @@ class VibeD : Generator {
 		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(en.name));
 	}
 
-	void generate(Out)(ref Out ltw, in Class cls) {
+	void generate(LTW ltw, in Class cls) {
 		import std.range : isInputRange;
 
 		expect(cls !is null, "Class must not be null.");
@@ -193,7 +195,7 @@ class VibeD : Generator {
 			this.generate(ltw, cast(const(ProtectedEntity))(mv), 1);
 			chain(
 				chain(
-					this.generate(ltw, cast(const(Type))(mv.type)),
+					this.generateType(ltw, cast(const(Type))(mv.type)),
 					"In Member with name", mv.name, "."
 				),
 				"In Class with name", cls.name, "."
@@ -206,7 +208,7 @@ class VibeD : Generator {
 			if(con.from is cls) {
 				chain(
 					chain(
-						this.generate(ltw, cast(const(Type))(con.fromType), 1),
+						this.generateType(ltw, cast(const(Type))(con.fromType), 1),
 						"In Member with name", con.name, "."
 					),
 					"In Class with name", cls.name, "."
@@ -235,14 +237,13 @@ class VibeD : Generator {
 		format(ltw, 0, "}\n");
 	}
 
-	void generateMemberFunction(Out)(ref Out ltw, in Class cls, 
-			string prefix = "") 
-	{
+	void generateMemberFunction(LTW ltw, in Class cls, string prefix = "") {
 		expect(cls !is null, "Class must not be null.");
 		logf("%s %s", cls.containerType.get("D", "class"), cls.name);
 
 		foreach(mv; MemRange!(const(MemberFunction))(cls.members)) {
-			logf("%s %s", cls.containerType.get("D", "class"), cls.name);
+			logf("%s %s %s %s", cls.containerType.get("D", "class"), cls.name,
+					mv.name, mv.returnType.name);
 			if(cls.containerType.get("D", "class") == "abstract class") {
 				format(ltw, 1, "abstract ");
 			} else {
@@ -250,7 +251,7 @@ class VibeD : Generator {
 			}
 			chain(
 				chain(
-					this.generate(ltw, cast(const(Type))(mv.returnType)),
+					this.generateType(ltw, cast(const(Type))(mv.returnType)),
 					"In Member with name", mv.name, "."
 				),
 				"In Class with name", cls.name, "."
@@ -262,7 +263,7 @@ class VibeD : Generator {
 				format(ltw, 0, "%s", first ? "" : ", ");
 				chain(
 					chain(
-						this.generate(ltw, cast(const(Type))(pa.type)),
+						this.generateType(ltw, cast(const(Type))(pa.type)),
 						"In Member with name", mv.name, "."
 					),
 					"In Class with name", cls.name, "."
@@ -286,7 +287,7 @@ class VibeD : Generator {
 
 	alias FilterConst = Flag!"FilterConst";
 
-	void generateCtor(Out)(ref Out ltw, in Class cls, const FilterConst fc) {
+	void generateCtor(LTW ltw, in Class cls, const FilterConst fc) {
 		import std.array : appender;
 		import std.algorithm.iteration : filter;
 		import std.range.primitives : walkLength;
@@ -322,7 +323,7 @@ class VibeD : Generator {
 			if(!first) {
 				format(app, 0, ", ");
 			}
-			generate(app, mv.type);
+			generateType(app, mv.type);
 			format(app, 0, "%s", mv.name);
 			first = false;
 		}
@@ -340,7 +341,7 @@ class VibeD : Generator {
 				}
 				chain(
 					chain(
-						generate(app, cast(const(Type))(con.fromType)),
+						generateType(app, cast(const(Type))(con.fromType)),
 						"In Member with name", con.name, "."
 					),
 					"In Class with name", cls.name, "."
@@ -375,7 +376,7 @@ class VibeD : Generator {
 		format(ltw, 1, "}\n\n");
 	}
 
-	void generateToStr(Out)(ref Out ltw, in Class cls) {
+	void generateToStr(LTW ltw, in Class cls) {
 		if(cls.containerType.get("D", "class") == "interface") {
 			return;
 		}
@@ -426,7 +427,7 @@ class VibeD : Generator {
 		}
 	}
 
-	void generate(Out)(ref Out ltw, in ProtectedEntity pe, in int indent = 0) {
+	void generate(LTW ltw, in ProtectedEntity pe, in int indent = 0) {
 		if("D" in pe.protection) {
 			format(ltw, indent, "%s ", pe.protection["D"]);
 		} else if(indent > 0) {
@@ -434,8 +435,8 @@ class VibeD : Generator {
 		}
 	}
 
-	void generate(Out)(ref Out ltw, in Type type, in int indent = 0) {
-		expect(type, "MemberVariable has no type");
+	void generateType(Out)(ref Out ltw, in Type type, in int indent = 0) {
+		expect(type, "Type is null");
 		if(auto cls = cast(const(Class))type) {
 			format(ltw, indent, "%s ", cls.name);
 		} else {
@@ -477,22 +478,4 @@ class VibeD : Generator {
 
 		return "";
 	}
-
-	/*string pathToVibeRoot(string[] paths) {
-		import std.algorithm.iteration : splitter;
-		import std.array : array;
-		foreach(it; paths) {
-			string[] sp = it.splitter(".").array;
-			logf("%s, %s", it, sp);
-			if(sp.length > 1) {
-				auto en = this.world.get(sp[0 .. 2]);
-				if(auto con = cast(const(Container))en) {
-					if(con.technology == "D") {
-						return it;
-					}	
-				}
-			}
-		}
-		return "";
-	}*/
 }
