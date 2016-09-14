@@ -146,15 +146,15 @@ class VibeD : Generator {
 
 	void generateModuleDecl(LTW ltw, in Entity en) {
 		format(ltw, 0, "module ");
-		bool first = true;
+
+		First first;
 		if(this.outDirPath.length > 0) {
 			foreach(it; this.outDirPath[2 .. $]) {
-				if(first) {
-					first = false;
-					format(ltw, 0, "%s", toLower(it));
-				} else {
-					format(ltw, 0, ".%s", toLower(it));
-				}
+				format(ltw, 0, "%s", first(
+						(){ return format("%s", toLower(it)); },
+						(){ return format(".%s", toLower(it)); }
+					)
+				);
 			}
 		}
 		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(en.name));
@@ -174,17 +174,16 @@ class VibeD : Generator {
 			cls.name
 		);
 
-		bool first = true;
+		First first;
 		foreach(EdgeType; AliasSeq!(const(Generalization), const(Realization)))
 		{
 			foreach(con; entityRange!(EdgeType)(&this.world.connections)) {
 				if(con.from is cls) {
-					if(first) {
-						format(ltw, 0, " : ");
-						first = false;
-					} else {
-						format(ltw, 0, ", ");
-					}
+					format(ltw, 0, "%s", first(
+							(){ return " : "; },
+							(){ return ", "; }
+						)
+					);
 					format(ltw, 0, con.to.name);
 				}
 			}
@@ -260,9 +259,11 @@ class VibeD : Generator {
 			);
 
 			format(ltw, 0, "%s(", mv.name);
-			bool first = true;
+			First first;
 			foreach(pa; mv.parameter) {
-				format(ltw, 0, "%s", first ? "" : ", ");
+				format(ltw, 0, "%s", 
+						first(() { return ""; }, (){ return ", "; })
+				);
 				chain(
 					chain(
 						this.generateType(ltw, cast(const(Type))(pa.type)),
@@ -271,7 +272,6 @@ class VibeD : Generator {
 					"In Class with name", cls.name, "."
 				);
 				format(ltw, 0, "%s", pa.name);
-				first = false;
 			}
 			format(ltw, 0, ");\n\n");
 		}
@@ -308,8 +308,9 @@ class VibeD : Generator {
 			return;
 		}
 
+		First first;
+
 		auto app = appender!string();
-		bool first = true;
 		bool wrap = false;
 		format(app, 1, "this(");
 		foreach(mv; MemRange!(const MemberVariable)(cls.members)) {
@@ -322,12 +323,9 @@ class VibeD : Generator {
 				format(app, 3, "");
 				wrap = true;
 			} 
-			if(!first) {
-				format(app, 0, ", ");
-			}
+			first((){}, (){ format(app, 0, ", "); });
 			generateType(app, mv.type);
 			format(app, 0, "%s", mv.name);
-			first = false;
 		}
 
 		foreach(con; entityRange!(const(Composition))(&this.world.connections)) {
@@ -338,9 +336,8 @@ class VibeD : Generator {
 					format(app, 3, "");
 					wrap = true;
 				} 
-				if(!first) {
-					format(app, 0, ", ");
-				}
+				first((){}, (){format(app, 0, ", ");});
+
 				chain(
 					chain(
 						generateType(app, cast(const(Type))(con.fromType)),
@@ -349,7 +346,6 @@ class VibeD : Generator {
 					"In Class with name", cls.name, "."
 				);
 				format(app, 0, "%s", con.name);
-				first = false;
 			}
 		}
 
@@ -409,14 +405,14 @@ class VibeD : Generator {
 			format(ltw, 2, "import std.format : formattedWrite;\n");
 			format(ltw, 2, "formattedWrite(sink, \"%s(\");\n", cls.name);
 
-			bool first = true;
+			First first;
 			foreach(mv; MemRange!(const MemberVariable)(cls.members)) {
-				if(!first) {
-					format(ltw, 2, "formattedWrite(sink, \",\");\n");
-				}
-				first = false;
-				format(ltw, 2, "formattedWrite(sink, \"%s='%%s'\", this.%s);\n", 
-					mv.name, mv.name
+				format(ltw, 2, "%s", first(
+					(){ return "formattedWrite(sink, \",\");\n"; },
+					(){ return format(
+							"formattedWrite(sink, \"%s='%%s'\", this.%s);\n", 
+							mv.name, mv.name
+						);})
 				);
 			}
 			format(ltw, 2, "formattedWrite(sink, \")\");\n");

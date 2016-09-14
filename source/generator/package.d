@@ -1,6 +1,7 @@
 module generator;
 
 import std.experimental.logger;
+import std.range : isOutputRange; 
 
 import containers.dynamicarray;
 
@@ -85,11 +86,20 @@ void generateIndent(O)(ref O output, int indent) {
 	}
 }
 
-void format(O,Args...)(ref O output, int indent, in string str, Args args) {
-	import std.format : formattedWrite;
+void format(O,Args...)(ref O output, int indent, in string str, Args args) 
+		if(isOutputRange!(O,string))
+{
+	import std.format : format, formattedWrite;
 
 	output.generateIndent(indent);
 	output.formattedWrite(str, args);
+}
+
+string format(Args...)(string str, Args args)
+		if(!isOutputRange!(string,string))
+{
+	import std.format : format;
+	return format(str, args);
 }
 
 struct MemRange(T) {
