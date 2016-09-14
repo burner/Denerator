@@ -39,7 +39,7 @@ class VibeD : Generator {
 		{
 			foreach(const(string) conK, const(Container) con; ss.containers) {
 				if(con.technology == "D") {
-					this.generate(con);
+					this.generateContainer(con);
 				}
 			}
 		}
@@ -48,12 +48,12 @@ class VibeD : Generator {
 		{
 			if(auto agg = cast(const(Aggregation))con) {
 				auto ltw = stdout.lockingTextWriter();
-				this.generate(ltw, agg);
+				this.generateAggregation(ltw, agg);
 			}
 		}
 	}
 
-	void generate(LTW ltw, in Aggregation agg) {
+	void generateAggregation(LTW ltw, in Aggregation agg) {
 		this.generateModuleDecl(ltw, agg);
 		this.generateImport(ltw, cast(const(Class))agg.from);
 		this.generateImport(ltw, cast(const(Class))agg.to);
@@ -76,24 +76,24 @@ class VibeD : Generator {
 		format(ltw, 0, "}\n");
 	}
 
-	void generate(in Container con) {
+	void generateContainer(in Container con) {
 		createFolder(this.outDirPath[]);
 		this.curCon = con;
 		this.con.clear();
 		this.con.insert(cast(Entity)con);
 
 		foreach(const(string) cn, const(Component) com; con.components) {
-			this.generate(com);
+			this.generateComponent(com);
 		}
 
 		foreach(const(string) cn, const(Class) cls; con.classes) {
 			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
 			auto ltw = f.lockingTextWriter();
-			this.generate(ltw, cls);
+			this.generateClass(ltw, cls);
 		}
 	}
 
-	void generate(in Component com) {
+	void generateComponent(in Component com) {
 		this.outDirPath.insertBack(toLower(com.name));
 		scope(exit) this.outDirPath.removeBack();
 
@@ -101,18 +101,18 @@ class VibeD : Generator {
 		logf("%(%s %)", this.outDirPath[]);
 
 		foreach(const(string) cn, const(Component) scom; com.subComponents) {
-			this.generate(scom);
+			this.generateComponent(scom);
 		}
 
 		foreach(const(string) cn, const(Class) cls; com.classes) {
 			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
 			auto ltw = f.lockingTextWriter();
-			this.generate(ltw, cls);
+			this.generateClass(ltw, cls);
 		}
 	}
 
 	void generateImports(LTW ltw, in Class cls) {
-		assert(cls !is null);
+		expect(cls, "Cannot generate imports for null Class");
 		EntityHashSet!(Class) allreadyImported;
 
 		foreach(EdgeType; AliasSeq!(const(Dependency), const(Composition),
@@ -158,7 +158,7 @@ class VibeD : Generator {
 		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(en.name));
 	}
 
-	void generate(LTW ltw, in Class cls) {
+	void generateClass(LTW ltw, in Class cls) {
 		import std.range : isInputRange;
 
 		expect(cls !is null, "Class must not be null.");
@@ -166,7 +166,7 @@ class VibeD : Generator {
 		generateImports(ltw, cls);
 		format(ltw, 0, "\n");
 
-		generate(ltw, cast(ProtectedEntity)cls);
+		generateProtectedEntity(ltw, cast(ProtectedEntity)cls);
 		logf("%s %s", cls.containerType.get("D", "class"), cls.name);
 		format(ltw, 0, "%s %s", cls.containerType.get("D", "class"), 
 			cls.name
@@ -192,7 +192,7 @@ class VibeD : Generator {
 
 		auto mvs = MemRange!(const(MemberVariable))(cls.members);
 		foreach(mv; mvs) {
-			this.generate(ltw, cast(const(ProtectedEntity))(mv), 1);
+			this.generateProtectedEntity(ltw, cast(const(ProtectedEntity))(mv), 1);
 			chain(
 				chain(
 					this.generateType(ltw, cast(const(Type))(mv.type)),
@@ -427,7 +427,8 @@ class VibeD : Generator {
 		}
 	}
 
-	void generate(LTW ltw, in ProtectedEntity pe, in int indent = 0) {
+	void generateProtectedEntity(LTW ltw, in ProtectedEntity pe, 
+			in int indent = 0) {
 		if("D" in pe.protection) {
 			format(ltw, indent, "%s ", pe.protection["D"]);
 		} else if(indent > 0) {
