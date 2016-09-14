@@ -160,7 +160,13 @@ class VibeD : Generator {
 		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(en.name));
 	}
 
-	void generateClass(LTW ltw, in Class cls) {
+	void generateClass(LTW ltw, const(Class) cls) {
+		chain(generateClassImpl(ltw, cls),
+			"In Class with name", cls.name, "."
+		);
+	}
+
+	void generateClassImpl(LTW ltw, in Class cls) {
 		import std.range : isInputRange;
 
 		ensure(cls !is null, "Class must not be null.");
@@ -193,13 +199,14 @@ class VibeD : Generator {
 
 		auto mvs = MemRange!(const(MemberVariable))(cls.members);
 		foreach(mv; mvs) {
-			this.generateProtectedEntity(ltw, cast(const(ProtectedEntity))(mv), 1);
 			chain(
-				chain(
-					this.generateType(ltw, cast(const(Type))(mv.type)),
-					"In Member with name", mv.name, "."
-				),
-				"In Class with name", cls.name, "."
+				this.generateProtectedEntity(ltw, 
+					cast(const(ProtectedEntity))(mv), 1),
+				"In Member with name", mv.name, "."
+			);
+			chain(
+				this.generateType(ltw, cast(const(Type))(mv.type)),
+				"In Member with name", mv.name, "."
 			);
 
 			format(ltw, 0, "%s;\n", mv.name);
@@ -208,11 +215,8 @@ class VibeD : Generator {
 		foreach(con; entityRange!(const(Composition))(&this.world.connections)) {
 			if(con.from is cls) {
 				chain(
-					chain(
-						this.generateType(ltw, cast(const(Type))(con.fromType), 1),
-						"In Member with name", con.name, "."
-					),
-					"In Class with name", cls.name, "."
+					this.generateType(ltw, cast(const(Type))(con.fromType), 1),
+					"In Member with name", con.name, "."
 				);
 				format(ltw, 0, "%s;\n", con.name);
 			}
@@ -239,6 +243,12 @@ class VibeD : Generator {
 	}
 
 	void generateMemberFunction(LTW ltw, in Class cls, string prefix = "") {
+		chain(generateMemberFunctionImpl(ltw, cls, prefix),
+			"In Class with name", cls.name, "."
+		);
+	}
+
+	void generateMemberFunctionImpl(LTW ltw, in Class cls, string prefix = "") {
 		ensure(cls !is null, "Class must not be null.");
 		logf("%s %s", cls.containerType.get("D", "class"), cls.name);
 
@@ -251,11 +261,8 @@ class VibeD : Generator {
 				format(ltw, 1, "%s", prefix);
 			}
 			chain(
-				chain(
-					this.generateType(ltw, cast(const(Type))(mv.returnType)),
-					"In Member with name", mv.name, "."
-				),
-				"In Class with name", cls.name, "."
+				this.generateType(ltw, cast(const(Type))(mv.returnType)),
+				"In Member with name", mv.name, "."
 			);
 
 			format(ltw, 0, "%s(", mv.name);
@@ -265,11 +272,8 @@ class VibeD : Generator {
 						first(() { return ""; }, (){ return ", "; })
 				);
 				chain(
-					chain(
-						this.generateType(ltw, cast(const(Type))(pa.type)),
-						"In Member with name", mv.name, "."
-					),
-					"In Class with name", cls.name, "."
+					this.generateType(ltw, cast(const(Type))(pa.type)),
+					"In Member with name", mv.name, "."
 				);
 				format(ltw, 0, "%s", pa.name);
 			}
