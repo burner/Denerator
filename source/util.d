@@ -10,14 +10,6 @@ auto chain(ET = Exception, F, int line = __LINE__, string file = __FILE__, Args.
 	}
 }
 
-/*void expect(ET = Exception, F, int line = __LINE__, string file = __FILE__, Args...)
-		(lazy F exp, lazy Args args)
-{
-	if(!exp) {
-		throw new ET(joinElem(args), file, line);
-	}
-}*/
-
 struct First {
 	bool first = true;
 
