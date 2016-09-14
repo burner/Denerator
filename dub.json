@@ -5,6 +5,7 @@
 	"authors": ["burner"],
 	"targetType" : "executable",
 	"dependencies": {
+		"exceptionhandling": "~>0.0.9",
 		"emsi_containers": ">=0.4.3"
 	},
 	"sourcePaths" : ["source", "../graphvizd/source/"],

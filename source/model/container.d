@@ -7,6 +7,7 @@ class Container : Entity {
 	import model.classes;
 	import model.component;
 	import model.world : SearchResult, TheWorld;
+	import exceptionhandling;
 
 	string technology;
 	StringEntityMap!(Component) components;
@@ -17,8 +18,6 @@ class Container : Entity {
 	}
 
 	this(in Container old, in Entity parent, TheWorld world) {
-		import util : expect;
-
 		super(old, parent);
 		this.technology = old.technology;
 		foreach(const(string) name, const(Component) com; old.components) {
@@ -29,7 +28,7 @@ class Container : Entity {
 		foreach(const(string) name, const(Class) cls; old.classes) {
 			assert(name == cls.name);
 			auto nCls = world.getOrNewClass(name);
-			expect(cls !is null, "While copying ", this.name, "class ", name,
+			ensure(cls !is null, "While copying ", this.name, "class ", name,
 				"could not be found as type in TheWorld"
 			);
 

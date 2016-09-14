@@ -9,6 +9,8 @@ import std.stdio;
 
 import containers.dynamicarray;
 
+import exceptionhandling;
+
 alias LTW = File.LockingTextWriter;
 
 class VibeD : Generator {
@@ -112,7 +114,7 @@ class VibeD : Generator {
 	}
 
 	void generateImports(LTW ltw, in Class cls) {
-		expect(cls, "Cannot generate imports for null Class");
+		ensure(cls !is null, "Cannot generate imports for null Class");
 		EntityHashSet!(Class) allreadyImported;
 
 		foreach(EdgeType; AliasSeq!(const(Dependency), const(Composition),
@@ -161,7 +163,7 @@ class VibeD : Generator {
 	void generateClass(LTW ltw, in Class cls) {
 		import std.range : isInputRange;
 
-		expect(cls !is null, "Class must not be null.");
+		ensure(cls !is null, "Class must not be null.");
 		generateModuleDecl(ltw, cls);
 		generateImports(ltw, cls);
 		format(ltw, 0, "\n");
@@ -238,7 +240,7 @@ class VibeD : Generator {
 	}
 
 	void generateMemberFunction(LTW ltw, in Class cls, string prefix = "") {
-		expect(cls !is null, "Class must not be null.");
+		ensure(cls !is null, "Class must not be null.");
 		logf("%s %s", cls.containerType.get("D", "class"), cls.name);
 
 		foreach(mv; MemRange!(const(MemberFunction))(cls.members)) {
@@ -437,11 +439,11 @@ class VibeD : Generator {
 	}
 
 	void generateType(Out)(ref Out ltw, in Type type, in int indent = 0) {
-		expect(type, "Type is null");
+		ensure(type !is null, "Type is null");
 		if(auto cls = cast(const(Class))type) {
 			format(ltw, indent, "%s ", cls.name);
 		} else {
-			expect("D" in type.typeToLanguage, "Variable type\"",
+			ensure("D" in type.typeToLanguage, "Variable type\"",
 				type.name, "\"has no typeToLanguage entry for key", "D"
 			);
 			format(ltw, indent, "%s ", type.typeToLanguage["D"]);
@@ -449,18 +451,20 @@ class VibeD : Generator {
 	}
 
 	size_t parameterLength(in MemberVariable mv) {
-		expect(mv.type, "MemberVariable of name", mv.name, " has no type");
-		expect("D" in mv.type.typeToLanguage, "MemberVariable.type",
+		ensure(mv.type !is null, "MemberVariable of name", mv.name, " has no type");
+		ensure("D" in mv.type.typeToLanguage, "MemberVariable.type",
 			"has no entry for key", "D"
 		);
 		return mv.type.typeToLanguage["D"].length + mv.name.length + 2;
 	}
 
 	size_t parameterLength(in Composition mv) {
-		expect(mv.fromType, "Composition of name", mv.name, " has no type");
-		expect("D" in mv.fromType.typeToLanguage, "Composition.fromType",
-			"has no entry for key", "D"
-		);
+		ensure(mv.fromType !is null, "Composition of name", mv.name, 
+				" has no type"
+			);
+		ensure("D" in mv.fromType.typeToLanguage, "Composition.fromType",
+				"has no entry for key", "D"
+			);
 		return mv.fromType.typeToLanguage["D"].length + mv.name.length + 2;
 	}
 

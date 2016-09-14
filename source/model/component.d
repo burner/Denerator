@@ -9,6 +9,7 @@ class Component : ProtectedEntity {
 	import model.entity : StringEntityMap;
 	import model.world : SearchResult, TheWorld;
 	import util;
+	import exceptionhandling;
 
 	StringEntityMap!(Class) classes;
 	Component[string] subComponents;

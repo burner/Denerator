@@ -20,6 +20,7 @@ class TheWorld : Entity {
 	import model.type : Type;
 	import model.connections;
 	import util;
+	import exceptionhandling;
 
 	StringEntityMap!(Actor) actors;
 	StringEntityMap!(SoftwareSystem) softwareSystems;
@@ -185,7 +186,7 @@ class TheWorld : Entity {
 				it.classes[name] = ret;
 				ret.parents ~= it;
 			} else {
-				expect(false, "Class ", name, "is already in ", it, ".");	
+				ensure(false, "Class ", name, "is already in ", it, ".");	
 			}
 		}
 		return ret;
