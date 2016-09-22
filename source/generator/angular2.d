@@ -1,0 +1,3 @@
+module generator.angular2;
+
+
