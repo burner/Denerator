@@ -1,16 +1,20 @@
 module generator.cstyle;
 
 import std.stdio;
+public import std.experimental.logger;
+public import generator;
+public import model;
 
 alias LTW = File.LockingTextWriter;
 
-class CStyle : Generator {
+abstract class CStyle : Generator {
 	import std.exception : enforce;
 	import std.typecons : Rebindable, Flag;
-	import std.uni : toLower;
 	import std.container.array : Array;
 	import std.file : getcwd;
 	import util;
+
+	alias FilterConst = Flag!"FilterConst";
 
 	const(string) outputDir;
 	Array!string outDirPath;
@@ -45,4 +49,8 @@ class CStyle : Generator {
 			}
 		}
 	}
+
+	abstract void generateContainer(in Container con);
+	abstract void generateComponent(in Component com);
+	abstract void generateAggregation(LTW ltw, in Aggregation agg);
 }

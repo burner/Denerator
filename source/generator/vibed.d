@@ -1,8 +1,5 @@
 module generator.vibed;
 
-import std.experimental.logger;
-import generator;
-import model;
 import std.array;
 import std.meta : AliasSeq;
 import std.stdio;
@@ -14,11 +11,15 @@ import exceptionhandling;
 import generator.cstyle;
 
 class VibeD : CStyle {
+	import std.exception : enforce;
+	import std.uni : toLower;
+	import util;
+
 	this(in TheWorld world, in string outputDir) {
 		super(world, outputDir);
 	}
 
-	void generateAggregation(LTW ltw, in Aggregation agg) {
+	override void generateAggregation(LTW ltw, in Aggregation agg) {
 		this.generateModuleDecl(ltw, agg);
 		this.generateImport(ltw, cast(const(Class))agg.from);
 		this.generateImport(ltw, cast(const(Class))agg.to);
@@ -41,7 +42,7 @@ class VibeD : CStyle {
 		format(ltw, 0, "}\n");
 	}
 
-	void generateContainer(in Container con) {
+	override void generateContainer(in Container con) {
 		createFolder(this.outDirPath[]);
 		this.curCon = con;
 		this.con.clear();
@@ -58,7 +59,7 @@ class VibeD : CStyle {
 		}
 	}
 
-	void generateComponent(in Component com) {
+	override void generateComponent(in Component com) {
 		this.outDirPath.insertBack(toLower(com.name));
 		scope(exit) this.outDirPath.removeBack();
 
@@ -253,8 +254,6 @@ class VibeD : CStyle {
 			return false;
 		}
 	}
-
-	alias FilterConst = Flag!"FilterConst";
 
 	void generateCtor(LTW ltw, in Class cls, const FilterConst fc) {
 		import std.array : appender;
