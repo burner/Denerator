@@ -68,7 +68,24 @@ abstract class CStyle : Generator {
 		}
 	}
 
-	abstract void generateComponent(in Component com);
+	void generateComponent(in Component com) {
+		this.outDirPath.insertBack(toLower(com.name));
+		scope(exit) this.outDirPath.removeBack();
+
+		enforce(createFolder(this.outDirPath[]));
+		logf("%(%s %)", this.outDirPath[]);
+
+		foreach(const(string) cn, const(Component) scom; com.subComponents) {
+			this.generateComponent(scom);
+		}
+
+		foreach(const(string) cn, const(Class) cls; com.classes) {
+			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
+			auto ltw = f.lockingTextWriter();
+			this.generateClass(ltw, cls);
+		}
+	}
+
 	abstract void generateAggregation(LTW ltw, in Aggregation agg);
 	abstract void generateClass(LTW ltw, const(Class) cls);
 }

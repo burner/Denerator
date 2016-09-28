@@ -42,41 +42,6 @@ class VibeD : CStyle {
 		format(ltw, 0, "}\n");
 	}
 
-	override void generateContainer(in Container con) {
-		createFolder(this.outDirPath[]);
-		this.curCon = con;
-		this.con.clear();
-		this.con.insert(cast(Entity)con);
-
-		foreach(const(string) cn, const(Component) com; con.components) {
-			this.generateComponent(com);
-		}
-
-		foreach(const(string) cn, const(Class) cls; con.classes) {
-			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
-			auto ltw = f.lockingTextWriter();
-			this.generateClass(ltw, cls);
-		}
-	}
-
-	override void generateComponent(in Component com) {
-		this.outDirPath.insertBack(toLower(com.name));
-		scope(exit) this.outDirPath.removeBack();
-
-		enforce(createFolder(this.outDirPath[]));
-		logf("%(%s %)", this.outDirPath[]);
-
-		foreach(const(string) cn, const(Component) scom; com.subComponents) {
-			this.generateComponent(scom);
-		}
-
-		foreach(const(string) cn, const(Class) cls; com.classes) {
-			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
-			auto ltw = f.lockingTextWriter();
-			this.generateClass(ltw, cls);
-		}
-	}
-
 	void generateImports(LTW ltw, in Class cls) {
 		ensure(cls !is null, "Cannot generate imports for null Class");
 		EntityHashSet!(Class) allreadyImported;
