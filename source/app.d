@@ -10,6 +10,7 @@ import duplicator;
 import generator.graphviz;
 import generator.mysql;
 import generator.vibed;
+import generator.angular2;
 import predefined.types.user;
 import predefined.types.group;
 import predefined.types.address;
@@ -143,6 +144,9 @@ void main() {
 	MySQL mysql = new MySQL(world, "MySQL");
 	mysql.generate(database);
 
-	auto vibed = new VibeD(world, "TestProject");
+	auto vibed = new VibeD(world, "VibeTestProject");
 	vibed.generate();
+
+	auto angular = new Angular2(world, "AngularTestProject");
+	angular.generate();
 }
