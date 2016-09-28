@@ -124,7 +124,7 @@ class VibeD : CStyle {
 		format(ltw, 0, "%s%s;\n\n", first ? "" : ".", toLower(en.name));
 	}
 
-	void generateClass(LTW ltw, const(Class) cls) {
+	override void generateClass(LTW ltw, const(Class) cls) {
 		chain(generateClassImpl(ltw, cls),
 			"In Class with name", cls.name, "."
 		);

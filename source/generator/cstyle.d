@@ -12,6 +12,7 @@ abstract class CStyle : Generator {
 	import std.typecons : Rebindable, Flag;
 	import std.container.array : Array;
 	import std.file : getcwd;
+	import std.uni : toLower;
 	import util;
 
 	alias FilterConst = Flag!"FilterConst";
@@ -50,7 +51,24 @@ abstract class CStyle : Generator {
 		}
 	}
 
-	abstract void generateContainer(in Container con);
+	void generateContainer(in Container con) {
+		createFolder(this.outDirPath[]);
+		this.curCon = con;
+		this.con.clear();
+		this.con.insert(cast(Entity)con);
+
+		foreach(const(string) cn, const(Component) com; con.components) {
+			this.generateComponent(com);
+		}
+
+		foreach(const(string) cn, const(Class) cls; con.classes) {
+			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
+			auto ltw = f.lockingTextWriter();
+			this.generateClass(ltw, cls);
+		}
+	}
+
 	abstract void generateComponent(in Component com);
 	abstract void generateAggregation(LTW ltw, in Aggregation agg);
+	abstract void generateClass(LTW ltw, const(Class) cls);
 }
