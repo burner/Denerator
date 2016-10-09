@@ -183,6 +183,10 @@ class Graphvic : Generator {
 		void genClass(const(Class) cls, 
 				ref const(Entity)[] path) 
 		{
+			if(cls.doNotGenerate == DoNotGenerate.yes) {
+				return;
+			}
+
 			Graph g = new Graph();
 			generate(cls, g);
 

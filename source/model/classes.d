@@ -1,5 +1,6 @@
 module model.classes;
 
+import std.typecons : Flag;
 import std.exception : enforce;
 import std.experimental.logger;
 
@@ -10,6 +11,8 @@ import model.entity : getOrNewEntityImpl, Entity, ProtectedEntity,
 import model.type : Type;
 import model.world : TheWorld;
 
+alias DoNotGenerate = Flag!"DoNotGenerate";
+
 class Class : Type {
 	import std.array : empty, front;
 	import model.entity : Entity, EntityHashSet, StringEntityMap, StringHashSet;
@@ -19,6 +22,8 @@ class Class : Type {
 	StringEntityMap!(string) containerType;
 
 	Entity[] parents;
+
+	DoNotGenerate doNotGenerate;
 
 	this(in string name) {
 		super(name, null);

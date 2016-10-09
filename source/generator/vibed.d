@@ -90,6 +90,10 @@ class VibeD : CStyle {
 	}
 
 	override void generateClass(LTW ltw, const(Class) cls) {
+		if(cls.doNotGenerate == DoNotGenerate.yes) {
+			return;
+		}
+
 		chain(generateClassImpl(ltw, cls),
 			"In Class with name", cls.name, "."
 		);
