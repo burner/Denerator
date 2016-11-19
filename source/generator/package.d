@@ -142,23 +142,30 @@ struct MemRange(T) {
 }
 
 auto entityRange(T,S)(S* src) {
-	auto ret = EntityRange!(T,S)(src);
+	auto ret = EntityRange!(T,S,Class)(src, null);
 	return ret;
 }
 
-struct EntityRange(T,S) {
+auto entityRange(T,S,C)(S* src, C c) {
+	auto ret = EntityRange!(T,S,C)(src, c);
+	return ret;
+}
+
+struct EntityRange(T,S,C) {
 	import std.typecons : Rebindable, Unique, RefCounted;
 	Rebindable!(T) curFront;
 	bool isEmpty;
 	RefCounted!(string[]) names;
 	size_t curIdx;
 	S* source;
+	Rebindable!C c;
 
-	static auto opCall(S)(S* source) {
-		EntityRange!(T,S) ret;
+	static auto opCall(S)(S* source, C c) {
+		EntityRange!(T,S,C) ret;
 		ret.curIdx = 0;
 		ret.source = source;	
 		ret.names = source.keys();
+		ret.c = c;
 
 		ret.isEmpty = ret.prepareStep();
 		//logf("%s", ret.isEmpty);
@@ -170,8 +177,13 @@ struct EntityRange(T,S) {
 	bool prepareStep() {
 		while(this.curIdx < names.length) {
 			string idx = this.names[this.curIdx];
-			if(cast(T)((*this.source)[idx])) {
+			T con = cast(T)((*this.source)[idx]);
+			if(this.c is null && con) {
 				return false;
+			} else if(this.c !is null && con 
+				&& (con.to is this.c || con.from is this.c) )
+			{
+				return false;	
 			} else {
 				++curIdx;
 			}

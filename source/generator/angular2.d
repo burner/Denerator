@@ -13,6 +13,10 @@ class Angular2 : CStyle {
 		}
 	}
 
+	void generateComponent(LTW ltw, const(Class) cls) {
+
+	}
+
 	override void generateAggregation(LTW ltw, in Aggregation agg) {
 
 	}
