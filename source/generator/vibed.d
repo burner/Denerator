@@ -117,12 +117,14 @@ class VibeD : CStyle {
 		foreach(EdgeType; AliasSeq!(const(Generalization), const(Realization)))
 		{
 			foreach(con; entityRange!(EdgeType)(&this.world.connections, cls)) {
-				format(ltw, 0, "%s", first(
-						(){ return " : "; },
-						(){ return ", "; }
-					)
-				);
-				format(ltw, 0, con.to.name);
+				if(con.from is cls) {
+					format(ltw, 0, "%s", first(
+							(){ return " : "; },
+							(){ return ", "; }
+						)
+					);
+					format(ltw, 0, con.to.name);
+				}
 			}
 		}
 
