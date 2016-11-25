@@ -17,6 +17,8 @@ import predefined.types.address;
 import predefined.types.basictypes;
 import predefined.ctrl.userctrl;
 
+import predefined.angular.component;
+
 class NoTimeLogger : Logger {
 	import std.stdio : writefln;
     this(LogLevel lv) @safe {
@@ -49,7 +51,7 @@ void main() {
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
 	system.description = "The awesome system to develop.";
 	Container frontend = system.getOrNewContainer("Frontend");
-	frontend.technology = "Angular";
+	frontend.technology = "Angular2";
 	auto frontendUserCtrl = frontend.getOrNewComponent("frontUserCtrl");
 	auto frontendStuffCtrl = frontend.getOrNewComponent("frontStuffCtrl");
 	auto hardware = world.getOrNewHardwareSystem("SomeHardware");
@@ -138,14 +140,16 @@ void main() {
 	addressPC.fromType = world.getOrNewType("PostalCode[]");
 	addressPC.fromType.typeToLanguage["D"] = "PostalCode[]";
 
-	Graphvic gv = new Graphvic(world, "GraphvizOutput");
-	gv.generate();
+	Class userInfo = genAngularService("UserInfo", world, frontendUserCtrl);
 
-	MySQL mysql = new MySQL(world, "MySQL");
-	mysql.generate(database);
+	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	//gv.generate();
 
-	auto vibed = new VibeD(world, "VibeTestProject");
-	vibed.generate();
+	//MySQL mysql = new MySQL(world, "MySQL");
+	//mysql.generate(database);
+
+	//auto vibed = new VibeD(world, "VibeTestProject");
+	//vibed.generate();
 
 	auto angular = new Angular2(world, "AngularTestProject");
 	angular.generate();

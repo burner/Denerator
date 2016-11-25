@@ -26,6 +26,10 @@ class Graphvic : Generator {
 		enforce(Generator.createFolder(outputDir));
 	}
 
+	override void generate(string s) {
+		this.generate();
+	}
+
 	override void generate() {
 		this.generateMakefile();
 		this.generateAll();

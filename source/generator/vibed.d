@@ -19,6 +19,10 @@ class VibeD : CStyle {
 		super(world, outputDir);
 	}
 
+	override void generate() {
+		super.generate("D");
+	}
+
 	override void generateAggregation(LTW ltw, in Aggregation agg) {
 		this.generateModuleDecl(ltw, agg);
 		this.generateImport(ltw, cast(const(Class))agg.from);
@@ -116,15 +120,14 @@ class VibeD : CStyle {
 		First first;
 		foreach(EdgeType; AliasSeq!(const(Generalization), const(Realization)))
 		{
-			foreach(con; entityRange!(EdgeType)(&this.world.connections, cls)) {
-				if(con.from is cls) {
-					format(ltw, 0, "%s", first(
-							(){ return " : "; },
-							(){ return ", "; }
-						)
-					);
-					format(ltw, 0, con.to.name);
-				}
+			foreach(con; entityRangeFrom!(EdgeType)(&this.world.connections, cls)) {
+				assert(con.from is cls);
+				format(ltw, 0, "%s", first(
+						(){ return " : "; },
+						(){ return ", "; }
+					)
+				);
+				format(ltw, 0, con.to.name);
 			}
 		}
 
@@ -145,14 +148,14 @@ class VibeD : CStyle {
 			format(ltw, 0, "%s;\n", mv.name);
 		}
 
-		foreach(con; entityRange!(const(Composition))(&this.world.connections)) {
-			if(con.from is cls) {
-				chain(
-					this.generateType(ltw, cast(const(Type))(con.fromType), 1),
-					"In Member with name", con.name, "."
-				);
-				format(ltw, 0, "%s;\n", con.name);
-			}
+		foreach(con; entityRangeFrom!(const(Composition))(&this.world.connections, cls)) 
+		{
+			assert(con.from is cls);
+			chain(
+				this.generateType(ltw, cast(const(Type))(con.fromType), 1),
+				"In Member with name", con.name, "."
+			);
+			format(ltw, 0, "%s;\n", con.name);
 		}
 
 		format(ltw, 0, "\n");
@@ -160,13 +163,12 @@ class VibeD : CStyle {
 		generateCtor(ltw, cls, FilterConst.yes);
 
 		if(cls.containerType.get("D", "abstract class")) {
-			foreach(con; entityRange!(const(Realization))(&this.world.connections)) 
+			foreach(con; entityRangeFrom!(const(Realization))(&this.world.connections, cls)) 
 			{
-				if(con.from is cls) {
-					generateMemberFunction(ltw, 
-						cast(const(Class))(con.to), "abstract " 
-					);
-				}
+				assert(con.from is cls);
+				generateMemberFunction(ltw, 
+					cast(const(Class))(con.to), "abstract " 
+				);
 			}
 		}
 		generateMemberFunction(ltw, cls);
@@ -263,25 +265,24 @@ class VibeD : CStyle {
 			format(app, 0, "%s", mv.name);
 		}
 
-		foreach(con; entityRange!(const(Composition))(&this.world.connections)) {
-			if(con.from is cls) {
-				if(app.data.length + parameterLength(con) > 80) {
-					format(ltw, 0, "%s\n", app.data);
-					app = appender!string();
-					format(app, 3, "");
-					wrap = true;
-				} 
-				first((){}, (){format(app, 0, ", ");});
+		foreach(con; entityRangeFrom!(const(Composition))(&this.world.connections, cls)) {
+			assert(con.from is cls);
+			if(app.data.length + parameterLength(con) > 80) {
+				format(ltw, 0, "%s\n", app.data);
+				app = appender!string();
+				format(app, 3, "");
+				wrap = true;
+			} 
+			first((){}, (){format(app, 0, ", ");});
 
+			chain(
 				chain(
-					chain(
-						generateType(app, cast(const(Type))(con.fromType)),
-						"In Member with name", con.name, "."
-					),
-					"In Class with name", cls.name, "."
-				);
-				format(app, 0, "%s", con.name);
-			}
+					generateType(app, cast(const(Type))(con.fromType)),
+					"In Member with name", con.name, "."
+				),
+				"In Class with name", cls.name, "."
+			);
+			format(app, 0, "%s", con.name);
 		}
 
 		if(cls.containerType.get("D", "class") == "interface") {
@@ -301,10 +302,9 @@ class VibeD : CStyle {
 			}
 			format(ltw, 2, "this.%s = %s;\n", mv.name, mv.name);
 		}
-		foreach(con; entityRange!(const(Composition))(&this.world.connections)) {
-			if(con.from is cls) {
-				format(ltw, 2, "this.%s = %1$s;\n", con.name);
-			}
+		foreach(con; entityRangeFrom!(const(Composition))(&this.world.connections, cls)) {
+			assert(con.from is cls);
+			format(ltw, 2, "this.%s = %1$s;\n", con.name);
 		}
 		format(ltw, 1, "}\n\n");
 	}

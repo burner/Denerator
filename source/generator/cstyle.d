@@ -31,12 +31,12 @@ abstract class CStyle : Generator {
 		enforce(Generator.createFolder(outputDir));
 	}
 
-	override void generate() {
+	override void generate(string technology) {
 		foreach(const(string) ssK, const(SoftwareSystem) ss;
 				this.world.softwareSystems) 
 		{
 			foreach(const(string) conK, const(Container) con; ss.containers) {
-				if(con.technology == "D") {
+				if(con.technology == technology) {
 					this.generateContainer(con);
 				}
 			}

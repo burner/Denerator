@@ -22,6 +22,7 @@ abstract class Generator {
 	}
 
 	abstract void generate();
+	abstract void generate(string technology);
 
 	static bool createFolder(Strs)(auto ref Strs foldernames) {
 		return createFolder(joiner(foldernames, "/").to!string());
@@ -142,12 +143,22 @@ struct MemRange(T) {
 }
 
 auto entityRange(T,S)(S* src) {
-	auto ret = EntityRange!(T,S,Class)(src, null);
+	auto ret = EntityRange!(T,S,Class)(src, null, null);
 	return ret;
 }
 
-auto entityRange(T,S,C)(S* src, C c) {
-	auto ret = EntityRange!(T,S,C)(src, c);
+auto entityRangeFrom(T,S,C)(S* src, C from) {
+	auto ret = EntityRange!(T,S,C)(src, from, null);
+	return ret;
+}
+
+auto entityRangeTo(T,S,C)(S* src, C to) {
+	auto ret = EntityRange!(T,S,C)(src, null, to);
+	return ret;
+}
+
+auto entityRangeFromTo(T,S,C)(S* src, C from, C to) {
+	auto ret = EntityRange!(T,S,C)(src, from, to);
 	return ret;
 }
 
@@ -158,14 +169,16 @@ struct EntityRange(T,S,C) {
 	RefCounted!(string[]) names;
 	size_t curIdx;
 	S* source;
-	Rebindable!C c;
+	Rebindable!C from;
+	Rebindable!C to;
 
-	static auto opCall(S)(S* source, C c) {
+	static auto opCall(S)(S* source, C from, C to) {
 		EntityRange!(T,S,C) ret;
 		ret.curIdx = 0;
 		ret.source = source;	
 		ret.names = source.keys();
-		ret.c = c;
+		ret.from = from;
+		ret.to = to;
 
 		ret.isEmpty = ret.prepareStep();
 		//logf("%s", ret.isEmpty);
@@ -178,12 +191,20 @@ struct EntityRange(T,S,C) {
 		while(this.curIdx < names.length) {
 			string idx = this.names[this.curIdx];
 			T con = cast(T)((*this.source)[idx]);
-			if(this.c is null && con) {
+			if(this.from is null && this.to is null && con) {
 				return false;
-			} else if(this.c !is null && con 
-				&& (con.to is this.c || con.from is this.c) )
-			{
-				return false;	
+			} else if(this.from !is null && this.to is null && con
+					&& this.from is con.from
+			) {
+				return false;
+			} else if(this.from is null && this.to !is null && con
+					&& this.to is con.to
+			) {
+				return false;
+			} else if(this.from !is null && this.to !is null && con
+					&& this.from is con.from && this.to is con.to
+			) {
+				return false;
 			} else {
 				++curIdx;
 			}

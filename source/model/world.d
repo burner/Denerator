@@ -159,9 +159,21 @@ class TheWorld : Entity {
 		));
 	}
 
-	Type getType(in string name) {
-		if(name in this.typeContainerMapping) {
-			return this.typeContainerMapping[name];
+	T getType(T = Type)(in string name) {
+		if(name in this.typeContainerMapping 
+				&& cast(T)(this.typeContainerMapping[name]) !is null) 
+		{
+			return cast(T)this.typeContainerMapping[name];
+		} else {
+			throw new Exception("Type \"" ~ name ~ "\" does not exists");
+		}
+	}
+
+	const(T) getType(T = Type)(in string name) const {
+		if(name in this.typeContainerMapping 
+				&& cast(const(T))(this.typeContainerMapping[name]) !is null) 
+		{
+			return cast(const(T))this.typeContainerMapping[name];
 		} else {
 			throw new Exception("Type \"" ~ name ~ "\" does not exists");
 		}
