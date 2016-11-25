@@ -51,6 +51,10 @@ abstract class CStyle : Generator {
 		}
 	}
 
+	override string genFileName(const(Class) cls) {
+		return toLower(cls.name) ~ ".d";
+	}
+
 	void generateContainer(in Container con) {
 		createFolder(this.outDirPath[]);
 		this.curCon = con;
@@ -62,7 +66,7 @@ abstract class CStyle : Generator {
 		}
 
 		foreach(const(string) cn, const(Class) cls; con.classes) {
-			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
+			auto f = createFile(this.outDirPath[], this.genFileName(cls), "w");
 			auto ltw = f.lockingTextWriter();
 			this.generateClass(ltw, cls);
 		}
@@ -80,7 +84,7 @@ abstract class CStyle : Generator {
 		}
 
 		foreach(const(string) cn, const(Class) cls; com.classes) {
-			auto f = createFile(this.outDirPath[], toLower(cls.name) ~ ".d", "w");
+			auto f = createFile(this.outDirPath[], this.genFileName(cls), "w");
 			auto ltw = f.lockingTextWriter();
 			this.generateClass(ltw, cls);
 		}

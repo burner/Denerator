@@ -14,6 +14,15 @@ class Angular2 : CStyle {
 		super.generate("Angular2");
 	}
 
+	override string genFileName(const(Class) cls) {
+		if(!entityRangeFromTo!(Dependency)(
+					&this.world.connections, cls,
+					angularService(super.world)).empty) 
+		{
+			return toLower(cls.name) ~ ".ts";
+		}
+	}
+
 	override void generateClass(LTW ltw, const(Class) cls) {
 		import model.connections : Dependency;
 		if(cls.doNotGenerate == DoNotGenerate.yes) {
