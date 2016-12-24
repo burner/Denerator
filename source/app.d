@@ -96,12 +96,12 @@ void main() {
 		server, database
 	).description = "CRUD";
 
-	Type str = world.getOrNewType("String");
+	Type str = world.newType("String");
 	str.typeToLanguage["D"] = "string";
 	str.typeToLanguage["Angular"] = "string";
 	str.typeToLanguage["MySQL"] = "TEXT";
 
-	Type integer = world.getOrNewType("Int");
+	Type integer = world.newType("Int");
 	integer.typeToLanguage["D"] = "long";
 	integer.typeToLanguage["Angular"] = "number";
 	integer.typeToLanguage["MySQL"] = "LONG";
@@ -137,7 +137,7 @@ void main() {
 	auto addressPC = world.getOrNew!Composition("addressPostalCode",
 		address, postalCode
 	);
-	addressPC.fromType = world.getOrNewType("PostalCode[]");
+	addressPC.fromType = world.newType("PostalCode[]");
 	addressPC.fromType.typeToLanguage["D"] = "PostalCode[]";
 
 	Class userInfo = genAngularService("UserInfo", world, frontendUserCtrl);

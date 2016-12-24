@@ -23,7 +23,7 @@ void addBasicTypes(TheWorld world) {
 }
 
 Type floatType(TheWorld world) {
-	Type lng = world.getOrNewType("Float");
+	Type lng = world.newType("Float");
 	lng.typeToLanguage["D"] = "float";
 	lng.typeToLanguage["C"] = "float";
 	lng.typeToLanguage["C++"] = "float";
@@ -36,7 +36,7 @@ Type floatType(TheWorld world) {
 }
 
 Type doubleType(TheWorld world) {
-	Type lng = world.getOrNewType("Double");
+	Type lng = world.newType("Double");
 	lng.typeToLanguage["D"] = "double";
 	lng.typeToLanguage["C"] = "double";
 	lng.typeToLanguage["C++"] = "double";
@@ -49,7 +49,7 @@ Type doubleType(TheWorld world) {
 }
 
 Type longType(TheWorld world) {
-	Type lng = world.getOrNewType("Long");
+	Type lng = world.newType("Long");
 	lng.typeToLanguage["D"] = "long";
 	lng.typeToLanguage["C"] = "int64_t";
 	lng.typeToLanguage["C++"] = "int64_t";
@@ -62,7 +62,7 @@ Type longType(TheWorld world) {
 }
 
 Type intType(TheWorld world) {
-	Type lng = world.getOrNewType("Int");
+	Type lng = world.newType("Int");
 	lng.typeToLanguage["D"] = "int";
 	lng.typeToLanguage["C"] = "int32_t";
 	lng.typeToLanguage["C++"] = "int32_t";
@@ -75,7 +75,7 @@ Type intType(TheWorld world) {
 }
 
 Type shortType(TheWorld world) {
-	Type lng = world.getOrNewType("Short");
+	Type lng = world.newType("Short");
 	lng.typeToLanguage["D"] = "short";
 	lng.typeToLanguage["C"] = "int16_t";
 	lng.typeToLanguage["C++"] = "int16_t";
@@ -88,7 +88,7 @@ Type shortType(TheWorld world) {
 }
 
 Type byteType(TheWorld world) {
-	Type lng = world.getOrNewType("Byte");
+	Type lng = world.newType("Byte");
 	lng.typeToLanguage["D"] = "byte";
 	lng.typeToLanguage["C"] = "int8_t";
 	lng.typeToLanguage["C++"] = "int8_t";
@@ -101,7 +101,7 @@ Type byteType(TheWorld world) {
 }
 
 Type ulongType(TheWorld world) {
-	Type lng = world.getOrNewType("ULong");
+	Type lng = world.newType("ULong");
 	lng.typeToLanguage["D"] = "ulong";
 	lng.typeToLanguage["C"] = "uint64_t";
 	lng.typeToLanguage["C++"] = "uint64_t";
@@ -114,7 +114,7 @@ Type ulongType(TheWorld world) {
 }
 
 Type uintType(TheWorld world) {
-	Type lng = world.getOrNewType("UInt");
+	Type lng = world.newType("UInt");
 	lng.typeToLanguage["D"] = "uint";
 	lng.typeToLanguage["C"] = "uint32_t";
 	lng.typeToLanguage["C++"] = "uint32_t";
@@ -127,7 +127,7 @@ Type uintType(TheWorld world) {
 }
 
 Type ushortType(TheWorld world) {
-	Type lng = world.getOrNewType("UShort");
+	Type lng = world.newType("UShort");
 	lng.typeToLanguage["D"] = "ushort";
 	lng.typeToLanguage["C"] = "uint16_t";
 	lng.typeToLanguage["C++"] = "uint16_t";
@@ -140,7 +140,7 @@ Type ushortType(TheWorld world) {
 }
 
 Type ubyteType(TheWorld world) {
-	Type lng = world.getOrNewType("UByte");
+	Type lng = world.newType("UByte");
 	lng.typeToLanguage["D"] = "ubyte";
 	lng.typeToLanguage["C"] = "uint8_t";
 	lng.typeToLanguage["C++"] = "uint8_t";
@@ -153,7 +153,7 @@ Type ubyteType(TheWorld world) {
 }
 
 Type boolType(TheWorld world) {
-	Type lng = world.getOrNewType("Bool");
+	Type lng = world.newType("Bool");
 	lng.typeToLanguage["D"] = "bool";
 	lng.typeToLanguage["C"] = "bool";
 	lng.typeToLanguage["C++"] = "bool";
@@ -166,7 +166,7 @@ Type boolType(TheWorld world) {
 }
 
 Type stringType(TheWorld world) {
-	Type lng = world.getOrNewType("String");
+	Type lng = world.newType("String");
 	lng.typeToLanguage["D"] = "string";
 	lng.typeToLanguage["C"] = "const char*";
 	lng.typeToLanguage["C++"] = "std::string";
@@ -179,7 +179,7 @@ Type stringType(TheWorld world) {
 }
 
 Type dateType(TheWorld world) {
-	Type lng = world.getOrNewType("Date");
+	Type lng = world.newType("Date");
 	lng.typeToLanguage["D"] = "Date";
 	lng.typeToLanguage["C++"] = "std::time_point";
 	lng.typeToLanguage["Vibe.d"] = "Date";
@@ -191,7 +191,7 @@ Type dateType(TheWorld world) {
 }
 
 Type timeType(TheWorld world) {
-	Type lng = world.getOrNewType("Time");
+	Type lng = world.newType("Time");
 	lng.typeToLanguage["D"] = "TimeOfDay";
 	lng.typeToLanguage["C++"] = "std::time_point";
 	lng.typeToLanguage["Vibe.d"] = "TimeOfDay";
@@ -203,7 +203,7 @@ Type timeType(TheWorld world) {
 }
 
 Type dateTimeType(TheWorld world) {
-	Type lng = world.getOrNewType("DateTime");
+	Type lng = world.newType("DateTime");
 	lng.typeToLanguage["D"] = "DateTime";
 	lng.typeToLanguage["C++"] = "std::time_point";
 	lng.typeToLanguage["Vibe.d"] = "TimeOfDay";
@@ -215,7 +215,7 @@ Type dateTimeType(TheWorld world) {
 }
 
 Type cfloatType(TheWorld world) {
-	Type lng = world.getOrNewType("const Float");
+	Type lng = world.newType("const Float");
 	lng.typeToLanguage["D"] = "const(float)";
 	lng.typeToLanguage["C"] = "const float";
 	lng.typeToLanguage["C++"] = "float const";
@@ -228,7 +228,7 @@ Type cfloatType(TheWorld world) {
 }
 
 Type cdoubleType(TheWorld world) {
-	Type lng = world.getOrNewType("const Double");
+	Type lng = world.newType("const Double");
 	lng.typeToLanguage["D"] = "const(double)";
 	lng.typeToLanguage["C"] = "const double";
 	lng.typeToLanguage["C++"] = "double const";
@@ -241,7 +241,7 @@ Type cdoubleType(TheWorld world) {
 }
 
 Type clongType(TheWorld world) {
-	Type lng = world.getOrNewType("const Long");
+	Type lng = world.newType("const Long");
 	lng.typeToLanguage["D"] = "const(long)";
 	lng.typeToLanguage["C"] = "const int64_t";
 	lng.typeToLanguage["C++"] = "int64_t const";
@@ -254,7 +254,7 @@ Type clongType(TheWorld world) {
 }
 
 Type cintType(TheWorld world) {
-	Type lng = world.getOrNewType("const Int");
+	Type lng = world.newType("const Int");
 	lng.typeToLanguage["D"] = "const(int)";
 	lng.typeToLanguage["C"] = "const int32_t";
 	lng.typeToLanguage["C++"] = "int32_t const";
@@ -267,7 +267,7 @@ Type cintType(TheWorld world) {
 }
 
 Type cshortType(TheWorld world) {
-	Type lng = world.getOrNewType("const Short");
+	Type lng = world.newType("const Short");
 	lng.typeToLanguage["D"] = "const(short)";
 	lng.typeToLanguage["C"] = "const int16_t";
 	lng.typeToLanguage["C++"] = "int16_t const";
@@ -280,7 +280,7 @@ Type cshortType(TheWorld world) {
 }
 
 Type cbyteType(TheWorld world) {
-	Type lng = world.getOrNewType("const Byte");
+	Type lng = world.newType("const Byte");
 	lng.typeToLanguage["D"] = "const(byte)";
 	lng.typeToLanguage["C"] = "const int8_t";
 	lng.typeToLanguage["C++"] = "int8_t const";
@@ -293,7 +293,7 @@ Type cbyteType(TheWorld world) {
 }
 
 Type culongType(TheWorld world) {
-	Type lng = world.getOrNewType("const ULong");
+	Type lng = world.newType("const ULong");
 	lng.typeToLanguage["D"] = "const(ulong)";
 	lng.typeToLanguage["C"] = "const uint64_t";
 	lng.typeToLanguage["C++"] = "uint64_t const";
@@ -306,7 +306,7 @@ Type culongType(TheWorld world) {
 }
 
 Type cuintType(TheWorld world) {
-	Type lng = world.getOrNewType("const UInt");
+	Type lng = world.newType("const UInt");
 	lng.typeToLanguage["D"] = "const(uint)";
 	lng.typeToLanguage["C"] = "const uint32_t";
 	lng.typeToLanguage["C++"] = "uint32_t const";
@@ -319,7 +319,7 @@ Type cuintType(TheWorld world) {
 }
 
 Type cushortType(TheWorld world) {
-	Type lng = world.getOrNewType("const UShort");
+	Type lng = world.newType("const UShort");
 	lng.typeToLanguage["D"] = "const(ushort)";
 	lng.typeToLanguage["C"] = "const uint16_t";
 	lng.typeToLanguage["C++"] = "uint16_t const";
@@ -332,7 +332,7 @@ Type cushortType(TheWorld world) {
 }
 
 Type cubyteType(TheWorld world) {
-	Type lng = world.getOrNewType("const UByte");
+	Type lng = world.newType("const UByte");
 	lng.typeToLanguage["D"] = "const(ubyte)";
 	lng.typeToLanguage["C"] = "const uint8_t";
 	lng.typeToLanguage["C++"] = "uint8_t const";
@@ -345,7 +345,7 @@ Type cubyteType(TheWorld world) {
 }
 
 Type cboolType(TheWorld world) {
-	Type lng = world.getOrNewType("const Bool");
+	Type lng = world.newType("const Bool");
 	lng.typeToLanguage["D"] = "const(bool)";
 	lng.typeToLanguage["C"] = "const bool";
 	lng.typeToLanguage["C++"] = "bool const";
@@ -358,7 +358,7 @@ Type cboolType(TheWorld world) {
 }
 
 Type cstringType(TheWorld world) {
-	Type lng = world.getOrNewType("const String");
+	Type lng = world.newType("const String");
 	lng.typeToLanguage["D"] = "const(string)";
 	lng.typeToLanguage["C"] = "const char const*";
 	lng.typeToLanguage["C++"] = "std::string const";
@@ -371,7 +371,7 @@ Type cstringType(TheWorld world) {
 }
 
 Type cdateType(TheWorld world) {
-	Type lng = world.getOrNewType("const Date");
+	Type lng = world.newType("const Date");
 	lng.typeToLanguage["D"] = "const(Date)";
 	lng.typeToLanguage["C++"] = "std::time_point const";
 	lng.typeToLanguage["Vibe.d"] = "const(Date)";
@@ -383,7 +383,7 @@ Type cdateType(TheWorld world) {
 }
 
 Type ctimeType(TheWorld world) {
-	Type lng = world.getOrNewType("const Time");
+	Type lng = world.newType("const Time");
 	lng.typeToLanguage["D"] = "const(TimeOfDay)";
 	lng.typeToLanguage["C++"] = "std::time_point const";
 	lng.typeToLanguage["Vibe.d"] = "const(TimeOfDay)";
@@ -395,7 +395,7 @@ Type ctimeType(TheWorld world) {
 }
 
 Type cdateTimeType(TheWorld world) {
-	Type lng = world.getOrNewType("const DateTime");
+	Type lng = world.newType("const DateTime");
 	lng.typeToLanguage["D"] = "const(DateTime)";
 	lng.typeToLanguage["C++"] = "std::time_point const";
 	lng.typeToLanguage["Vibe.d"] = "const(TimeOfDay)";
@@ -407,7 +407,7 @@ Type cdateTimeType(TheWorld world) {
 }
 
 Type passwordHashType(TheWorld world) {
-	Type lng = world.getOrNewType("PasswordHash");
+	Type lng = world.newType("PasswordHash");
 	lng.typeToLanguage["D"] = "ubyte[64]";
 	lng.typeToLanguage["C++"] = "std::vector<uint8_t>";
 	lng.typeToLanguage["Vibe.d"] = "ubyte[64]";

@@ -6,6 +6,8 @@ import generator.cstyle;
 
 class Angular2 : CStyle {
 	import predefined.angular.component : angularService;
+	import std.uni : toLower;
+
 	this(in TheWorld world, in string outputDir) {
 		super(world, outputDir);
 	}
@@ -21,6 +23,7 @@ class Angular2 : CStyle {
 		{
 			return toLower(cls.name) ~ ".ts";
 		}
+		assert(false);
 	}
 
 	override void generateClass(LTW ltw, const(Class) cls) {

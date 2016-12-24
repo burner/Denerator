@@ -11,6 +11,7 @@ struct SearchResult {
 class TheWorld : Entity {
 	import std.array : empty, front;
 	import std.exception : enforce;
+	import std.format : format;
 	import model.container : Container;
 	import model.world : SearchResult;
 	import model.actor : Actor;
@@ -153,10 +154,14 @@ class TheWorld : Entity {
 		return con;
 	}
 
-	Type getOrNewType(in string name) {
-		return enforce(getOrNewEntityImpl!(Type)(name,
-			this.typeContainerMapping, null
-		));
+	Type newType(in string name) {
+		if(name in this.typeContainerMapping) {
+			throw new Exception(format("Type '%s' already exists", name));
+		} else {
+			Type ret = new Type(name, null);
+			this.typeContainerMapping[name] = ret;
+			return ret;
+		}
 	}
 
 	T getType(T = Type)(in string name) {
