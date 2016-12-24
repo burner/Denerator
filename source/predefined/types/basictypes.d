@@ -5,12 +5,10 @@ import model.type;
 
 void addBasicTypes(TheWorld world) {
 	auto types = [
-		&floatType, &doubleType, 
 		&longType, &intType, &shortType, &byteType,
 		&ulongType, &uintType, &ushortType, &ubyteType,
 		&stringType, &floatType, &doubleType, &dateTimeType,
 		&dateType, &timeType, 
-		&cfloatType, &cdoubleType, 
 		&clongType, &cintType, &cshortType, &cbyteType,
 		&culongType, &cuintType, &cushortType, &cubyteType,
 		&cstringType, &cfloatType, &cdoubleType, &cdateTimeType,

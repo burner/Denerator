@@ -96,15 +96,8 @@ void main() {
 		server, database
 	).description = "CRUD";
 
-	Type str = world.newType("String");
-	str.typeToLanguage["D"] = "string";
-	str.typeToLanguage["Angular"] = "string";
-	str.typeToLanguage["MySQL"] = "TEXT";
-
-	Type integer = world.newType("Int");
-	integer.typeToLanguage["D"] = "long";
-	integer.typeToLanguage["Angular"] = "number";
-	integer.typeToLanguage["MySQL"] = "LONG";
+	Type str = world.getType("String");
+	Type integer = world.getType("Int");
 
 	Class user = userClass(world, frontendUserCtrl, serverUserCtrl, database);
 	Class group = groupClass(world, frontendUserCtrl, serverUserCtrl, database);

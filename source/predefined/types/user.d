@@ -14,7 +14,7 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 	user.containerType["MySQL"] = "Table";
 
 	MemberVariable userId = user.getOrNew!MemberVariable("id");
-	userId.type = world.newType("const ULong");
+	userId.type = world.getType("const ULong");
 	assert(userId.type);
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
@@ -22,19 +22,19 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 	userId.addLangSpecificAttribute("Typescript", "const");
 
 	MemberVariable firstname = user.getOrNew!MemberVariable("firstname");
-	firstname.type = world.newType("String");
+	firstname.type = world.getType("String");
 	assert(firstname.type);
 
 	MemberVariable middlename = user.getOrNew!MemberVariable("middlename");
-	middlename.type = world.newType("String");
+	middlename.type = world.getType("String");
 	assert(middlename.type);
 
 	MemberVariable lastname = user.getOrNew!MemberVariable("lastname");
-	lastname.type = world.newType("String");
+	lastname.type = world.getType("String");
 	assert(lastname.type);
 
 	MemberVariable passwordHash = user.getOrNew!MemberVariable("password");
-	passwordHash.type = world.newType("PasswordHash");
+	passwordHash.type = world.getType("PasswordHash");
 	assert(passwordHash.type);
 
 	return user;
