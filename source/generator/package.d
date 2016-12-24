@@ -40,8 +40,6 @@ abstract class Generator {
 		}
 	}
 
-	abstract string genFileName(const(Class) cls);
-
 	static File createFile(string filename, in string openType = "w") {
 		//filename = toLower(filename);
 		auto ret = File(filename, openType);

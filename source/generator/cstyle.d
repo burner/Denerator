@@ -51,7 +51,7 @@ abstract class CStyle : Generator {
 		}
 	}
 
-	override string genFileName(const(Class) cls) {
+	string genFileName(const(Class) cls) {
 		return toLower(cls.name) ~ ".d";
 	}
 

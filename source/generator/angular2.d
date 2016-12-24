@@ -23,7 +23,7 @@ class Angular2 : CStyle {
 		{
 			return toLower(cls.name) ~ ".ts";
 		}
-		return toLower(cls.name) ~ ".ts";
+		assert(false);
 	}
 
 	override void generateClass(LTW ltw, const(Class) cls) {

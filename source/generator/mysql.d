@@ -21,6 +21,7 @@ class MySQL : Generator {
 	}
 
 	override void generate() {}	
+	override void generate(string technology) {}
 
 	void generate(in Container con) {
 		assert(con.technology == "MySQL");
