@@ -12,6 +12,7 @@ class TheWorld : Entity {
 	import std.array : empty, front;
 	import std.exception : enforce;
 	import std.format : format;
+	import std.traits : CopyConstness;
 	import model.container : Container;
 	import model.world : SearchResult;
 	import model.actor : Actor;
@@ -77,13 +78,17 @@ class TheWorld : Entity {
 				}
 			}
 
-			foreach(const(string) name, const(SoftwareSystem) ss; this.softwareSystems) {
+			foreach(const(string) name, const(SoftwareSystem) ss; 
+					this.softwareSystems) 
+			{
 				if(name == fr) {
 					return ss.get(path);
 				}
 			}
 
-			foreach(const(string) name, const(HardwareSystem) hw; this.hardwareSystems) {
+			foreach(const(string) name, const(HardwareSystem) hw; 
+					this.hardwareSystems) 
+			{
 				if(name == fr) {
 					return hw.get(path);
 				}
@@ -108,8 +113,22 @@ class TheWorld : Entity {
 		return dummy;
 	}
 
-	Actor getOrNewActor(in string name) {
-		return enforce(getOrNewEntityImpl!Actor(name, this.actors, this));
+	CopyConstness!(T,Actor) getActor(this T)(const(string) name) {
+		if(name in this.actors) {
+			return this.actors[name];
+		} else {
+			throw new Exception("Actor \"" ~ name ~ "\" does not exists");
+		}
+	}
+
+	Actor newActor(const(string) name) {
+		if(name in this.actors) {
+			throw new Exception(format("Actor '%s' already exists", name));
+		} else {
+			Actor ret = new Actor(name, this);
+			this.actors[name] = ret;
+			return ret;
+		}
 	}
 
 	SoftwareSystem getOrNewSoftwareSystem(in string name) {

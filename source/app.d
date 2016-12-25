@@ -41,11 +41,11 @@ void main() {
 	auto world = new TheWorld("TheWorld");
 	addBasicTypes(world);
 
-	Actor users = world.getOrNewActor("The Users");
+	Actor users = world.newActor("The Users");
 	users.description = "This is a way to long description for something "
 		~ "that should be obvious.";
 
-	Actor admin = world.getOrNewActor("The Admin");
+	Actor admin = world.newActor("The Admin");
 	admin.description = "An admin does what an admin does.";
 
 	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
@@ -60,13 +60,19 @@ void main() {
 	system2.description = "You don't want to touch this.";
 
 	auto usersFrontend = world.getOrNew!Connection("userDepFrontend",
-		users, frontendUserCtrl
+		world.getActor("The Users"), frontendUserCtrl
 	);
 	usersFrontend.description = "Uses the frontend to do stuff.";
 	world.getOrNew!Connection("userDepStuffCtrl",
 		users, frontendStuffCtrl
 	).description = "Uses the Stuff Logic of the Awesome Software";
 	usersFrontend.description = "Uses the frontend to do stuff.";
+
+	{
+		const(TheWorld) cw = world;
+		const(Actor) ca = world.getActor("The Users");
+		assert(ca !is null);
+	}
 
 	world.getOrNew!Connection("adminUser",
 		admin, frontendUserCtrl
