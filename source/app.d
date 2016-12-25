@@ -48,15 +48,15 @@ void main() {
 	Actor admin = world.newActor("The Admin");
 	admin.description = "An admin does what an admin does.";
 
-	auto system = world.getOrNewSoftwareSystem("AwesomeSoftware");
+	auto system = world.newSoftwareSystem("AwesomeSoftware");
 	system.description = "The awesome system to develop.";
 	Container frontend = system.getOrNewContainer("Frontend");
 	frontend.technology = "Angular2";
 	auto frontendUserCtrl = frontend.getOrNewComponent("frontUserCtrl");
 	auto frontendStuffCtrl = frontend.getOrNewComponent("frontStuffCtrl");
-	auto hardware = world.getOrNewHardwareSystem("SomeHardware");
+	auto hardware = world.newHardwareSystem("SomeHardware");
 
-	auto system2 = world.getOrNewSoftwareSystem("LagacySoftwareSystem");
+	auto system2 = world.newSoftwareSystem("LagacySoftwareSystem");
 	system2.description = "You don't want to touch this.";
 
 	auto usersFrontend = world.getOrNew!Connection("userDepFrontend",

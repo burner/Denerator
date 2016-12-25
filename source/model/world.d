@@ -131,17 +131,53 @@ class TheWorld : Entity {
 		}
 	}
 
-	SoftwareSystem getOrNewSoftwareSystem(in string name) {
+	CopyConstness!(T,SoftwareSystem) getSoftwareSystem(this T)(const(string) name) {
+		if(name in this.softwareSystems) {
+			return this.softwareSystems[name];
+		} else {
+			throw new Exception("SoftwareSystem \"" ~ name ~ "\" does not exists");
+		}
+	}
+
+	SoftwareSystem newSoftwareSystem(const(string) name) {
+		if(name in this.softwareSystems) {
+			throw new Exception(format("SoftwareSystem '%s' already exists", name));
+		} else {
+			SoftwareSystem ret = new SoftwareSystem(name, this);
+			this.softwareSystems[name] = ret;
+			return ret;
+		}
+	}
+
+	CopyConstness!(T,HardwareSystem) getHardwareSystem(this T)(const(string) name) {
+		if(name in this.hardwareSystems) {
+			return this.hardwareSystems[name];
+		} else {
+			throw new Exception("HardwareSystem \"" ~ name ~ "\" does not exists");
+		}
+	}
+
+	HardwareSystem newHardwareSystem(const(string) name) {
+		if(name in this.hardwareSystems) {
+			throw new Exception(format("HardwareSystem '%s' already exists", name));
+		} else {
+			HardwareSystem ret = new HardwareSystem(name, this);
+			this.hardwareSystems[name] = ret;
+			return ret;
+		}
+	}
+
+	/*SoftwareSystem getOrNewSoftwareSystem(in string name) {
 		return enforce(getOrNewEntityImpl!SoftwareSystem(name,
 			this.softwareSystems, this)
 		);
-	}
+	}*/
 
-	HardwareSystem getOrNewHardwareSystem(in string name) {
+	/*HardwareSystem getOrNewHardwareSystem(in string name) {
 		return enforce(getOrNewEntityImpl!HardwareSystem(name,
 			this.hardwareSystems, this)
 		);
-	}
+	}*/
 
 	T getOrNew(T,F,O)(in string name, F from, O to) {
 		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
