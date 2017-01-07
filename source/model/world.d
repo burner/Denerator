@@ -167,18 +167,6 @@ class TheWorld : Entity {
 		}
 	}
 
-	/*SoftwareSystem getOrNewSoftwareSystem(in string name) {
-		return enforce(getOrNewEntityImpl!SoftwareSystem(name,
-			this.softwareSystems, this)
-		);
-	}*/
-
-	/*HardwareSystem getOrNewHardwareSystem(in string name) {
-		return enforce(getOrNewEntityImpl!HardwareSystem(name,
-			this.hardwareSystems, this)
-		);
-	}*/
-
 	T getOrNew(T,F,O)(in string name, F from, O to) {
 		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
 			name, this.connections, this
@@ -219,17 +207,15 @@ class TheWorld : Entity {
 		}
 	}
 
-	T getType(T = Type)(in string name) {
-		if(name in this.typeContainerMapping 
-				&& cast(T)(this.typeContainerMapping[name]) !is null) 
-		{
-			return cast(T)this.typeContainerMapping[name];
+	CopyConstness!(T,S) getType(S,this T)(in string name) {
+		if(name in this.typeContainerMapping) {
+			return cast(CopyConstness!(T,S))this.typeContainerMapping[name];
 		} else {
 			throw new Exception("Type \"" ~ name ~ "\" does not exists");
 		}
 	}
 
-	const(T) getType(T = Type)(in string name) const {
+	/*const(T) getType(T = Type)(in string name) const {
 		if(name in this.typeContainerMapping 
 				&& cast(const(T))(this.typeContainerMapping[name]) !is null) 
 		{
@@ -237,7 +223,7 @@ class TheWorld : Entity {
 		} else {
 			throw new Exception("Type \"" ~ name ~ "\" does not exists");
 		}
-	}
+	}*/
 
 	/** Gets a class from one of the containers and adds them to all other
 	containers. If the Class can't be find by its name it is created and added
