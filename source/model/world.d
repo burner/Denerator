@@ -207,23 +207,13 @@ class TheWorld : Entity {
 		}
 	}
 
-	CopyConstness!(T,S) getType(S,this T)(in string name) {
+	CopyConstness!(T,S) getType(S = Type,this T)(in string name) {
 		if(name in this.typeContainerMapping) {
 			return cast(CopyConstness!(T,S))this.typeContainerMapping[name];
 		} else {
 			throw new Exception("Type \"" ~ name ~ "\" does not exists");
 		}
 	}
-
-	/*const(T) getType(T = Type)(in string name) const {
-		if(name in this.typeContainerMapping 
-				&& cast(const(T))(this.typeContainerMapping[name]) !is null) 
-		{
-			return cast(const(T))this.typeContainerMapping[name];
-		} else {
-			throw new Exception("Type \"" ~ name ~ "\" does not exists");
-		}
-	}*/
 
 	/** Gets a class from one of the containers and adds them to all other
 	containers. If the Class can't be find by its name it is created and added
