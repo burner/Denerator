@@ -50,10 +50,10 @@ void main() {
 
 	auto system = world.newSoftwareSystem("AwesomeSoftware");
 	system.description = "The awesome system to develop.";
-	Container frontend = system.getOrNewContainer("Frontend");
+	Container frontend = system.newContainer("Frontend");
 	frontend.technology = "Angular2";
-	auto frontendUserCtrl = frontend.getOrNewComponent("frontUserCtrl");
-	auto frontendStuffCtrl = frontend.getOrNewComponent("frontStuffCtrl");
+	auto frontendUserCtrl = frontend.newComponent("frontUserCtrl");
+	auto frontendStuffCtrl = frontend.newComponent("frontStuffCtrl");
 	auto hardware = world.newHardwareSystem("SomeHardware");
 
 	auto system2 = world.newSoftwareSystem("LagacySoftwareSystem");
@@ -78,7 +78,7 @@ void main() {
 		admin, frontendUserCtrl
 	).description = "Manager Users";
 
-	Container server = system.getOrNewContainer("Server");
+	Container server = system.newContainer("Server");
 	server.technology = "D";
 	world.getOrNew!Connection("frontendServerDep", frontend, server)
 		.description = "HTTPS";
@@ -86,7 +86,7 @@ void main() {
 	world.getOrNew!Connection("serverSS2", server, system2).description =
 		"To bad we have to use that.";
 
-	auto serverUserCtrl = server.getOrNewComponent("serverUserCtrl");
+	auto serverUserCtrl = server.newComponent("serverUserCtrl");
 	auto frontendHardwareLink = world.getOrNew!Connection("frontendUsesHardware",
 		serverUserCtrl, hardware
 	);
@@ -96,7 +96,7 @@ void main() {
 
 	userCtrl(world, server);
 
-	auto database = system.getOrNewContainer("Database");
+	auto database = system.newContainer("Database");
 	database.technology = "MySQL";
 	world.getOrNew!Connection("serverDatabase",
 		server, database

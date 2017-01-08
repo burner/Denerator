@@ -39,11 +39,23 @@ class Container : Entity {
 		assert(!this.name.empty);
 	}
 
-	Component getOrNewComponent(in string name) {
-		import std.exception : enforce;
-		return enforce(getOrNewEntityImpl!Component(name, this.components,
-			this)
-		);
+	CopyConstness!(T,Component) getComponent(this T)(in string name) {
+		if(name in this.components) {
+			return cast(CopyConstness!(T,Component))this.containters[name];
+		} else {
+			throw new Exception("Component \"" ~ name ~ "\" does not exists");
+		}
+	}
+
+	Component newComponent(in string name) {
+		import std.format : format;
+		if(name in this.components) {
+			throw new Exception(format("Component '%s' already exists", name));
+		} else {
+			auto ret = new Component(name, this);
+			this.components[name] = ret;
+			return ret;
+		}
 	}
 
 	SearchResult holdsEntity(const Entity needle) const {

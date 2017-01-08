@@ -32,11 +32,23 @@ class SoftwareSystem : Entity {
 		}
 	}
 
-	Container getOrNewContainer(in string name) {
-		import std.exception : enforce;
-		return enforce(getOrNewEntityImpl!Container(name, this.containers,
-			this)
-		);
+	CopyConstness!(T,Container) getContainer(this T)(in string name) {
+		if(name in this.containers) {
+			return cast(CopyConstness!(T,Container))this.containters[name];
+		} else {
+			throw new Exception("Container \"" ~ name ~ "\" does not exists");
+		}
+	}
+
+	Container newContainer(in string name) {
+		import std.format : format;
+		if(name in this.containers) {
+			throw new Exception(format("Container '%s' already exists", name));
+		} else {
+			auto ret = new Container(name, this);
+			this.containers[name] = ret;
+			return ret;
+		}
 	}
 
 	void drop() {
