@@ -219,7 +219,36 @@ class TheWorld : Entity {
 	containers. If the Class can't be find by its name it is created and added
 	to all containers.
 	*/
-	Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
+	Class newClass(T...)(in string name, T stuffThatHoldsClasses) {
+		import std.experimental.logger;
+		Class ret;
+		if(name in this.typeContainerMapping) {
+			throw new Exception(format("Class '%s' already exists", name));
+		} else {
+			this.typeContainerMapping[name] = new Class(name);
+			ret = cast(Class)this.typeContainerMapping[name];
+		}
+
+		foreach(it; stuffThatHoldsClasses) {
+			if(name !in it.classes) {
+				it.classes[name] = ret;
+				ret.parents ~= it;
+			} else {
+				ensure(false, "Class ", name, "is already in ", it, ".");	
+			}
+		}
+		return ret;
+	}
+
+	CopyConstness!(T,Class) getClass(this T)(in string name) {
+		if(name in this.typeContainerMapping) {
+			return cast(Class)this.typeContainerMapping[name];
+		} else {
+			throw new Exception(format("Class '%s' does not exists", name));
+		}
+	}
+
+	/*Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
 		import std.experimental.logger;
 		Class ret;
 		if(name in this.typeContainerMapping) {
@@ -238,7 +267,7 @@ class TheWorld : Entity {
 			}
 		}
 		return ret;
-	}
+	}*/
 
 	override string areYouIn(ref in StringHashSet store) const {
 		return super.name in store ? super.name : "";

@@ -94,8 +94,6 @@ void main() {
 	auto serverUserSub = serverUserCtrl.getOrNewSubComponent("utils").
 		description = "Best component name ever!";
 
-	userCtrl(world, server);
-
 	auto database = system.newContainer("Database");
 	database.technology = "MySQL";
 	world.getOrNew!Connection("serverDatabase",
@@ -112,6 +110,8 @@ void main() {
 		frontendUserCtrl, serverUserCtrl, database
 	);
 
+	userCtrl(world, server);
+
 	MemberFunction func = address.getOrNew!MemberFunction("func");
 	func.returnType = integer;
 
@@ -122,7 +122,7 @@ void main() {
 		address, user
 	);
 
-	Class postalCode = world.getOrNewClass("PostalCode", database,
+	Class postalCode = world.newClass("PostalCode", database,
 			serverUserCtrl);
 	postalCode.containerType["MySQL"] = "Table";
 	MemberVariable pcID = postalCode.getOrNew!MemberVariable("id");

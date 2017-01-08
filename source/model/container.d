@@ -27,7 +27,7 @@ class Container : Entity {
 
 		foreach(const(string) name, const(Class) cls; old.classes) {
 			assert(name == cls.name);
-			auto nCls = world.getOrNewClass(name);
+			auto nCls = world.getClass(name);
 			ensure(cls !is null, "While copying ", this.name, "class ", name,
 				"could not be found as type in TheWorld"
 			);

@@ -22,7 +22,7 @@ class Component : ProtectedEntity {
 		super(old, parent);
 
 		foreach(const(string) name, const(Class) value; old.classes) {
-			auto cls = world.getOrNewClass(name);
+			auto cls = world.getClass(name);
 			expect(cls !is null, "While copying ", this.name, "class ", name,
 				"could not be found as type in TheWorld"
 			);

@@ -5,13 +5,13 @@ import model.container;
 import model.classes;
 
 Class angularComponent(C)(TheWorld world, C cons) {
-	Class ngCmp = world.getOrNewClass("AngularComponent", cons);
+	Class ngCmp = world.newClass("AngularComponent", cons);
 	ngCmp.doNotGenerate = DoNotGenerate.yes;
 
 	return ngCmp;
 }
 Class angularService(C)(TheWorld world, C cons) {
-	Class ngCmp = world.getOrNewClass("AngularService", cons);
+	Class ngCmp = world.newClass("AngularService", cons);
 	ngCmp.doNotGenerate = DoNotGenerate.yes;
 
 	return ngCmp;
@@ -41,7 +41,7 @@ Class genImpl(C)(string name, TheWorld world, C cons, Class to,
 	   	string connectionName) 
 {
 	import model.connections : Dependency;
-	Class ret = world.getOrNewClass(name, cons);
+	Class ret = world.newClass(name, cons);
 	world.getOrNew!Dependency(name ~ connectionName, ret, to);
 	return ret;
 }

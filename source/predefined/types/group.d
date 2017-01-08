@@ -8,14 +8,14 @@ import model.classes;
 import model.connections;
 
 Class groupClass(Con...)(TheWorld world, Con cons) {
-	Class group = world.getOrNewClass("Group", cons);
+	Class group = world.newClass("Group", cons);
 
 	group.containerType["D"] = "struct";
 	group.containerType["Angular"] = "class";
 	group.containerType["MySQL"] = "Table";
 
 	MemberVariable userId = group.getOrNew!MemberVariable("id");
-	userId.type = world.getType("const ULong");
+	userId.type = world.getType!Type("const ULong");
 	assert(userId.type);
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
@@ -23,10 +23,10 @@ Class groupClass(Con...)(TheWorld world, Con cons) {
 	userId.addLangSpecificAttribute("Typescript", "const");
 
 	MemberVariable groupname = group.getOrNew!MemberVariable("name");
-	groupname.type = world.getType("String");
+	groupname.type = world.getType!Type("String");
 	assert(groupname.type);
 
-	auto user = world.getOrNewClass("User");
+	auto user = world.getClass("User");
 	Aggregation groupAdmin = world.getOrNew!Aggregation("GroupAdmin",
 		user, group
 	);

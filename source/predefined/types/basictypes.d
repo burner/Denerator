@@ -5,6 +5,7 @@ import model.type;
 
 void addBasicTypes(TheWorld world) {
 	auto types = [
+		&voidType,
 		&longType, &intType, &shortType, &byteType,
 		&ulongType, &uintType, &ushortType, &ubyteType,
 		&stringType, &floatType, &doubleType, &dateTimeType,
@@ -18,6 +19,19 @@ void addBasicTypes(TheWorld world) {
 	foreach(it; types) {
 		it(world);
 	}
+}
+
+Type voidType(TheWorld world) {
+	Type lng = world.newType("Void");
+	lng.typeToLanguage["D"] = "void";
+	lng.typeToLanguage["C"] = "void";
+	lng.typeToLanguage["C++"] = "void";
+	lng.typeToLanguage["Vibe.d"] = "void";
+	lng.typeToLanguage["Typescript"] = "void";
+	lng.typeToLanguage["Angular"] = "void";
+	lng.typeToLanguage["Angular2"] = "void";
+	lng.typeToLanguage["MySQL"] = "INTEGER";
+	return lng;
 }
 
 Type floatType(TheWorld world) {
