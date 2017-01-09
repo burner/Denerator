@@ -293,7 +293,6 @@ class TheWorld : Entity {
 	to all containers.
 	*/
 	Class newClass(T...)(in string name, T stuffThatHoldsClasses) {
-		import std.experimental.logger;
 		Class ret;
 		if(name in this.typeContainerMapping) {
 			throw new Exception(format("Class '%s' already exists", name));

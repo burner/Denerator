@@ -15,7 +15,7 @@ hash_t stringToHash(string str) @safe pure nothrow @nogc {
 	return hash;
 }
 
-hash_t EntityToHash(in Entity e) pure @safe nothrow @nogc {
+hash_t EntityToHash(const(Entity) e) pure @safe nothrow @nogc {
 	return stringToHash(e.name);
 }
 
@@ -38,19 +38,19 @@ class Entity {
 		return this.name == entity.name;
 	}
 
-	this(string name, in Entity parent) {
+	this(string name,  const(Entity) parent) {
 		this.name = name;
 		this.parent = parent;
 	}
 
-	this(in Entity old, in Entity parent) {
+	this(in Entity old, const(Entity) parent) {
 		this.name = old.name;
 		this.parent = parent;
 		this.description = old.description;
 		this.longDescription = old.longDescription;
 	}
 
-	string areYouIn(ref in StringHashSet store) const {
+	string areYouIn(ref const(StringHashSet) store) const {
 		if(this.name in store) {
 			return this.name;
 		} else if(this.parent is null) {
@@ -60,7 +60,7 @@ class Entity {
 		}
 	}
 
-	const(Entity) areYouIn(ref in EntityHashSet!(Entity) store) const {
+	const(Entity) areYouIn(ref const(EntityHashSet!(Entity)) store) const {
 		if(cast(Entity)(this) in store) {
 			return this;
 		} else if(this.parent is null) {
@@ -106,7 +106,7 @@ class Entity {
 class ProtectedEntity : Entity {
 	HashMap!(string,string) protection;
 
-	this(in string name, in Entity parent) {
+	this(in string name, const(Entity) parent) {
 		super(name, parent);
 	}
 
@@ -131,7 +131,7 @@ Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
 	return null;
 }
 
-S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map,
+S getOrNewEntityImpl(T, S=T)(const(string) name, ref StringEntityMap!(T) map,
 		in Entity parent)
 {
 	if(name in map) {
@@ -143,7 +143,7 @@ S getOrNewEntityImpl(T, S=T)(in string name, ref StringEntityMap!(T) map,
 	}
 }
 
-T getOrNewEntityImpl(T)(in string name, ref DynamicArray!(T) arr,
+T getOrNewEntityImpl(T)(const(string) name, ref DynamicArray!(T) arr,
 		in Entity parent)
 {
 	foreach(it; arr) {
@@ -169,7 +169,7 @@ const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args) {
 	return null;
 }
 
-void toStringIndent(in int indent) {
+void toStringIndent(const(int) indent) {
 	import std.stdio : write;
 	foreach(it; 0 .. indent) {
 		write('\t');
