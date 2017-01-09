@@ -167,16 +167,98 @@ class TheWorld : Entity {
 		}
 	}
 
-	T getOrNew(T,F,O)(in string name, F from, O to) {
+	Realization newRealization(F,O)(in string name, F from, O to) {
+		return this.newConnectionImpl!Realization(name, from, to);
+	}
+
+	Generalization newGeneralization(F,O)(in string name, F from, O to) {
+		return this.newConnectionImpl!Generalization(name, from, to);
+	}
+
+	Composition newComposition(F,O)(in string name, F from, O to) {
+		return this.newConnectionImpl!Composition(name, from, to);
+	}
+
+	Aggregation newAggregation(F,O)(in string name, F from, O to) {
+		return this.newConnectionImpl!Aggregation(name, from, to);
+	}
+
+	Connection newConnection(F,O)(in string name, F from, O to) {
+		return this.newConnectionImpl!Connection(name, from, to);
+	}
+	
+	Dependency newDependency(F,O)(in string name, F from, O to) {
+		return this.newConnectionImpl!Dependency(name, from, to);
+	}
+
+	ConnectionImpl newConnectionImpl(F,O)(in string name, F from, O to) {
+		return this.newConnectionImpl!ConnectionImpl(name, from, to);
+	}
+
+	CopyConstness!(T,Realization) getRealization(this T)(in string name) {
+		return this.getConnectionImpl!Realization(name);
+	}
+
+	CopyConstness!(T,Generalization) getGeneralization(this T)(in string name) {
+		return this.getConnectionImpl!Generalization(name);
+	}
+
+	CopyConstness!(T,Composition) getComposition(this T)(in string name) {
+		return this.getConnectionImpl!Composition(name);
+	}
+
+	CopyConstness!(T,Aggregation) getAggregation(this T)(in string name) {
+		return this.getConnectionImpl!Aggregation(name);
+	}
+
+	CopyConstness!(T,Connection) getConnection(this T)(in string name) {
+		return this.getConnectionImpl!Connection(name);
+	}
+	
+	CopyConstness!(T,Dependency) getDependency(this T)(in string name) {
+		return this.getConnectionImpl!Dependency(name);
+	}
+
+	CopyConstness!(T,ConnectionImpl) getConnectionImpl(this T)(in string name) {
+		return this.getConnectionImpl!ConnectionImpl(name);
+	}
+
+	T newConnectionImpl(T,F,O)(in string name, F from, O to) {
+		if(name in this.connections) {
+			throw new Exception(format("%s with name \"%s\" already exists",
+				T.stringof, name
+			));
+		}
+		
+		T ret = new T(name, this);
+		this.connections[name] = ret;
+		ret.from = from;
+		ret.to = to;
+		return ret;
+	}
+
+	CopyConstness!(F,T) getConnectionImpl(T, this F)(in string name) {
+		if(name !in this.connections 
+				|| (cast(typeof(return))this.connections[name]) is null) 
+		{
+			throw new Exception(format("%s with name \"%s\" does not exists",
+				T.stringof, name
+			));
+		}
+		
+		return cast(typeof(return))this.connections[name];
+	}
+
+	/*T getOrNew(T,F,O)(in string name, F from, O to) {
 		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
 			name, this.connections, this
 		));
 		con.from = from;
 		con.to = to;
 		return con;
-	}
+	}*/
 
-	T getOrNew(T,F,O)(T toCopy, F from, O to) {
+	T copy(T,F,O)(T toCopy, F from, O to) {
 		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
 			toCopy.name, this.connections, this
 		));

@@ -59,11 +59,11 @@ void main() {
 	auto system2 = world.newSoftwareSystem("LagacySoftwareSystem");
 	system2.description = "You don't want to touch this.";
 
-	auto usersFrontend = world.getOrNew!Connection("userDepFrontend",
+	auto usersFrontend = world.newConnection("userDepFrontend",
 		world.getActor("The Users"), frontendUserCtrl
 	);
 	usersFrontend.description = "Uses the frontend to do stuff.";
-	world.getOrNew!Connection("userDepStuffCtrl",
+	world.newConnection("userDepStuffCtrl",
 		users, frontendStuffCtrl
 	).description = "Uses the Stuff Logic of the Awesome Software";
 	usersFrontend.description = "Uses the frontend to do stuff.";
@@ -74,20 +74,20 @@ void main() {
 		assert(ca !is null);
 	}
 
-	world.getOrNew!Connection("adminUser",
+	world.newConnection("adminUser",
 		admin, frontendUserCtrl
 	).description = "Manager Users";
 
 	Container server = system.newContainer("Server");
 	server.technology = "D";
-	world.getOrNew!Connection("frontendServerDep", frontend, server)
+	world.newConnection("frontendServerDep", frontend, server)
 		.description = "HTTPS";
 
-	world.getOrNew!Connection("serverSS2", server, system2).description =
+	world.newConnection("serverSS2", server, system2).description =
 		"To bad we have to use that.";
 
 	auto serverUserCtrl = server.newComponent("serverUserCtrl");
-	auto frontendHardwareLink = world.getOrNew!Connection("frontendUsesHardware",
+	auto frontendHardwareLink = world.newConnection("frontendUsesHardware",
 		serverUserCtrl, hardware
 	);
 
@@ -96,7 +96,7 @@ void main() {
 
 	auto database = system.newContainer("Database");
 	database.technology = "MySQL";
-	world.getOrNew!Connection("serverDatabase",
+	world.newConnection("serverDatabase",
 		server, database
 	).description = "CRUD";
 
@@ -118,7 +118,7 @@ void main() {
 	func.getOrNew!MemberVariable("a").type = integer;
 	func.getOrNew!MemberVariable("b").type = str;
 
-	Aggregation userAddress = world.getOrNew!Aggregation("AddressUser",
+	Aggregation userAddress = world.newAggregation("AddressUser",
 		address, user
 	);
 
@@ -133,7 +133,7 @@ void main() {
 	MemberVariable pcCode = postalCode.newMemberVariable("code");
 	pcCode.type = integer;
 
-	auto addressPC = world.getOrNew!Composition("addressPostalCode",
+	auto addressPC = world.newComposition("addressPostalCode",
 		address, postalCode
 	);
 	addressPC.fromType = world.newType("PostalCode[]");

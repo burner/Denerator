@@ -27,11 +27,11 @@ Class groupClass(Con...)(TheWorld world, Con cons) {
 	assert(groupname.type);
 
 	auto user = world.getClass("User");
-	Aggregation groupAdmin = world.getOrNew!Aggregation("GroupAdmin",
+	Aggregation groupAdmin = world.newAggregation("GroupAdmin",
 		user, group
 	);
 
-	Aggregation groupMember = world.getOrNew!Aggregation("GroupMember",
+	Aggregation groupMember = world.newAggregation("GroupMember",
 		user, group
 	);
 

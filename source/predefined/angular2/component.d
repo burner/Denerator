@@ -42,6 +42,6 @@ Class genImpl(C)(string name, TheWorld world, C cons, Class to,
 {
 	import model.connections : Dependency;
 	Class ret = world.newClass(name, cons);
-	world.getOrNew!Dependency(name ~ connectionName, ret, to);
+	world.newDependency(name ~ connectionName, ret, to);
 	return ret;
 }

@@ -35,7 +35,7 @@ ClassAndInterface userCtrl(Container)(TheWorld world, Container cons) {
 	Class userAC = world.newClass("AUserCtrl", cons);
 	userAC.containerType["D"] = "abstract class";
 
-	world.getOrNew!Realization("IUserCtrl_AUserCtrl", userAC, userInter);
+	world.newRealization("IUserCtrl_AUserCtrl", userAC, userInter);
 
 	ClassAndInterface ret;
 	ret.inter = userInter;
