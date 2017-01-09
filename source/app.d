@@ -100,8 +100,8 @@ void main() {
 		server, database
 	).description = "CRUD";
 
-	Type str = world.getType!Type("String");
-	Type integer = world.getType!Type("Int");
+	Type str = world.getType("String");
+	Type integer = world.getType("Int");
 
 	Class user = userClass(world, frontendUserCtrl, serverUserCtrl, database);
 	Class group = groupClass(world, frontendUserCtrl, serverUserCtrl, database);
