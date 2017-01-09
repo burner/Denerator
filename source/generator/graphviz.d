@@ -46,12 +46,12 @@ class Graphvic : Generator {
 		auto ltw = f.lockingTextWriter();
 
 		ltw.formattedWrite(
-			"DOTFILES= $(shell find . -type f -name '*.dot')\n\n"
+			"DOTFILES= $(shell find . -type f -name '*.dot')\n\n" ~
 			"DOTFILESPNG= $(patsubst %%.dot,%%.png,$(DOTFILES))\n\n"
 		);
 
 		ltw.formattedWrite(
-			"all: $(DOTFILESPNG)\n\n"
+			"all: $(DOTFILESPNG)\n\n" ~
 			"print:\n\techo \"$(DOTFILESPNG)\"\n\techo \"$(DOTFILES)\"\n\n"
 		);
 

@@ -13,7 +13,7 @@ Class addressClass(Con...)(TheWorld world, Con cons) {
 	address.containerType["Angular"] = "struct";
 	address.containerType["MySQL"] = "Table";
 
-	MemberVariable addressId = address.getOrNew!MemberVariable("id");
+	MemberVariable addressId = address.newMemberVariable("id");
 	addressId.type = world.getType!Type("const ULong");
 	assert(addressId.type);
 	addressId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
@@ -21,39 +21,39 @@ Class addressClass(Con...)(TheWorld world, Con cons) {
 	addressId.addLangSpecificAttribute("D", "const");
 	addressId.addLangSpecificAttribute("Typescript", "const");
 
-	MemberVariable streetName = address.getOrNew!MemberVariable("streetname");
+	MemberVariable streetName = address.newMemberVariable("streetname");
 	streetName.type = world.getType!Type("String");
 	assert(streetName.type);
 
-	MemberVariable streetNumber = address.getOrNew!MemberVariable("streetnumber");
+	MemberVariable streetNumber = address.newMemberVariable("streetnumber");
 	streetNumber.type = world.getType!Type("String");
 	assert(streetNumber.type);
 
-	MemberVariable apartment = address.getOrNew!MemberVariable("apartment");
+	MemberVariable apartment = address.newMemberVariable("apartment");
 	apartment.type = world.getType!Type("String");
 	assert(apartment.type);
 
-	MemberVariable city = address.getOrNew!MemberVariable("city");
+	MemberVariable city = address.newMemberVariable("city");
 	city.type = world.getType!Type("String");
 	assert(city.type);
 
-	MemberVariable postalcode = address.getOrNew!MemberVariable("postalcode");
+	MemberVariable postalcode = address.newMemberVariable("postalcode");
 	postalcode.type = world.getType!Type("String");
 	assert(postalcode.type);
 
-	MemberVariable country = address.getOrNew!MemberVariable("country");
+	MemberVariable country = address.newMemberVariable("country");
 	country.type = world.getType!Type("String");
 	assert(country.type);
 
-	MemberVariable state = address.getOrNew!MemberVariable("state");
+	MemberVariable state = address.newMemberVariable("state");
 	state.type = world.getType!Type("String");
 	assert(state.type);
 
-	MemberVariable district = address.getOrNew!MemberVariable("district");
+	MemberVariable district = address.newMemberVariable("district");
 	district.type = world.getType!Type("String");
 	assert(district.type);
 
-	MemberVariable organisation = address.getOrNew!MemberVariable("organisation");
+	MemberVariable organisation = address.newMemberVariable("organisation");
 	organisation.type = world.getType!Type("String");
 	assert(organisation.type);
 

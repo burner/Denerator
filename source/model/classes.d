@@ -17,6 +17,7 @@ class Class : Type {
 	import std.array : empty, front;
 	import model.entity : Entity, EntityHashSet, StringEntityMap, StringHashSet;
 	import model.type : Type;
+	import std.format : format;
 
 	Member[] members;
 	StringEntityMap!(string) containerType;
@@ -79,17 +80,43 @@ class Class : Type {
 		}
 	}
 
-	S getOrNew(S)(in string name) {
+	MemberVariable newMemberVariable(in string name) {
+		return this.newImpl!MemberVariable(name);
+	}
+
+	MemberFunction newMemberFunction(in string name) {
+		return this.newImpl!MemberFunction(name);
+	}
+
+	CopyConstness!(T,MemberVariable) getMemberVariable(this T)(in string name) {
+		return this.get!MemberVariable(name);
+	}
+
+	CopyConstness!(T,MemberFunction) getMemberFunction(this T)(in string name) {
+		return this.get!MemberFunction(name);
+	}
+
+	S newImpl(S)(in string name) {
 		import std.array : back;
-		//return enforce(getOrNewEntityImpl!(Member,S)(name, this.members, this));
 		foreach(mem; this.members) {
 			if(name == mem.name) {
-				return cast(S)mem;
+				throw new Exception(format("%s with name \"%s\" already present",
+					S.stringof, name));
 			}
 		}
 
 		this.members ~= new S(name, this);
 		return cast(S)this.members.back();
+	}
+
+	CopyConstness!(T,S) getImpl(S,this T)(in string name) {
+		foreach(mem; this.members) {
+			if(name == mem.name && (cast(typeof(return))mem) !is null) {
+				return cast(typeof(return))mem;
+			}
+		}
+		throw new Exception(format("%s with name \"%s\" could not be found",
+			S.stringof, name));
 	}
 
 	override string areYouIn(ref in StringHashSet store) const {

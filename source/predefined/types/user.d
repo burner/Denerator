@@ -13,7 +13,7 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 	user.containerType["Angular"] = "class";
 	user.containerType["MySQL"] = "Table";
 
-	MemberVariable userId = user.getOrNew!MemberVariable("id");
+	MemberVariable userId = user.newMemberVariable("id");
 	userId.type = world.getType!Type("const ULong");
 	assert(userId.type);
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
@@ -21,19 +21,19 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 	userId.addLangSpecificAttribute("D", "const");
 	userId.addLangSpecificAttribute("Typescript", "const");
 
-	MemberVariable firstname = user.getOrNew!MemberVariable("firstname");
+	MemberVariable firstname = user.newMemberVariable("firstname");
 	firstname.type = world.getType!Type("String");
 	assert(firstname.type);
 
-	MemberVariable middlename = user.getOrNew!MemberVariable("middlename");
+	MemberVariable middlename = user.newMemberVariable("middlename");
 	middlename.type = world.getType!Type("String");
 	assert(middlename.type);
 
-	MemberVariable lastname = user.getOrNew!MemberVariable("lastname");
+	MemberVariable lastname = user.newMemberVariable("lastname");
 	lastname.type = world.getType!Type("String");
 	assert(lastname.type);
 
-	MemberVariable passwordHash = user.getOrNew!MemberVariable("password");
+	MemberVariable passwordHash = user.newMemberVariable("password");
 	passwordHash.type = world.getType!Type("PasswordHash");
 	assert(passwordHash.type);
 

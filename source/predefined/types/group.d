@@ -14,7 +14,7 @@ Class groupClass(Con...)(TheWorld world, Con cons) {
 	group.containerType["Angular"] = "class";
 	group.containerType["MySQL"] = "Table";
 
-	MemberVariable userId = group.getOrNew!MemberVariable("id");
+	MemberVariable userId = group.newMemberVariable("id");
 	userId.type = world.getType!Type("const ULong");
 	assert(userId.type);
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
@@ -22,7 +22,7 @@ Class groupClass(Con...)(TheWorld world, Con cons) {
 	userId.addLangSpecificAttribute("D", "const");
 	userId.addLangSpecificAttribute("Typescript", "const");
 
-	MemberVariable groupname = group.getOrNew!MemberVariable("name");
+	MemberVariable groupname = group.newMemberVariable("name");
 	groupname.type = world.getType!Type("String");
 	assert(groupname.type);
 

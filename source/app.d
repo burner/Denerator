@@ -112,7 +112,7 @@ void main() {
 
 	userCtrl(world, server);
 
-	MemberFunction func = address.getOrNew!MemberFunction("func");
+	MemberFunction func = address.newMemberFunction("func");
 	func.returnType = integer;
 
 	func.getOrNew!MemberVariable("a").type = integer;
@@ -125,12 +125,12 @@ void main() {
 	Class postalCode = world.newClass("PostalCode", database,
 			serverUserCtrl);
 	postalCode.containerType["MySQL"] = "Table";
-	MemberVariable pcID = postalCode.getOrNew!MemberVariable("id");
+	MemberVariable pcID = postalCode.newMemberVariable("id");
 	pcID.type = integer;
 	pcID.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	pcID.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
 	pcID.addLangSpecificAttribute("D", "const");
-	MemberVariable pcCode = postalCode.getOrNew!MemberVariable("code");
+	MemberVariable pcCode = postalCode.newMemberVariable("code");
 	pcCode.type = integer;
 
 	auto addressPC = world.getOrNew!Composition("addressPostalCode",

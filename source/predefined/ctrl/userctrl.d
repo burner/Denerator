@@ -16,19 +16,19 @@ ClassAndInterface userCtrl(Container)(TheWorld world, Container cons) {
 
 	userInter.containerType["D"] = "interface";
 
-	MemberFunction createUser = userInter.getOrNew!MemberFunction("createUser");
+	MemberFunction createUser = userInter.newMemberFunction("createUser");
 	createUser.returnType = user;
 	createUser.addParameter("userData", user);
 
-	MemberFunction delUser = userInter.getOrNew!MemberFunction("deleteUser");
+	MemberFunction delUser = userInter.newMemberFunction("deleteUser");
 	delUser.returnType = world.getType!Type("Void");
 	delUser.addParameter("userData", user);
 
-	MemberFunction getUser = userInter.getOrNew!MemberFunction("getUser");
+	MemberFunction getUser = userInter.newMemberFunction("getUser");
 	getUser.returnType = user;
 	getUser.addParameter("userData", user);
 
-	MemberFunction modifyUser = userInter.getOrNew!MemberFunction("modifyUser");
+	MemberFunction modifyUser = userInter.newMemberFunction("modifyUser");
 	modifyUser.returnType = world.getType!Type("Void");
 	modifyUser.addParameter("moddedUser", user);
 
