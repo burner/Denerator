@@ -115,8 +115,8 @@ void main() {
 	MemberFunction func = address.newMemberFunction("func");
 	func.returnType = integer;
 
-	func.getOrNew!MemberVariable("a").type = integer;
-	func.getOrNew!MemberVariable("b").type = str;
+	func.addParameter("a", integer);
+	func.addParameter("b", str);
 
 	Aggregation userAddress = world.newAggregation("AddressUser",
 		address, user

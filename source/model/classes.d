@@ -281,7 +281,7 @@ class MemberFunction : Member {
 		}
 	}
 
-	T getOrNew(T)(in string name) {
+	/*T getOrNew(T)(in string name) {
 		static if(is(T == MemberVariable)) {
 			return enforce(getOrNewEntityImpl!MemberVariable(name,
 				this.parameter, this)
@@ -291,7 +291,7 @@ class MemberFunction : Member {
 				this.modifer, this)
 			);
 		}
-	}
+	}*/
 
 	MemberVariable addParameter(in string name, Type type) {
 		auto np = new MemberVariable(name, this);
