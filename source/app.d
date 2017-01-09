@@ -91,7 +91,7 @@ void main() {
 		serverUserCtrl, hardware
 	);
 
-	auto serverUserSub = serverUserCtrl.getOrNewSubComponent("utils").
+	auto serverUserSub = serverUserCtrl.newSubComponent("utils").
 		description = "Best component name ever!";
 
 	auto database = system.newContainer("Database");

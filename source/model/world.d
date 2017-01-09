@@ -249,15 +249,6 @@ class TheWorld : Entity {
 		return cast(typeof(return))this.connections[name];
 	}
 
-	/*T getOrNew(T,F,O)(in string name, F from, O to) {
-		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
-			name, this.connections, this
-		));
-		con.from = from;
-		con.to = to;
-		return con;
-	}*/
-
 	T copy(T,F,O)(T toCopy, F from, O to) {
 		T con =  enforce(getOrNewEntityImpl!(Entity,T)(
 			toCopy.name, this.connections, this
@@ -329,27 +320,6 @@ class TheWorld : Entity {
 			throw new Exception(format("Class '%s' does not exists", name));
 		}
 	}
-
-	/*Class getOrNewClass(T...)(in string name, T stuffThatHoldsClasses) {
-		import std.experimental.logger;
-		Class ret;
-		if(name in this.typeContainerMapping) {
-			ret = cast(Class)this.typeContainerMapping[name];
-		} else {
-			this.typeContainerMapping[name] = new Class(name);
-			ret = cast(Class)this.typeContainerMapping[name];
-		}
-
-		foreach(it; stuffThatHoldsClasses) {
-			if(name !in it.classes) {
-				it.classes[name] = ret;
-				ret.parents ~= it;
-			} else {
-				ensure(false, "Class ", name, "is already in ", it, ".");	
-			}
-		}
-		return ret;
-	}*/
 
 	override string areYouIn(ref in StringHashSet store) const {
 		return super.name in store ? super.name : "";

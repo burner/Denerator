@@ -6,6 +6,7 @@ import model.classes;
 
 class Component : ProtectedEntity {
 	import std.array : empty, front;
+	import std.format : format;
 	import model.entity : StringEntityMap;
 	import model.world : SearchResult, TheWorld;
 	import util;
@@ -37,9 +38,21 @@ class Component : ProtectedEntity {
 		assert(!this.name.empty);
 	}
 
-	Component getOrNewSubComponent(in string name) {
-		if(name in this.subComponents) {
+	CopyConstness!(T,Component) getSubComponent(this T)(in string name) {
+		if(name !in this.subComponents) {
+			throw new Exception(format("Component with name \"%s\" could not be found",
+				name));
+		} else {
 			return this.subComponents[name];
+		}
+	}
+
+	Component newSubComponent(in string name) {
+		if(name in this.subComponents) {
+			throw new Exception(format(
+				"Component with name \"%s\" already present",
+				name)
+			);
 		} else {
 			auto n = new Component(name, this);
 			this.subComponents[name] = n;
