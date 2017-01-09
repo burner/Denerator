@@ -38,12 +38,12 @@ class Entity {
 		return this.name == entity.name;
 	}
 
-	this(string name,  const(Entity) parent) {
+	pure this(string name,  const(Entity) parent) {
 		this.name = name;
 		this.parent = parent;
 	}
 
-	this(in Entity old, const(Entity) parent) {
+	pure this(const(Entity) old, const(Entity) parent) {
 		this.name = old.name;
 		this.parent = parent;
 		this.description = old.description;
@@ -70,7 +70,7 @@ class Entity {
 		}
 	}
 
-	string pathToRoot() const {
+	string pathToRoot() const pure {
 		import std.array : empty;
 		if(this.parent is null) {
 			return "";
@@ -84,7 +84,7 @@ class Entity {
 		}
 	}
 
-	final auto getRoot() inout {
+	final auto getRoot() inout pure {
 		assert(this.parent !is null);
 		if(this.parent.parent is null) {
 			return this;
@@ -106,7 +106,7 @@ class Entity {
 class ProtectedEntity : Entity {
 	HashMap!(string,string) protection;
 
-	this(in string name, const(Entity) parent) {
+	pure this(in string name, const(Entity) parent) {
 		super(name, parent);
 	}
 
@@ -118,7 +118,7 @@ class ProtectedEntity : Entity {
 	}
 }
 
-Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) {
+Entity getSubEntityImpl(T)(ref T map, const(string[]) uri) pure {
 	if(!uri.empty && uri.front in map) {
 		Entity sub = map[uri.front];
 		if(uri.length == 1) {
@@ -157,7 +157,7 @@ T getOrNewEntityImpl(T)(const(string) name, ref DynamicArray!(T) arr,
 	return ne;
 }
 
-const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args) {
+const(Entity) holdsEntityImpl(T...)(const(Entity) needle, in ref T args) pure {
 	foreach(ref arg; args) {
 		foreach(const(string) key, const(Entity) entity; arg) {
 			if(needle is entity) {

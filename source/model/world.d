@@ -30,7 +30,7 @@ class TheWorld : Entity {
 	StringEntityMap!(Type) typeContainerMapping;
 	StringEntityMap!(Entity) connections;
 
-	this(in string name) {
+	this(const(string) name) {
 		super(name, null);
 	}
 
@@ -167,63 +167,63 @@ class TheWorld : Entity {
 		}
 	}
 
-	Realization newRealization(F,O)(in string name, F from, O to) {
+	Realization newRealization(F,O)(const(string) name, F from, O to) {
 		return this.newConnectionImpl!Realization(name, from, to);
 	}
 
-	Generalization newGeneralization(F,O)(in string name, F from, O to) {
+	Generalization newGeneralization(F,O)(const(string) name, F from, O to) {
 		return this.newConnectionImpl!Generalization(name, from, to);
 	}
 
-	Composition newComposition(F,O)(in string name, F from, O to) {
+	Composition newComposition(F,O)(const(string) name, F from, O to) {
 		return this.newConnectionImpl!Composition(name, from, to);
 	}
 
-	Aggregation newAggregation(F,O)(in string name, F from, O to) {
+	Aggregation newAggregation(F,O)(const(string) name, F from, O to) {
 		return this.newConnectionImpl!Aggregation(name, from, to);
 	}
 
-	Connection newConnection(F,O)(in string name, F from, O to) {
+	Connection newConnection(F,O)(const(string) name, F from, O to) {
 		return this.newConnectionImpl!Connection(name, from, to);
 	}
 	
-	Dependency newDependency(F,O)(in string name, F from, O to) {
+	Dependency newDependency(F,O)(const(string) name, F from, O to) {
 		return this.newConnectionImpl!Dependency(name, from, to);
 	}
 
-	ConnectionImpl newConnectionImpl(F,O)(in string name, F from, O to) {
+	ConnectionImpl newConnectionImpl(F,O)(const(string) name, F from, O to) {
 		return this.newConnectionImpl!ConnectionImpl(name, from, to);
 	}
 
-	CopyConstness!(T,Realization) getRealization(this T)(in string name) {
+	CopyConstness!(T,Realization) getRealization(this T)(const(string) name) {
 		return this.getConnectionImpl!Realization(name);
 	}
 
-	CopyConstness!(T,Generalization) getGeneralization(this T)(in string name) {
+	CopyConstness!(T,Generalization) getGeneralization(this T)(const(string) name) {
 		return this.getConnectionImpl!Generalization(name);
 	}
 
-	CopyConstness!(T,Composition) getComposition(this T)(in string name) {
+	CopyConstness!(T,Composition) getComposition(this T)(const(string) name) {
 		return this.getConnectionImpl!Composition(name);
 	}
 
-	CopyConstness!(T,Aggregation) getAggregation(this T)(in string name) {
+	CopyConstness!(T,Aggregation) getAggregation(this T)(const(string) name) {
 		return this.getConnectionImpl!Aggregation(name);
 	}
 
-	CopyConstness!(T,Connection) getConnection(this T)(in string name) {
+	CopyConstness!(T,Connection) getConnection(this T)(const(string) name) {
 		return this.getConnectionImpl!Connection(name);
 	}
 	
-	CopyConstness!(T,Dependency) getDependency(this T)(in string name) {
+	CopyConstness!(T,Dependency) getDependency(this T)(const(string) name) {
 		return this.getConnectionImpl!Dependency(name);
 	}
 
-	CopyConstness!(T,ConnectionImpl) getConnectionImpl(this T)(in string name) {
+	CopyConstness!(T,ConnectionImpl) getConnectionImpl(this T)(const(string) name) {
 		return this.getConnectionImpl!ConnectionImpl(name);
 	}
 
-	T newConnectionImpl(T,F,O)(in string name, F from, O to) {
+	T newConnectionImpl(T,F,O)(const(string) name, F from, O to) {
 		if(name in this.connections) {
 			throw new Exception(format("%s with name \"%s\" already exists",
 				T.stringof, name
@@ -237,7 +237,7 @@ class TheWorld : Entity {
 		return ret;
 	}
 
-	CopyConstness!(F,T) getConnectionImpl(T, this F)(in string name) {
+	CopyConstness!(F,T) getConnectionImpl(T, this F)(const(string) name) {
 		if(name !in this.connections 
 				|| (cast(typeof(return))this.connections[name]) is null) 
 		{
@@ -270,7 +270,7 @@ class TheWorld : Entity {
 		return con;
 	}
 
-	Type newType(in string name) {
+	Type newType(const(string) name) {
 		if(name in this.typeContainerMapping) {
 			throw new Exception(format("Type '%s' already exists", name));
 		} else {
@@ -280,7 +280,7 @@ class TheWorld : Entity {
 		}
 	}
 
-	CopyConstness!(T,S) getType(S = Type,this T)(in string name) {
+	CopyConstness!(T,S) getType(S = Type,this T)(const(string) name) {
 		if(name in this.typeContainerMapping) {
 			return cast(CopyConstness!(T,S))this.typeContainerMapping[name];
 		} else {
@@ -292,7 +292,7 @@ class TheWorld : Entity {
 	containers. If the Class can't be find by its name it is created and added
 	to all containers.
 	*/
-	Class newClass(T...)(in string name, T stuffThatHoldsClasses) {
+	Class newClass(T...)(const(string) name, T stuffThatHoldsClasses) {
 		Class ret;
 		if(name in this.typeContainerMapping) {
 			throw new Exception(format("Class '%s' already exists", name));
@@ -312,7 +312,7 @@ class TheWorld : Entity {
 		return ret;
 	}
 
-	CopyConstness!(T,Class) getClass(this T)(in string name) {
+	CopyConstness!(T,Class) getClass(this T)(const(string) name) {
 		if(name in this.typeContainerMapping) {
 			return cast(Class)this.typeContainerMapping[name];
 		} else {
@@ -362,4 +362,12 @@ class TheWorld : Entity {
 			}
 		}
 	}
+}
+
+unittest {
+	auto w = new TheWorld("The World");
+	auto ss = w.newSoftwareSystem("SS");
+	//assert(w.getSoftwareSystem("SS") !is null);
+	//auto c1 = ss.newContainer("C1");
+	//auto c2 = ss.newContainer("C2");
 }
