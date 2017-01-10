@@ -7,7 +7,7 @@ import model.classes;
 class Component : ProtectedEntity {
 	import std.array : empty, front;
 	import std.format : format;
-	import model.entity : StringEntityMap;
+	import model.entity : StringEntityMap, empty;
 	import model.world : SearchResult, TheWorld;
 	import util;
 	import exceptionhandling;

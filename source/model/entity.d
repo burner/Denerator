@@ -1,6 +1,7 @@
 module model.entity;
 
 import std.experimental.allocator.mallocator : Mallocator;
+import std.experimental.allocator.gc_allocator : GCAllocator;
 
 import containers.hashmap;
 import containers.hashset;
@@ -21,7 +22,12 @@ hash_t EntityToHash(const(Entity) e) pure @safe nothrow @nogc {
 
 public alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
 public alias StringHashSet = HashSet!(string, Mallocator, stringToHash);
-public alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
+//public alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
+public alias StringEntityMap(T) = T[string];
+
+public @property bool empty(T)(auto ref const(T[string]) aa) {
+	return aa.length == 0;
+}
 
 class Entity {
 	immutable(string) name;

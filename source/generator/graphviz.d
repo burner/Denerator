@@ -11,6 +11,7 @@ import graph;
 import writer;
 
 class Graphvic : Generator {
+	import model.entity : empty;
 	import std.array : array, empty, front;
 	import std.algorithm.iteration : map, joiner, splitter;
 	import std.typecons : scoped, Rebindable;

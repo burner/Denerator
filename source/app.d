@@ -38,6 +38,13 @@ class NoTimeLogger : Logger {
 
 void main() {
 	sharedLog = new NoTimeLogger(LogLevel.all);
+
+	bool ret;
+	version(unittest) {
+		ret = true;
+	}
+	//if(ret) return;
+
 	auto world = new TheWorld("TheWorld");
 	addBasicTypes(world);
 

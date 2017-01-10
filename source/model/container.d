@@ -7,6 +7,7 @@ class Container : Entity {
 	import model.classes;
 	import model.component;
 	import model.world : SearchResult, TheWorld;
+	import model.entity : empty;
 	import exceptionhandling;
 
 	string technology;

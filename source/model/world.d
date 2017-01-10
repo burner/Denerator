@@ -367,7 +367,7 @@ class TheWorld : Entity {
 unittest {
 	auto w = new TheWorld("The World");
 	auto ss = w.newSoftwareSystem("SS");
-	//assert(w.getSoftwareSystem("SS") !is null);
-	//auto c1 = ss.newContainer("C1");
-	//auto c2 = ss.newContainer("C2");
+	assert(w.getSoftwareSystem("SS") !is null);
+	auto c1 = ss.newContainer("C1");
+	auto c2 = ss.newContainer("C2");
 }
