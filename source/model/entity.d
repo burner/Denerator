@@ -21,12 +21,17 @@ hash_t EntityToHash(const(Entity) e) pure @safe nothrow @nogc {
 }
 
 public alias EntityHashSet(T) = HashSet!(T, Mallocator, EntityToHash);
-public alias StringHashSet = HashSet!(string, Mallocator, stringToHash);
+//public alias StringHashSet = HashSet!(string, Mallocator, stringToHash);
+public alias StringHashSet = bool[string];
 //public alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
 public alias StringEntityMap(T) = T[string];
 
 public @property bool empty(T)(auto ref const(T[string]) aa) {
 	return aa.length == 0;
+}
+
+public void insert(ref bool[string] aa, string str) {
+	aa[str] = true;
 }
 
 class Entity {
