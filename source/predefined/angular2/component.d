@@ -20,7 +20,6 @@ Class angularService(C)(TheWorld world, C cons) {
 
 Class angularDirective(C)(TheWorld world, C cons) {
 	Class ngCmp = world.newClass("AngularDirective", cons);
-	ngCmp.doNotGenerate = DoNotGenerate.yes;
 
 	return ngCmp;
 }
@@ -32,22 +31,8 @@ Class angularPipe(C)(TheWorld world, C cons) {
 	return ngCmp;
 }
 
-Class angularClass(C)(TheWorld world, C cons) {
-	Class ngCmp = world.newClass("AngularClass", cons);
-	ngCmp.doNotGenerate = DoNotGenerate.yes;
-
-	return ngCmp;
-}
-
-Class angularInterface(C)(TheWorld world, C cons) {
-	Class ngCmp = world.newClass("AngularInterface", cons);
-	ngCmp.doNotGenerate = DoNotGenerate.yes;
-
-	return ngCmp;
-}
-
-Class angularEnum(C)(TheWorld world, C cons) {
-	Class ngCmp = world.newClass("AngularEnum", cons);
+Class angularModule(C)(TheWorld world, C cons) {
+	Class ngCmp = world.newClass("AngularModule", cons);
 	ngCmp.doNotGenerate = DoNotGenerate.yes;
 
 	return ngCmp;
@@ -69,65 +54,46 @@ const(Class) angularPipe(const(TheWorld) world) {
 	return world.getType!Class("AngularPipe");
 }
 
-const(Class) angularClass(const(TheWorld) world) {
-	return world.getType!Class("AngularClass");
+const(Class) angularModule(const(TheWorld) world) {
+	return world.getType!Class("AngularModule");
 }
 
-const(Class) angularInterface(const(TheWorld) world) {
-	return world.getType!Class("AngularInterface");
-}
-
-const(Class) angularEnum(const(TheWorld) world) {
-	return world.getType!Class("AngularEnum");
-}
-
-Class genAngularService(C)(string name, TheWorld world, C cons) {
-	return genImpl(name, world, cons, 
-		 angularService(world, cons), "AngularServiceDependency"
+Class genAngularService(C...)(string name, TheWorld world, C cons) {
+	return genImpl(name, world, 
+		 angularService(world, cons), "AngularServiceDependency", cons
 	);
 }
 
-Class genAngularComponent(C)(string name, TheWorld world, C cons) {
-	return genImpl(name, world, cons, 
-		 angularComponent(world, cons), "AngularComponentDependency"
+Class genAngularComponent(C...)(string name, TheWorld world, C cons) {
+	return genImpl(name, world, 
+		 angularComponent(world, cons), "AngularComponentDependency", cons
 	);
 }
 
-Class genAngularDirective(C)(string name, TheWorld world, C cons) {
-	return genImpl(name, world, cons, 
-		 angularDirective(world, cons), "AngularDirectiveDependency"
+Class genAngularDirective(C...)(string name, TheWorld world, C cons) {
+	return genImpl(name, world, 
+		 angularDirective(world, cons), "AngularDirectiveDependency", cons
 	);
 }
 
-Class genAngularPipe(C)(string name, TheWorld world, C cons) {
-	return genImpl(name, world, cons, 
-		 angularPipe(world, cons), "AngularPipeDependency"
+Class genAngularPipe(C...)(string name, TheWorld world, C cons) {
+	return genImpl(name, world, 
+		 angularPipe(world, cons), "AngularPipeDependency", cons
 	);
 }
 
-Class genAngularClass(C)(string name, TheWorld world, C cons) {
-	return genImpl(name, world, cons, 
-		 angularClass(world, cons), "AngularClassDependency"
+Class genAngularModule(C...)(string name, TheWorld world, C cons) {
+	return genImpl(name, world, 
+		 angularModule(world, cons), "AngularModuleDependency", cons
 	);
 }
 
-Class genAngularInterface(C)(string name, TheWorld world, C cons) {
-	return genImpl(name, world, cons, 
-		 angularInterface(world, cons), "AngularInterfaceDependency"
-	);
-}
-
-Class genAngularEnum(C)(string name, TheWorld world, C cons) {
-	return genImpl(name, world, cons, 
-		 angularEnum(world, cons), "AngularEnumDependency"
-	);
-}
-
-Class genImpl(C)(string name, TheWorld world, C cons, Class to,
-	   	string connectionName) 
+Class genImpl(C...)(string name, TheWorld world, Class to,
+	   	string connectionName, C cons) 
 {
 	import model.connections : Dependency;
 	Class ret = world.newClass(name, cons);
+	ret.doNotGenerate = DoNotGenerate.yes;
 	world.newDependency(name ~ connectionName, ret, to);
 	return ret;
 }

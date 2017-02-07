@@ -37,6 +37,12 @@ class Angular2 : CStyle {
 		{
 			format(ltw, 0, "import { Injectable } from '@angular/core';\n");
 		}
+		if(!entityRangeFromTo!(Dependency)(
+					&this.world.connections, cls,
+					angularComponent(super.world)).empty) 
+		{
+			format(ltw, 0, "import { Component } from '@angular/core';\n");
+		}
 	}
 
 	//void generateComponent(LTW ltw, const(Class) cls) {
