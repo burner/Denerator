@@ -5,7 +5,7 @@ import std.experimental.logger;
 import generator.cstyle;
 
 class Angular2 : CStyle {
-	import predefined.angular.component : angularService;
+	import predefined.angular.component;
 	import std.uni : toLower;
 
 	this(in TheWorld world, in string outputDir) {
@@ -19,7 +19,7 @@ class Angular2 : CStyle {
 	override string genFileName(const(Class) cls) {
 		if(!entityRangeFromTo!(Dependency)(
 					&this.world.connections, cls,
-					angularService(super.world)).empty) 
+					getAngularService(super.world)).empty) 
 		{
 			return toLower(cls.name) ~ ".ts";
 		}
@@ -33,13 +33,13 @@ class Angular2 : CStyle {
 		}
 		if(!entityRangeFromTo!(Dependency)(
 					&this.world.connections, cls,
-					angularService(super.world)).empty) 
+					getAngularService(super.world)).empty) 
 		{
 			format(ltw, 0, "import { Injectable } from '@angular/core';\n");
 		}
 		if(!entityRangeFromTo!(Dependency)(
 					&this.world.connections, cls,
-					angularComponent(super.world)).empty) 
+					getAngularComponent(super.world)).empty) 
 		{
 			format(ltw, 0, "import { Component } from '@angular/core';\n");
 		}

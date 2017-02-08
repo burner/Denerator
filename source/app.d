@@ -43,8 +43,11 @@ void main() {
 	version(unittest) {
 		ret = true;
 	}
-	//if(ret) return;
+	logf("%s", ret);
+	if(!ret) fun();
+}
 
+void fun() {
 	auto world = new TheWorld("TheWorld");
 	addBasicTypes(world);
 
@@ -61,6 +64,7 @@ void main() {
 	frontend.technology = "Angular2";
 	auto frontendUserCtrl = frontend.newComponent("frontUserCtrl");
 	auto frontendStuffCtrl = frontend.newComponent("frontStuffCtrl");
+	initAngularBaseClasses(world, frontendUserCtrl, frontendStuffCtrl);
 	auto hardware = world.newHardwareSystem("SomeHardware");
 
 	auto system2 = world.newSoftwareSystem("LagacySoftwareSystem");

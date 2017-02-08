@@ -1,8 +1,10 @@
 module generator.golanggin;
 
+import exceptionhandling;
 import generator.cstyle;
 
 class GoLangGin : CStyle {
+	import util;
 	this(in TheWorld world, in string outputDir) {
 		super(world, outputDir);
 	}
@@ -25,8 +27,8 @@ class GoLangGin : CStyle {
 		import std.range : isInputRange;
 
 		ensure(cls !is null, "Class must not be null.");
-		generateModuleDecl(ltw, cls);
-		generateImports(ltw, cls);
+		//generateModuleDecl(ltw, cls); TODO
+		//generateImports(ltw, cls);
 		format(ltw, 0, "\n");
 
 		format(ltw, 0, "type %s struct {\n", cls.name);
