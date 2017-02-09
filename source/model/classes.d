@@ -36,7 +36,7 @@ class Class : Type {
 	}
 
 	~this() {
-		assert(false);
+		//assert(false);
 	}
 
 	void realCCtor(in Class old, TheWorld newWorld) {

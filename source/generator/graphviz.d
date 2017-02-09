@@ -66,7 +66,8 @@ class Graphvic : Generator {
 
 		auto f = Generator.createFile([this.outputDir, "all.dot"]);
 		auto ltw = f.lockingTextWriter();
-		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		//auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		auto writer = new Writer!(typeof(ltw))(g, ltw);
 	}
 
 	void generateSystemContext() {
@@ -85,7 +86,8 @@ class Graphvic : Generator {
 
 		auto f = Generator.createFile([this.outputDir, "systemcontext.dot"]);
 		auto ltw = f.lockingTextWriter();
-		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		//auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		auto writer = new Writer!(typeof(ltw))(g, ltw);
 	}
 
 	void generateSoftwareSystem() {
@@ -110,7 +112,8 @@ class Graphvic : Generator {
 				ssName ~ ".dot"]
 			);
 			auto ltw = f.lockingTextWriter();
-			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+			//auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+			auto writer = new Writer!(typeof(ltw))(g, ltw);
 		}
 	}
 
@@ -149,7 +152,8 @@ class Graphvic : Generator {
 						comName ~ ".dot"]
 					);
 					auto ltw = f.lockingTextWriter();
-					auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+					//auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+					auto writer = new Writer!(typeof(ltw))(g, ltw);
 				}
 			}
 		}
@@ -179,7 +183,8 @@ class Graphvic : Generator {
 					ssName, conName ~ ".dot"]
 				);
 				auto ltw = f.lockingTextWriter();
-				auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+				//auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+				auto writer = new Writer!(typeof(ltw))(g, ltw);
 			}
 		}
 	}
@@ -206,7 +211,8 @@ class Graphvic : Generator {
 			assert(createFolder(folderName));
 			auto f = Generator.createFile([fileName]);
 			auto ltw = f.lockingTextWriter();
-			auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+			//auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+			auto writer = new Writer!(typeof(ltw))(g, ltw);
 		}
 
 		void genComponent(const(Component) com, 
@@ -280,8 +286,8 @@ class Graphvic : Generator {
 			ss.name ~ "_only.dot"]
 		);
 		auto ltw = f.lockingTextWriter();
-		auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
-		
+		//auto writer = scoped!(Writer!(typeof(ltw)))(g, ltw);
+		auto writer = new Writer!(typeof(ltw))(g, ltw);
 	}
 
 	void generate(in TheWorld world, Graph g) {
