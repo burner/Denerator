@@ -158,9 +158,9 @@ void fun() {
 	MySQL mysql = new MySQL(world, "MySQL");
 	mysql.generate(database);
 
-	//auto vibed = new VibeD(world, "VibeTestProject");
-	//vibed.generate();
+	auto vibed = new VibeD(world, "VibeTestProject");
+	vibed.generate();
 
-	//auto angular = new Angular2(world, "AngularTestProject");
-	//angular.generate();
+	auto angular = new Angular2(world, "AngularTestProject");
+	angular.generate();
 }
