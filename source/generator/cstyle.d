@@ -84,9 +84,12 @@ abstract class CStyle : Generator {
 		}
 
 		foreach(const(string) cn, const(Class) cls; com.classes) {
-			auto f = createFile(this.outDirPath[], this.genFileName(cls), "w");
-			auto ltw = f.lockingTextWriter();
-			this.generateClass(ltw, cls);
+			if(cls.doNotGenerate == DoNotGenerate.no) {
+				logf("cls name %s", cls.name);
+				auto f = createFile(this.outDirPath[], this.genFileName(cls), "w");
+				auto ltw = f.lockingTextWriter();
+				this.generateClass(ltw, cls);
+			}
 		}
 	}
 

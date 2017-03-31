@@ -31,6 +31,7 @@ Class angularService(C...)(TheWorld world, C cons) {
 
 Class angularDirective(C...)(TheWorld world, C cons) {
 	Class ngCmp = world.newClass("AngularDirective", cons);
+	ngCmp.doNotGenerate = DoNotGenerate.yes;
 
 	return ngCmp;
 }
@@ -104,7 +105,6 @@ Class genImpl(C...)(string name, TheWorld world, Entity to,
 {
 	import model.connections : Dependency;
 	Class ret = world.newClass(name, cons);
-	ret.doNotGenerate = DoNotGenerate.yes;
 	world.newDependency(name ~ connectionName, ret, to);
 	return ret;
 }

@@ -21,6 +21,23 @@ class Angular2 : CStyle {
 					&this.world.connections, cls,
 					getAngularService(super.world)).empty) 
 		{
+			return toLower(cls.name) ~ ".service.ts";
+		} else if(!entityRangeFromTo!(Dependency)(
+					&this.world.connections, cls,
+					getAngularComponent(super.world)).empty) 
+		{
+			return toLower(cls.name) ~ ".component.ts";
+		} else if(!entityRangeFromTo!(Dependency)(
+					&this.world.connections, cls,
+					getAngularDirective(super.world)).empty) 
+		{
+			return toLower(cls.name) ~ ".directive.ts";
+		} else if(!entityRangeFromTo!(Dependency)(
+					&this.world.connections, cls,
+					getAngularDirective(super.world)).empty) 
+		{
+			return toLower(cls.name) ~ ".directive.ts";
+		} else {
 			return toLower(cls.name) ~ ".ts";
 		}
 		assert(false);
@@ -42,12 +59,9 @@ class Angular2 : CStyle {
 					getAngularComponent(super.world)).empty) 
 		{
 			format(ltw, 0, "import { Component } from '@angular/core';\n");
+			format(ltw, 0, "Component\n");
 		}
 	}
-
-	//void generateComponent(LTW ltw, const(Class) cls) {
-
-	//}
 
 	override void generateAggregation(LTW ltw, in Aggregation agg) {
 

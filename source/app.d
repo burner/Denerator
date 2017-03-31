@@ -65,6 +65,9 @@ void fun() {
 	auto frontendUserCtrl = frontend.newComponent("frontUserCtrl");
 	auto frontendStuffCtrl = frontend.newComponent("frontStuffCtrl");
 	initAngularBaseClasses(world, frontendUserCtrl, frontendStuffCtrl);
+
+	auto app = genAngularComponent("app", world, frontendUserCtrl);
+
 	auto hardware = world.newHardwareSystem("SomeHardware");
 
 	auto system2 = world.newSoftwareSystem("LagacySoftwareSystem");
@@ -152,15 +155,15 @@ void fun() {
 
 	Class userInfo = genAngularService("UserInfo", world, frontendUserCtrl);
 
-	Graphvic gv = new Graphvic(world, "GraphvizOutput");
-	gv.generate();
+	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	//gv.generate();
 
-	MySQL mysql = new MySQL(world, "MySQL");
-	mysql.generate(database);
+	//MySQL mysql = new MySQL(world, "MySQL");
+	//mysql.generate(database);
 
-	auto vibed = new VibeD(world, "VibeTestProject");
-	vibed.generate();
+	//auto vibed = new VibeD(world, "VibeTestProject");
+	//vibed.generate();
 
-	auto angular = new Angular2(world, "AngularTestProject");
+	auto angular = new Angular2(world, "Frontend");
 	angular.generate();
 }
