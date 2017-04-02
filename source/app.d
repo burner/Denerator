@@ -66,7 +66,7 @@ void fun() {
 	auto frontendStuffCtrl = frontend.newComponent("frontStuffCtrl");
 	initAngularBaseClasses(world, frontendUserCtrl, frontendStuffCtrl);
 
-	auto app = genAngularComponent("app", world, frontendUserCtrl);
+	auto app = genAngularComponent("Main", world, frontendUserCtrl);
 
 	auto hardware = world.newHardwareSystem("SomeHardware");
 

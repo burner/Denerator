@@ -34,9 +34,9 @@ class Angular2 : CStyle {
 			return toLower(cls.name) ~ ".directive.ts";
 		} else if(!entityRangeFromTo!(Dependency)(
 					&this.world.connections, cls,
-					getAngularDirective(super.world)).empty) 
+					getAngularPipe(super.world)).empty) 
 		{
-			return toLower(cls.name) ~ ".directive.ts";
+			return toLower(cls.name) ~ ".pipe.ts";
 		} else {
 			return toLower(cls.name) ~ ".ts";
 		}
@@ -44,10 +44,34 @@ class Angular2 : CStyle {
 	}
 
 	override void generateClass(LTW ltw, const(Class) cls) {
-		import model.connections : Dependency;
 		if(cls.doNotGenerate == DoNotGenerate.yes) {
 			return;
 		}
+
+		this.generateImports(ltw, cls);
+		if(!entityRangeFromTo!(Dependency)(
+					&this.world.connections, cls,
+					getAngularService(super.world)).empty) 
+		{
+			this.generateNgService(ltw, cls);
+		} else if(!entityRangeFromTo!(Dependency)(
+					&this.world.connections, cls,
+					getAngularComponent(super.world)).empty) 
+		{
+			this.generateNgComponent(ltw, cls);
+		} else if(!entityRangeFromTo!(Dependency)(
+					&this.world.connections, cls,
+					getAngularEnum(super.world)).empty) 
+		{
+			this.generateNgEnum(ltw, cls);
+		}
+
+		this.generateMembers(ltw, cls);
+		format(ltw, 0, "}\n");
+	}
+
+	void generateImports(LTW ltw, const(Class) cls) {
+		import model.connections : Dependency;
 		if(!entityRangeFromTo!(Dependency)(
 					&this.world.connections, cls,
 					getAngularService(super.world)).empty) 
@@ -58,12 +82,47 @@ class Angular2 : CStyle {
 					&this.world.connections, cls,
 					getAngularComponent(super.world)).empty) 
 		{
-			format(ltw, 0, "import { Component } from '@angular/core';\n");
-			format(ltw, 0, "Component\n");
+			format(ltw, 0, "import { Component, OnInit } from '@angular/core';" ~
+				"\n"
+			);
 		}
 	}
 
 	override void generateAggregation(LTW ltw, in Aggregation agg) {
+	}
 
+	void generateMembers(LTW ltw, const(Class) cls) {
+	}
+
+	void generateNgEnum(LTW ltw, const(Class) cls) {
+		format(ltw, 0, "export Enum %s {\n", cls.name);
+	}
+
+	void generateNgClass(LTW ltw, const(Class) cls) {
+		format(ltw, 0, "export class %s {\n", cls.name);
+	}
+
+	void generateNgService(LTW ltw, const(Class) cls) {
+		format(ltw, 0, 
+			"@Injectable()\n" ~
+		    "export class %sService {\n" ~
+		    "\tconstructor() { }\n"
+			, cls.name
+		);
+	}
+
+	void generateNgComponent(LTW ltw, const(Class) cls) {
+		format(ltw, 0,
+			"@Component({\n" ~
+			"\tselector: 'app-%s',\n" ~
+			"\ttemplateUrl: './%1$s.component.html',\n" ~
+			"\tstyleUrls: ['./%1$s.component.css']\n" ~
+			"})\n" ~
+			"export class %1$sComponent implements OnInit {\n"
+			, cls.name
+		);
+
+		format(ltw, 1, "constructor() {}\n");
+		format(ltw, 1, "abstract ngOnInit();\n");
 	}
 }

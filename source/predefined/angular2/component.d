@@ -13,6 +13,7 @@ void initAngularBaseClasses(C...)(TheWorld world, C cons) {
 	angularDirective(world, cons);
 	angularPipe(world, cons);
 	angularModule(world, cons);
+	angularEnum(world, cons);
 }
 
 Class angularComponent(C...)(TheWorld world, C cons) {
@@ -50,6 +51,13 @@ Class angularModule(C...)(TheWorld world, C cons) {
 	return ngCmp;
 }
 
+Class angularEnum(C...)(TheWorld world, C cons) {
+	Class ngCmp = world.newClass("AngularEnum", cons);
+	ngCmp.doNotGenerate = DoNotGenerate.yes;
+
+	return ngCmp;
+}
+
 CopyConstness!(W,Class) getAngularComponent(W)(W world) {
 	return world.getType!Class("AngularComponent");
 }
@@ -68,6 +76,10 @@ CopyConstness!(W,Class) getAngularPipe(W)(W world) {
 
 CopyConstness!(W,Class) getAngularModule(W)(W world) {
 	return world.getType!Class("AngularModule");
+}
+
+CopyConstness!(W,Class) getAngularEnum(W)(W world) {
+	return world.getType!Class("AngularEnum");
 }
 
 Class genAngularService(C...)(string name, TheWorld world, C cons) {
@@ -97,6 +109,12 @@ Class genAngularPipe(C...)(string name, TheWorld world, C cons) {
 Class genAngularModule(C...)(string name, TheWorld world, C cons) {
 	return genImpl(name, world, 
 		 getAngularModule(world), "AngularModuleDependency", cons
+	);
+}
+
+Class genAngularEnum(C...)(string name, TheWorld world, C cons) {
+	return genImpl(name, world, 
+		 getAngularEnum(world), "AngularEnumDependency", cons
 	);
 }
 
