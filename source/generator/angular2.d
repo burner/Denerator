@@ -21,24 +21,24 @@ class Angular2 : CStyle {
 					&this.world.connections, cls,
 					getAngularService(super.world)).empty) 
 		{
-			return toLower(cls.name) ~ ".service.ts";
+			return toLower(cls.name) ~ ".service.base.ts";
 		} else if(!entityRangeFromTo!(Dependency)(
 					&this.world.connections, cls,
 					getAngularComponent(super.world)).empty) 
 		{
-			return toLower(cls.name) ~ ".component.ts";
+			return toLower(cls.name) ~ ".component.base.ts";
 		} else if(!entityRangeFromTo!(Dependency)(
 					&this.world.connections, cls,
 					getAngularDirective(super.world)).empty) 
 		{
-			return toLower(cls.name) ~ ".directive.ts";
+			return toLower(cls.name) ~ ".directive.base.ts";
 		} else if(!entityRangeFromTo!(Dependency)(
 					&this.world.connections, cls,
 					getAngularPipe(super.world)).empty) 
 		{
-			return toLower(cls.name) ~ ".pipe.ts";
+			return toLower(cls.name) ~ ".pipe.base.ts";
 		} else {
-			return toLower(cls.name) ~ ".ts";
+			return toLower(cls.name) ~ ".base.ts";
 		}
 		assert(false);
 	}
@@ -104,8 +104,7 @@ class Angular2 : CStyle {
 
 	void generateNgService(LTW ltw, const(Class) cls) {
 		format(ltw, 0, 
-			"@Injectable()\n" ~
-		    "export class %sService {\n" ~
+		    "export class %sServiceBase {\n" ~
 		    "\tconstructor() { }\n"
 			, cls.name
 		);
@@ -113,16 +112,11 @@ class Angular2 : CStyle {
 
 	void generateNgComponent(LTW ltw, const(Class) cls) {
 		format(ltw, 0,
-			"@Component({\n" ~
-			"\tselector: 'app-%s',\n" ~
-			"\ttemplateUrl: './%1$s.component.html',\n" ~
-			"\tstyleUrls: ['./%1$s.component.css']\n" ~
-			"})\n" ~
-			"export class %1$sComponent implements OnInit {\n"
+			"abstract class %1$sComponentBase implements OnInit {\n" ~
+		    "\tconstructor() { }\n"
 			, cls.name
 		);
 
-		format(ltw, 1, "constructor() {}\n");
 		format(ltw, 1, "abstract ngOnInit();\n");
 	}
 }
