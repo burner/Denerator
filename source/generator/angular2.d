@@ -8,6 +8,7 @@ class Angular2 : CStyle {
 	import predefined.angular.component;
 	import std.uni : toLower;
 	import util;
+	import exceptionhandling;
 
 	this(in TheWorld world, in string outputDir) {
 		super(world, outputDir);
@@ -70,11 +71,14 @@ class Angular2 : CStyle {
 		}
 
 		this.generateMembers(ltw, cls);
-		this.generateMemberFunctions(ltw, cls);
 		format(ltw, 0, "\n");
 		this.generateCtor(ltw, cls, FilterConst.no);
 		format(ltw, 0, "\n");
-		this.generateCtor(ltw, cls, FilterConst.yes);
+		if(areCtorsDifferent(cls)) {
+			this.generateCtor(ltw, cls, FilterConst.yes);
+			format(ltw, 0, "\n");
+		}
+		this.generateMemberFunctions(ltw, cls);
 		format(ltw, 0, "}\n");
 	}
 
@@ -97,9 +101,6 @@ class Angular2 : CStyle {
 	}
 
 	override void generateAggregation(LTW ltw, in Aggregation agg) {
-	}
-
-	void generateMemberFunctions(LTW ltw, const(Class) cls) {
 	}
 
 	void generateMembers(LTW ltw, const(Class) cls) {
@@ -173,6 +174,41 @@ class Angular2 : CStyle {
 		format(ltw, 1, "}\n");
 	}
 
+	void generateMemberFunctions(LTW ltw, in Class cls, string prefix = "") {
+		chain(generateMemberFunctionImpl(ltw, cls, prefix),
+			"In Class with name", cls.name, "."
+		);
+	}
+
+	void generateMemberFunctionImpl(LTW ltw, in Class cls, string prefix = "") {
+		ensure(cls !is null, "Class must not be null.");
+		logf("%s %s", cls.containerType.get("Angular", "class"), cls.name);
+
+		foreach(mv; MemRange!(const(MemberFunction))(cls.members)) {
+			logf("%s %s %s %s", cls.containerType.get("Angular", "class"), cls.name,
+					mv.name, mv.returnType.name);
+			format(ltw, 1, "abstract %s(", mv.name);
+			First first;
+			foreach(pa; mv.parameter) {
+				format(ltw, 0, "%s", 
+						first(() { return ""; }, (){ return ", "; })
+				);
+				format(ltw, 0, "%s : ", pa.name);
+				chain(
+					this.generateType(ltw, cast(const(Type))(pa.type)),
+					"In Member with name", mv.name, "."
+				);
+			}
+			format(ltw, 0, ") : ");
+			chain(
+				this.generateType(ltw, cast(const(Type))(mv.returnType)),
+				"In Member with name", mv.name, "."
+			);
+			format(ltw, 0, ";\n\n");
+
+		}
+	}
+
 	void generateProtectedEntity(LTW ltw, in ProtectedEntity pe, 
 			in int indent = 0) 
 	{
@@ -183,7 +219,7 @@ class Angular2 : CStyle {
 		super.generateType(ltw, type, "Angular", indent);
 	}	
 
-	bool isConst(in Member mem) {
+	override bool isConst(in ProtectedEntity mem) {
 		return super.isConst(mem, "Angular");
 	}
 
@@ -192,7 +228,7 @@ class Angular2 : CStyle {
 	}
 
 	void generateNgClass(LTW ltw, const(Class) cls) {
-		format(ltw, 0, "export class %s {\n", cls.name);
+		format(ltw, 0, "export abstract class %s {\n", cls.name);
 	}
 
 	void generateNgService(LTW ltw, const(Class) cls) {

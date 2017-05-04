@@ -118,6 +118,8 @@ abstract class CStyle : Generator {
 		}
 	}
 
+	abstract bool isConst(const ProtectedEntity);
+
 	bool isConst(in ProtectedEntity mem, const string lang) {
 		import std.algorithm.searching : canFind;
 		if(lang in mem.protection) {
@@ -127,6 +129,15 @@ abstract class CStyle : Generator {
 		}
 	}
 
+	bool areCtorsDifferent(const Class cls) {
+		import std.algorithm.iteration : filter;
+		import std.range.primitives : walkLength;
+		return MemRange!(const MemberVariable)(cls.members)
+				.filter!(a => !isConst(a))
+				.walkLength 
+			!= MemRange!(const MemberVariable)(cls.members)
+					.walkLength;
+	}
 
 	abstract void generateAggregation(LTW ltw, in Aggregation agg);
 	abstract void generateClass(LTW ltw, const(Class) cls);

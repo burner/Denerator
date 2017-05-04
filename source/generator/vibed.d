@@ -160,7 +160,9 @@ class VibeD : CStyle {
 
 		format(ltw, 0, "\n");
 		generateCtor(ltw, cls, FilterConst.no);
-		generateCtor(ltw, cls, FilterConst.yes);
+		if(areCtorsDifferent(cls)) {
+			generateCtor(ltw, cls, FilterConst.yes);
+		}
 
 		if(cls.containerType.get("D", "abstract class")) {
 			foreach(con; entityRangeFrom!(const(Realization))(&this.world.connections, cls)) 
@@ -200,7 +202,7 @@ class VibeD : CStyle {
 				"In Member with name", mv.name, "."
 			);
 
-			format(ltw, 0, "%s(", mv.name);
+			format(ltw, 0, " %s(", mv.name);
 			First first;
 			foreach(pa; mv.parameter) {
 				format(ltw, 0, "%s", 
@@ -210,13 +212,13 @@ class VibeD : CStyle {
 					this.generateType(ltw, cast(const(Type))(pa.type)),
 					"In Member with name", mv.name, "."
 				);
-				format(ltw, 0, "%s", pa.name);
+				format(ltw, 0, " %s", pa.name);
 			}
 			format(ltw, 0, ");\n\n");
 		}
 	}
 
-	bool isConst(in ProtectedEntity mem) {
+	override bool isConst(in ProtectedEntity mem) {
 		return super.isConst(mem, "D");
 	}
 
@@ -283,7 +285,7 @@ class VibeD : CStyle {
 				),
 				"In Class with name", cls.name, "."
 			);
-			format(app, 0, "%s", con.name);
+			format(app, 0, " %s", con.name);
 		}
 
 		if(cls.containerType.get("D", "class") == "interface") {
