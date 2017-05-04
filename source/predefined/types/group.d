@@ -15,12 +15,13 @@ Class groupClass(Con...)(TheWorld world, Con cons) {
 	group.containerType["MySQL"] = "Table";
 
 	MemberVariable userId = group.newMemberVariable("id");
-	userId.type = world.getType!Type("const ULong");
+	userId.type = world.getType!Type("ULong");
 	assert(userId.type);
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
-	userId.addLangSpecificAttribute("D", "const");
-	userId.addLangSpecificAttribute("Typescript", "const");
+	userId.protection["D"] = "const";
+	userId.protection["Typescript"] = "const";
+	userId.protection["Angular"] = "const";
 
 	MemberVariable groupname = group.newMemberVariable("name");
 	groupname.type = world.getType!Type("String");

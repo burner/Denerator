@@ -14,12 +14,13 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 	user.containerType["MySQL"] = "Table";
 
 	MemberVariable userId = user.newMemberVariable("id");
-	userId.type = world.getType!Type("const ULong");
+	userId.type = world.getType!Type("ULong");
 	assert(userId.type);
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
-	userId.addLangSpecificAttribute("D", "const");
-	userId.addLangSpecificAttribute("Typescript", "const");
+	userId.protection["D"] = "const";
+	userId.protection["Typescript"] = "const";
+	userId.protection["Angular"] = "const";
 
 	MemberVariable firstname = user.newMemberVariable("firstname");
 	firstname.type = world.getType!Type("String");

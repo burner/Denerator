@@ -7,6 +7,7 @@ import generator.cstyle;
 class Angular2 : CStyle {
 	import predefined.angular.component;
 	import std.uni : toLower;
+	import util;
 
 	this(in TheWorld world, in string outputDir) {
 		super(world, outputDir);
@@ -64,9 +65,16 @@ class Angular2 : CStyle {
 					getAngularEnum(super.world)).empty) 
 		{
 			this.generateNgEnum(ltw, cls);
+		} else {
+			generateNgClass(ltw, cls);
 		}
 
 		this.generateMembers(ltw, cls);
+		this.generateMemberFunctions(ltw, cls);
+		format(ltw, 0, "\n");
+		this.generateCtor(ltw, cls, FilterConst.no);
+		format(ltw, 0, "\n");
+		this.generateCtor(ltw, cls, FilterConst.yes);
 		format(ltw, 0, "}\n");
 	}
 
@@ -91,7 +99,92 @@ class Angular2 : CStyle {
 	override void generateAggregation(LTW ltw, in Aggregation agg) {
 	}
 
+	void generateMemberFunctions(LTW ltw, const(Class) cls) {
+	}
+
 	void generateMembers(LTW ltw, const(Class) cls) {
+		auto mvs = MemRange!(const(MemberVariable))(cls.members);
+		foreach(mv; mvs) {
+			chain(
+				this.generateProtectedEntity(ltw, 
+					cast(const(ProtectedEntity))(mv), 1),
+				"In Member with name", mv.name, "."
+			);
+			format(ltw, 0, "%s : ", mv.name);
+			chain(
+				this.generateType(ltw, cast(const(Type))(mv.type)),
+				"In Member with name", mv.name, "."
+			);
+			format(ltw, 0, ";\n");
+		}
+	}
+
+	void generateCtor(LTW ltw, in Class cls, const FilterConst fc) {
+		import std.array : appender;
+		import std.algorithm.iteration : filter;
+		import std.range.primitives : walkLength;
+
+		size_t wl = 0;
+		if(fc == FilterConst.yes) {
+			wl = MemRange!(const MemberVariable)(cls.members)
+					.filter!(a => !isConst(a))
+					.walkLength;
+		} else if(fc == FilterConst.no) {
+			wl = MemRange!(const MemberVariable)(cls.members)
+					.walkLength;
+		}
+
+		if(wl == 0) {
+			return;
+		}
+
+		bool first = true;
+
+		format(ltw, 1, "constructor(");
+		foreach(mv; MemRange!(const MemberVariable)(cls.members)) {
+			if(fc == FilterConst.yes && isConst(mv)) {
+				continue;
+			}
+			if(!first) {
+				format(ltw, 0, ", ");
+			}
+			first = false;
+			//chain(
+				this.generateProtectedEntity(ltw, mv, 0)
+					;
+				//, "In Member with name", mv.name, "."
+			//);
+			format(ltw, 0, "%s : ", mv.name);
+			generateType(ltw, mv.type);
+		}
+
+		format(ltw, 0, ") {\n");
+
+		foreach(mv; MemRange!(const MemberVariable)(cls.members)) {
+			if(fc == FilterConst.yes && isConst(mv)) {
+				continue;
+			}
+			format(ltw, 2, "this.%s = %s;\n", mv.name, mv.name);
+		}
+		foreach(con; entityRangeFrom!(const(Composition))(&this.world.connections, cls)) {
+			assert(con.from is cls);
+			format(ltw, 2, "this.%s = %1$s;\n", con.name);
+		}
+		format(ltw, 1, "}\n");
+	}
+
+	void generateProtectedEntity(LTW ltw, in ProtectedEntity pe, 
+			in int indent = 0) 
+	{
+		super.generateProtectedEntity(ltw, pe, "Angular", indent);
+	}
+
+	void generateType(Out)(ref Out ltw, in Type type, in int indent = 0) {
+		super.generateType(ltw, type, "Angular", indent);
+	}	
+
+	bool isConst(in Member mem) {
+		return super.isConst(mem, "Angular");
 	}
 
 	void generateNgEnum(LTW ltw, const(Class) cls) {
@@ -104,7 +197,7 @@ class Angular2 : CStyle {
 
 	void generateNgService(LTW ltw, const(Class) cls) {
 		format(ltw, 0, 
-		    "export class %sServiceBase {\n" ~
+		    "\nabstract export class %sServiceBase {\n" ~
 		    "\tconstructor() { }\n"
 			, cls.name
 		);
@@ -112,7 +205,7 @@ class Angular2 : CStyle {
 
 	void generateNgComponent(LTW ltw, const(Class) cls) {
 		format(ltw, 0,
-			"abstract class %1$sComponentBase implements OnInit {\n" ~
+			"\nabstract class %1$sComponentBase implements OnInit {\n" ~
 		    "\tconstructor() { }\n"
 			, cls.name
 		);

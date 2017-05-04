@@ -14,6 +14,7 @@ abstract class CStyle : Generator {
 	import std.file : getcwd;
 	import std.uni : toLower;
 	import util;
+	import exceptionhandling;
 
 	alias FilterConst = Flag!"FilterConst";
 
@@ -92,6 +93,40 @@ abstract class CStyle : Generator {
 			}
 		}
 	}
+
+	void generateType(Out)(ref Out ltw, in Type type, const string lang, 
+			in int indent = 0) 
+	{
+		ensure(type !is null, "Type is null");
+		if(auto cls = cast(const(Class))type) {
+			format(ltw, indent, "%s", cls.name);
+		} else {
+			ensure(lang in type.typeToLanguage, "Variable type\"",
+				type.name, "\"has no typeToLanguage entry for key", lang
+			);
+			format(ltw, indent, "%s", type.typeToLanguage[lang]);
+		}
+	}
+
+	void generateProtectedEntity(Out)(Out ltw, in ProtectedEntity pe,
+		   	const string lang, in int indent = 0) 
+	{
+		if(lang in pe.protection) {
+			format(ltw, indent, "%s ", pe.protection[lang]);
+		} else if(indent > 0) {
+			format(ltw, indent, "");
+		}
+	}
+
+	bool isConst(in ProtectedEntity mem, const string lang) {
+		import std.algorithm.searching : canFind;
+		if(lang in mem.protection) {
+			return canFind(mem.protection[lang], "const");
+		} else {
+			return false;
+		}
+	}
+
 
 	abstract void generateAggregation(LTW ltw, in Aggregation agg);
 	abstract void generateClass(LTW ltw, const(Class) cls);

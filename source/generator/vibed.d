@@ -145,7 +145,7 @@ class VibeD : CStyle {
 				"In Member with name", mv.name, "."
 			);
 
-			format(ltw, 0, "%s;\n", mv.name);
+			format(ltw, 0, " %s;\n", mv.name);
 		}
 
 		foreach(con; entityRangeFrom!(const(Composition))(&this.world.connections, cls)) 
@@ -216,14 +216,8 @@ class VibeD : CStyle {
 		}
 	}
 
-	bool isConst(in Member mem) {
-		import std.algorithm.searching : canFind;
-		if("D" in mem.langSpecificAttributes) {
-			const(string[]) att = mem.langSpecificAttributes["D"];
-			return canFind(att, "const");
-		} else {
-			return false;
-		}
+	bool isConst(in ProtectedEntity mem) {
+		return super.isConst(mem, "D");
 	}
 
 	void generateCtor(LTW ltw, in Class cls, const FilterConst fc) {
@@ -261,11 +255,18 @@ class VibeD : CStyle {
 				wrap = true;
 			} 
 			first((){}, (){ format(app, 0, ", "); });
+			chain(
+				this.generateProtectedEntity(app, 
+					cast(const(ProtectedEntity))(mv), 0),
+				"In Member with name", mv.name, "."
+			);
 			generateType(app, mv.type);
-			format(app, 0, "%s", mv.name);
+			format(app, 0, " %s", mv.name);
 		}
 
-		foreach(con; entityRangeFrom!(const(Composition))(&this.world.connections, cls)) {
+		foreach(con; 
+				entityRangeFrom!(const(Composition))(&this.world.connections, cls)) 
+		{
 			assert(con.from is cls);
 			if(app.data.length + parameterLength(con) > 80) {
 				format(ltw, 0, "%s\n", app.data);
@@ -360,26 +361,16 @@ class VibeD : CStyle {
 		}
 	}
 
-	void generateProtectedEntity(LTW ltw, in ProtectedEntity pe, 
-			in int indent = 0) {
-		if("D" in pe.protection) {
-			format(ltw, indent, "%s ", pe.protection["D"]);
-		} else if(indent > 0) {
-			format(ltw, indent, "");
-		}
+	void generateProtectedEntity(Out)(Out ltw, in ProtectedEntity pe, 
+			in int indent = 0) 
+	{
+		logf("%s %b", pe.name, isConst(pe));
+		super.generateProtectedEntity(ltw, pe, "D", indent);
 	}
 
 	void generateType(Out)(ref Out ltw, in Type type, in int indent = 0) {
-		ensure(type !is null, "Type is null");
-		if(auto cls = cast(const(Class))type) {
-			format(ltw, indent, "%s ", cls.name);
-		} else {
-			ensure("D" in type.typeToLanguage, "Variable type\"",
-				type.name, "\"has no typeToLanguage entry for key", "D"
-			);
-			format(ltw, indent, "%s ", type.typeToLanguage["D"]);
-		}
-	}
+		super.generateType(ltw, type, "D", indent);
+	}	
 
 	size_t parameterLength(in MemberVariable mv) {
 		ensure(mv.type !is null, "MemberVariable of name", mv.name, " has no type");
