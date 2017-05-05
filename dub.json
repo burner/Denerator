@@ -8,6 +8,19 @@
 		"exceptionhandling": "~>0.0.9",
 		"emsi_containers": ">=0.4.3"
 	},
-	"sourcePaths" : ["source", "../graphvizd/source/"],
-	"importPaths" : ["source", "../graphvizd/source/"]
+	"configurations" : [
+		{
+			"name" : "lib",
+			"targetType" : "library",
+			"sourcePaths" : ["source", "../graphvizd/source/"],
+			"importPaths" : ["source", "../graphvizd/source/"]
+		},
+		{
+			"name" : "exe",
+			"targetType" : "executable",
+			"sourcePaths" : ["main", "source", "../graphvizd/source/"],
+			"importPaths" : ["main", "source", "../graphvizd/source/"]
+		}
+	]
+
 }
