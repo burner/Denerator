@@ -26,7 +26,7 @@ void addBasicTypes(TheWorld world) {
 	foreach(it; constTypes) {
 		auto t = it(world);
 		foreach(l; ["D", "C", "C++", "Vibe.d", "Typescript", "Angular",
-				"Angular2", "MySQL"])
+				"MySQL"])
 		{
 			t.protection[l] = "const";
 		}
@@ -41,7 +41,6 @@ Type voidType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "void";
 	lng.typeToLanguage["Typescript"] = "void";
 	lng.typeToLanguage["Angular"] = "void";
-	lng.typeToLanguage["Angular2"] = "void";
 	lng.typeToLanguage["MySQL"] = "INTEGER";
 	return lng;
 }
@@ -54,7 +53,6 @@ Type floatType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "float";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "FLOAT";
 	return lng;
 }
@@ -67,7 +65,6 @@ Type doubleType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "double";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "DOUBLE";
 	return lng;
 }
@@ -80,7 +77,6 @@ Type longType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "long";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "BIGINT";
 	return lng;
 }
@@ -93,7 +89,6 @@ Type intType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "int";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "INT";
 	return lng;
 }
@@ -106,7 +101,6 @@ Type shortType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "short";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "SMALLINT";
 	return lng;
 }
@@ -119,7 +113,6 @@ Type byteType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "byte";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "TINYINT";
 	return lng;
 }
@@ -132,7 +125,6 @@ Type ulongType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "ulong";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "BIGINT UNSIGNED";
 	return lng;
 }
@@ -145,7 +137,6 @@ Type uintType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "uint";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "INT UNSIGNED";
 	return lng;
 }
@@ -158,7 +149,6 @@ Type ushortType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "ushort";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "SMALLINT UNSIGNED";
 	return lng;
 }
@@ -171,7 +161,6 @@ Type ubyteType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "ubyte";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "TINYINT UNSIGNED";
 	return lng;
 }
@@ -184,7 +173,6 @@ Type boolType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "bool";
 	lng.typeToLanguage["Typescript"] = "boolean";
 	lng.typeToLanguage["Angular"] = "boolean";
-	lng.typeToLanguage["Angular2"] = "boolean";
 	lng.typeToLanguage["MySQL"] = "BIT(1)";
 	return lng;
 }
@@ -197,7 +185,6 @@ Type stringType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "string";
 	lng.typeToLanguage["Typescript"] = "string";
 	lng.typeToLanguage["Angular"] = "string";
-	lng.typeToLanguage["Angular2"] = "string";
 	lng.typeToLanguage["MySQL"] = "TEXT";
 	return lng;
 }
@@ -209,7 +196,6 @@ Type dateType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "Date";
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
-	lng.typeToLanguage["Angular2"] = "Date";
 	lng.typeToLanguage["MySQL"] = "Date";
 	return lng;
 }
@@ -221,7 +207,6 @@ Type timeType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "TimeOfDay";
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
-	lng.typeToLanguage["Angular2"] = "Date";
 	lng.typeToLanguage["MySQL"] = "TIME";
 	return lng;
 }
@@ -233,7 +218,6 @@ Type dateTimeType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "TimeOfDay";
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
-	lng.typeToLanguage["Angular2"] = "Date";
 	lng.typeToLanguage["MySQL"] = "DATETIME";
 	return lng;
 }
@@ -246,7 +230,6 @@ Type cfloatType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "float";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "FLOAT";
 	return lng;
 }
@@ -259,7 +242,6 @@ Type cdoubleType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "double";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "DOUBLE";
 	return lng;
 }
@@ -272,7 +254,6 @@ Type clongType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "long";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "BIGINT";
 	return lng;
 }
@@ -285,7 +266,6 @@ Type cintType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "int";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "INT";
 	return lng;
 }
@@ -298,7 +278,6 @@ Type cshortType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "short";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "SMALLINT";
 	return lng;
 }
@@ -311,7 +290,6 @@ Type cbyteType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "byte";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "TINYINT";
 	return lng;
 }
@@ -324,7 +302,6 @@ Type culongType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "ulong";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "BIGINT UNSIGNED";
 	return lng;
 }
@@ -337,7 +314,6 @@ Type cuintType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "uint";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "INT UNSIGNED";
 	return lng;
 }
@@ -350,7 +326,6 @@ Type cushortType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "ushort";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "SMALLINT UNSIGNED";
 	return lng;
 }
@@ -363,7 +338,6 @@ Type cubyteType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "ubyte";
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
-	lng.typeToLanguage["Angular2"] = "number";
 	lng.typeToLanguage["MySQL"] = "TINYINT UNSIGNED";
 	return lng;
 }
@@ -376,7 +350,6 @@ Type cboolType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "bool";
 	lng.typeToLanguage["Typescript"] = "boolean";
 	lng.typeToLanguage["Angular"] = "boolean";
-	lng.typeToLanguage["Angular2"] = "boolean";
 	lng.typeToLanguage["MySQL"] = "BIT(1)";
 	return lng;
 }
@@ -389,7 +362,6 @@ Type cstringType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "string";
 	lng.typeToLanguage["Typescript"] = "string";
 	lng.typeToLanguage["Angular"] = "string";
-	lng.typeToLanguage["Angular2"] = "string";
 	lng.typeToLanguage["MySQL"] = "TEXT";
 	return lng;
 }
@@ -401,7 +373,6 @@ Type cdateType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "Date";
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
-	lng.typeToLanguage["Angular2"] = "Date";
 	lng.typeToLanguage["MySQL"] = "Date";
 	return lng;
 }
@@ -413,7 +384,6 @@ Type ctimeType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "TimeOfDay";
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
-	lng.typeToLanguage["Angular2"] = "Date";
 	lng.typeToLanguage["MySQL"] = "TIME";
 	return lng;
 }
@@ -425,7 +395,6 @@ Type cdateTimeType(TheWorld world) {
 	lng.typeToLanguage["Vibe.d"] = "TimeOfDay";
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
-	lng.typeToLanguage["Angular2"] = "Date";
 	lng.typeToLanguage["MySQL"] = "DATETIME";
 	return lng;
 }

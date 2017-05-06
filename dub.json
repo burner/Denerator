@@ -1,7 +1,7 @@
 {
 	"name": "degenerator",
-	"description": "A minimal D application.",
-	"copyright": "Copyright © 2016, burner",
+	"description": "The Project Generation Tool",
+	"copyright": "Copyright © 2016-2017, burner",
 	"authors": ["burner"],
 	"targetType" : "executable",
 	"dependencies": {

@@ -22,6 +22,7 @@ abstract class CStyle : Generator {
 	Array!string outDirPath;
 	EntityHashSet!Entity con;
 	Rebindable!(const Container) curCon;
+	string technology;
 
 	this(in TheWorld world, in string outputDir) {
 		super(world);
@@ -33,6 +34,7 @@ abstract class CStyle : Generator {
 	}
 
 	override void generate(string technology) {
+		this.technology = technology;
 		foreach(const(string) ssK, const(SoftwareSystem) ss;
 				this.world.softwareSystems) 
 		{
@@ -94,36 +96,49 @@ abstract class CStyle : Generator {
 		}
 	}
 
-	void generateType(Out)(ref Out ltw, in Type type, const string lang, 
-			in int indent = 0) 
+	void generateLangSpecificAttributes(Out)(ref Out ltw, const(Member) mem,
+			const int indent = 0)
 	{
+		ensure(mem !is null, "Member is null");
+		if(this.technology in mem.langSpecificAttributes) {
+			First first;
+
+			foreach(attri; mem.langSpecificAttributes[this.technology]) {
+				first(
+					(){format(ltw, indent, "%s", attri);},
+					(){format(ltw, 0, " %s", attri);}
+				);
+			}
+		}
+	}
+
+	void generateType(Out)(ref Out ltw, in Type type, in int indent = 0) {
 		ensure(type !is null, "Type is null");
 		if(auto cls = cast(const(Class))type) {
 			format(ltw, indent, "%s", cls.name);
 		} else {
-			ensure(lang in type.typeToLanguage, "Variable type\"",
-				type.name, "\"has no typeToLanguage entry for key", lang
+			ensure(this.technology in type.typeToLanguage, "Variable type\"",
+				type.name, "\"has no typeToLanguage entry for key",
+				this.technology
 			);
-			format(ltw, indent, "%s", type.typeToLanguage[lang]);
+			format(ltw, indent, "%s", type.typeToLanguage[this.technology]);
 		}
 	}
 
 	void generateProtectedEntity(Out)(Out ltw, in ProtectedEntity pe,
-		   	const string lang, in int indent = 0) 
+		   	in int indent = 0) 
 	{
-		if(lang in pe.protection) {
-			format(ltw, indent, "%s ", pe.protection[lang]);
+		if(this.technology in pe.protection) {
+			format(ltw, indent, "%s ", pe.protection[this.technology]);
 		} else if(indent > 0) {
 			format(ltw, indent, "");
 		}
 	}
 
-	abstract bool isConst(const ProtectedEntity);
-
-	bool isConst(in ProtectedEntity mem, const string lang) {
+	bool isConst(const ProtectedEntity mem) {
 		import std.algorithm.searching : canFind;
-		if(lang in mem.protection) {
-			return canFind(mem.protection[lang], "const");
+		if(this.technology in mem.protection) {
+			return canFind(mem.protection[this.technology], "const");
 		} else {
 			return false;
 		}

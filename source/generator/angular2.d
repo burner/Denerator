@@ -15,7 +15,7 @@ class Angular2 : CStyle {
 	}
 
 	override void generate() {
-		super.generate("Angular2");
+		super.generate("Angular");
 	}
 
 	override string genFileName(const(Class) cls) {
@@ -212,16 +212,12 @@ class Angular2 : CStyle {
 	void generateProtectedEntity(LTW ltw, in ProtectedEntity pe, 
 			in int indent = 0) 
 	{
-		super.generateProtectedEntity(ltw, pe, "Angular", indent);
+		super.generateProtectedEntity(ltw, pe, indent);
 	}
 
 	void generateType(Out)(ref Out ltw, in Type type, in int indent = 0) {
-		super.generateType(ltw, type, "Angular", indent);
+		super.generateType(ltw, type, indent);
 	}	
-
-	override bool isConst(in ProtectedEntity mem) {
-		return super.isConst(mem, "Angular");
-	}
 
 	void generateNgEnum(LTW ltw, const(Class) cls) {
 		format(ltw, 0, "export Enum %s {\n", cls.name);

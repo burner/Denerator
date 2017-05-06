@@ -19,6 +19,8 @@ class VibeD : CStyle {
 		super(world, outputDir);
 	}
 
+	alias generate = CStyle.generate;
+
 	override void generate() {
 		super.generate("D");
 	}
@@ -141,6 +143,10 @@ class VibeD : CStyle {
 				"In Member with name", mv.name, "."
 			);
 			chain(
+				super.generateLangSpecificAttributes(ltw, mv),
+				"In Member with name", mv.name, "."
+			);
+			chain(
 				this.generateType(ltw, cast(const(Type))(mv.type)),
 				"In Member with name", mv.name, "."
 			);
@@ -216,10 +222,6 @@ class VibeD : CStyle {
 			}
 			format(ltw, 0, ");\n\n");
 		}
-	}
-
-	override bool isConst(in ProtectedEntity mem) {
-		return super.isConst(mem, "D");
 	}
 
 	void generateCtor(LTW ltw, in Class cls, const FilterConst fc) {
@@ -367,11 +369,11 @@ class VibeD : CStyle {
 			in int indent = 0) 
 	{
 		logf("%s %b", pe.name, isConst(pe));
-		super.generateProtectedEntity(ltw, pe, "D", indent);
+		super.generateProtectedEntity(ltw, pe, indent);
 	}
 
 	void generateType(Out)(ref Out ltw, in Type type, in int indent = 0) {
-		super.generateType(ltw, type, "D", indent);
+		super.generateType(ltw, type, indent);
 	}	
 
 	size_t parameterLength(in MemberVariable mv) {
