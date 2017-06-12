@@ -10,7 +10,7 @@ import duplicator;
 import generator.graphviz;
 import generator.mysql;
 import generator.vibed;
-import generator.angular2;
+import generator.angular;
 import predefined.types.user;
 import predefined.types.group;
 import predefined.types.address;
@@ -61,7 +61,7 @@ void fun() {
 	auto system = world.newSoftwareSystem("AwesomeSoftware");
 	system.description = "The awesome system to develop.";
 	Container frontend = system.newContainer("Frontend");
-	frontend.technology = "Angular2";
+	frontend.technology = "Angular";
 	auto frontendUserCtrl = frontend.newComponent("frontUserCtrl");
 	auto frontendStuffCtrl = frontend.newComponent("frontStuffCtrl");
 	initAngularBaseClasses(world, frontendUserCtrl, frontendStuffCtrl);
@@ -161,9 +161,9 @@ void fun() {
 	//MySQL mysql = new MySQL(world, "MySQL");
 	//mysql.generate(database);
 
-	auto vibed = new VibeD(world, "VibeTestProject");
-	vibed.generate();
+	//auto vibed = new VibeD(world, "VibeTestProject");
+	//vibed.generate();
 
-	auto angular = new Angular2(world, "Frontend");
+	auto angular = new Angular(world, "Frontend");
 	angular.generate();
 }

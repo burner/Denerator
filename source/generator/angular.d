@@ -1,10 +1,10 @@
-module generator.angular2;
+module generator.angular;
 
 import std.experimental.logger;
 
 import generator.cstyle;
 
-class Angular2 : CStyle {
+class Angular : CStyle {
 	import predefined.angular.component;
 	import std.uni : toLower;
 	import util;
@@ -46,6 +46,7 @@ class Angular2 : CStyle {
 	}
 
 	override void generateClass(LTW ltw, const(Class) cls) {
+		logf("generateClass");
 		if(cls.doNotGenerate == DoNotGenerate.yes) {
 			return;
 		}
@@ -155,7 +156,7 @@ class Angular2 : CStyle {
 					;
 				//, "In Member with name", mv.name, "."
 			//);
-			format(ltw, 0, "%s : ", mv.name);
+			format(ltw, 0, "%sIn : ", mv.name);
 			generateType(ltw, mv.type);
 		}
 
@@ -165,11 +166,11 @@ class Angular2 : CStyle {
 			if(fc == FilterConst.yes && isConst(mv)) {
 				continue;
 			}
-			format(ltw, 2, "this.%s = %s;\n", mv.name, mv.name);
+			format(ltw, 2, "this.%s = %sIn;\n", mv.name, mv.name);
 		}
 		foreach(con; entityRangeFrom!(const(Composition))(&this.world.connections, cls)) {
 			assert(con.from is cls);
-			format(ltw, 2, "this.%s = %1$s;\n", con.name);
+			format(ltw, 2, "this.%s = %1$sIn;\n", con.name);
 		}
 		format(ltw, 1, "}\n");
 	}

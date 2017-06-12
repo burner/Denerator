@@ -38,8 +38,11 @@ abstract class CStyle : Generator {
 		foreach(const(string) ssK, const(SoftwareSystem) ss;
 				this.world.softwareSystems) 
 		{
+			logf("");
 			foreach(const(string) conK, const(Container) con; ss.containers) {
+				logf("");
 				if(con.technology == technology) {
+					logf("");
 					this.generateContainer(con);
 				}
 			}
@@ -47,6 +50,7 @@ abstract class CStyle : Generator {
 
 		foreach(const(string) conK, const(Entity) con; this.world.connections)
 		{
+			logf("");
 			if(auto agg = cast(const(Aggregation))con) {
 				auto ltw = stdout.lockingTextWriter();
 				this.generateAggregation(ltw, agg);

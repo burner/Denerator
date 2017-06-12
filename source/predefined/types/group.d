@@ -20,8 +20,7 @@ Class groupClass(Con...)(TheWorld world, Con cons) {
 	userId.addLangSpecificAttribute("MySQL", "PRIMARY KEY");
 	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
 	userId.protection["D"] = "const";
-	userId.protection["Typescript"] = "const";
-	userId.protection["Angular"] = "const";
+	userId.protection["Angular"] = "readonly";
 
 	MemberVariable groupname = group.newMemberVariable("name");
 	groupname.type = world.getType!Type("String");
