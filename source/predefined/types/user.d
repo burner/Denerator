@@ -20,7 +20,7 @@ Class userClass(Con...)(TheWorld world, Con cons) {
 	userId.addLangSpecificAttribute("MySQL", "AUTO INCREMENT");
 	userId.protection["D"] = "const";
 	userId.protection["Typescript"] = "const";
-	userId.protection["Angular"] = "const";
+	userId.protection["Angular"] = "readonly";
 
 	MemberVariable firstname = user.newMemberVariable("firstname");
 	firstname.type = world.getType!Type("String");
