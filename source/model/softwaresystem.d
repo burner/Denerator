@@ -17,7 +17,6 @@ private const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg) {
 class SoftwareSystem : Entity {
 	import std.array : empty, front;
 	import model.container : Container;
-	import model.entity : empty;
 	import model.world : SearchResult, TheWorld;
 
 	StringEntityMap!(Container) containers;
