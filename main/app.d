@@ -44,8 +44,71 @@ void main() {
 		ret = true;
 	}
 	logf("%s", ret);
-	if(!ret) fun();
+	if(!ret) appModel();
 }
+
+void appModel(){
+    import generator.java;
+
+    //Basic setup
+    auto world = new TheWorld("World");
+    addBasicTypes(world);
+    Type voidType = world.getType("Void");
+
+    //System context level
+    Actor runner = world.newActor("Runner");
+    auto runningApplication = world.newSoftwareSystem("Running Application");
+    world.newConnection("Uses", runner, runningApplication);
+
+    //Container level
+    auto app = runningApplication.newContainer("App");
+    app.technology = "Java";
+
+    //Component level
+    //user interface
+    auto userInterface = app.newComponent("user_interface");
+        auto contract_UserInterface = userInterface.newSubComponent("contract");
+            auto planning_Contract_UserInterface = contract_UserInterface.newSubComponent("planning");
+        auto view_UserInterface = userInterface.newSubComponent("view");
+            auto planning_View_UserInterface = view_UserInterface.newSubComponent("planning");
+        auto presenter_UserInteface = userInterface.newSubComponent("presenter");
+            auto planning_Presenter_UserInterface = presenter_UserInteface.newSubComponent("planning");
+
+    //more inner workings
+    auto useCase = app.newComponent("use_case");
+    auto entities = app.newComponent("entities");
+
+
+    //Class level
+    //Add selectPlaylistPresneter class to planning_presenter_UserInterface
+    Class selectPlaylistPresenter = world.newClass("SelectPlaylistPresenter", planning_Presenter_UserInterface);
+    selectPlaylistPresenter.containerType["Java"] = "class";
+    selectPlaylistPresenter.typeToLanguage["Java"] = selectPlaylistPresenter.name;
+
+    Class selectPlaylistView = world.newClass("SelectPlaylistView", planning_View_UserInterface);
+    selectPlaylistView.containerType["Java"] = "class";
+    selectPlaylistView.typeToLanguage["Java"] = selectPlaylistView.name;
+
+    Class selectPlaylistContract = world.newClass("SelectPlaylistContract", planning_Contract_UserInterface);
+    selectPlaylistContract.containerType["Java"] = "interface";
+    selectPlaylistContract.typeToLanguage["Java"] = selectPlaylistContract.name;
+
+        //members
+        MemberVariable playlistView = selectPlaylistPresenter.newMemberVariable("playlistView");
+        playlistView.type = world.getType("SelectPlaylistView");
+
+        //member functions
+        MemberFunction fillPlaylistFunction = selectPlaylistPresenter.newMemberFunction("fillPlaylist");
+        fillPlaylistFunction.returnType = voidType;
+
+
+    Java java = new Java(world, "java_code");
+    java.generate(app);
+
+    //Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	//gv.generate();
+}
+
 
 void fun() {
 	auto world = new TheWorld("TheWorld");
@@ -155,8 +218,8 @@ void fun() {
 
 	Class userInfo = genAngularService("UserInfo", world, frontendUserCtrl);
 
-	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
-	//gv.generate();
+	Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	gv.generate();
 
 	//MySQL mysql = new MySQL(world, "MySQL");
 	//mysql.generate(database);
@@ -164,6 +227,6 @@ void fun() {
 	//auto vibed = new VibeD(world, "VibeTestProject");
 	//vibed.generate();
 
-	auto angular = new Angular(world, "Frontend");
-	angular.generate();
+	//auto angular = new Angular(world, "Frontend");
+	//angular.generate();
 }
