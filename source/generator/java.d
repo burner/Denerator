@@ -14,23 +14,20 @@ import std.algorithm.mutation :reverse;
 
 class Java : Generator {
     import model.container;
-
-    //because the putput dir changes during the progress of generation (i.e. the names of the components are appended as file names)
-    //it is no longer a const variable
-    //Therefore in every container or component the classes have to be generated first, before the subcomponents are generated
-    string outputDir;
+    //The base path under which all files shall be placed
+    immutable(string) outputDirBasePath;
+    //Working path modified when generating output
     Rebindable!(const(Container)) currentContainer;
 
     this(in TheWorld world, in string outputDir) {
     		super(world);
-    		this.outputDir = outputDir;
-    		deleteFolder(this.outputDir);
+    		this.outputDirBasePath = outputDir;
+    		deleteFolder(this.outputDirBasePath);
     		//enforce ensures that a given value is true -> in this case that a folder is created, otherwise throws an exception
     		enforce(Generator.createFolder(outputDir));
     }
 
-~this() {
-    }
+    ~this(){}
 
     override void generate(){}
 
@@ -40,13 +37,15 @@ class Java : Generator {
         info("Generating contents of container ", container.name);
         assert(container.technology is "Java");
         this.currentContainer = container;
-        enforce(Generator.createFolder(getOutputDir(container)));
-        //generate classes
+        immutable(string) outputDir = getOutputDir(container);
+        enforce(Generator.createFolder(outputDir));
 
+        //generate classes
         foreach(value; container.classes){
             const(Class) clazz = value;
-            generateClass(clazz);
+            generateClass!(Container)(clazz, container, outputDir);
         }
+
         //generate component
         foreach(value; container.components){
             const(Component) component = value;
@@ -55,12 +54,13 @@ class Java : Generator {
     }
 
     void generateComponent(in Component component){
-        info("Generating contents of component", component.name);
-        enforce(Generator.createFolder(getOutputDir(component)));
+        info("Generating contents of component ", component.name);
+        immutable(string) outputDir = getOutputDir(component);
+        enforce(Generator.createFolder(outputDir));
         //generate classes
         foreach(value; component.classes){
             const(Class) clazz = value;
-            generateClass(clazz);
+            generateClass!(Component)(clazz, component, outputDir);
         }
 
         //generate subcomponents
@@ -70,20 +70,18 @@ class Java : Generator {
         }
     }
 
-
-
-
-
-    void generateClass(in Class clazz){
+    void generateClass(Parent)(in Class clazz, in Parent parent, in string outputDir) const{
         info("Generating class " , clazz.name);
-        //auto file = Generator.createFile([this.outputDir, clazz.name ~ ".java"]);
-        //auto lockingTextWriter = file.lockingTextWriter();
-        //format(lockingTextWriter, 0, "%s class %s{", clazz.protection["Java"], clazz.name );
-        ////Initilaize a struct of class members implementing range.
+        auto file = Generator.createFile([outputDir, clazz.name ~ ".java"]);
+        auto lockingTextWriter = file.lockingTextWriter();
+        format(lockingTextWriter, 0, "package %s;\n", getClassPackageLine(parent));
+        //TODO asssert that "Java" keys exist in protection and containerType attributes
+        format(lockingTextWriter, 0, "%s %s %s{", clazz.protection["Java"], clazz.containerType["Java"], clazz.name );
+
         //foreach(member ; MemRange!(const MemberVariable)(clazz.members)){
         //    //TODO generateMemeber
         //}
-        //format(lockingTextWriter, 0, "}");
+        format(lockingTextWriter, 0, "\n}");
     }
 
     void generateMember(Out, Mem : Member)(ref Out lockingTextWriter, bool first, ref Mem member ){
@@ -113,20 +111,43 @@ class Java : Generator {
         //TODO
     }
 
-    private string getOutputDir(in Entity entity){
+    private immutable(string) getOutputDir(in Entity entity) const {
         string[] folderNames = [];
         Rebindable!(const(Entity)) entityCopy = entity;
-        while(entityCopy){
-            folderNames ~= entityCopy.name;
-            if(entityCopy is this.currentContainer){
-                break;
+        if(!(entityCopy is this.currentContainer)){
+            while(entityCopy){
+                folderNames ~= entityCopy.name;
+                if(entityCopy.parent is this.currentContainer){
+                    break;
+                }
+                entityCopy = entityCopy.parent;
             }
-            entityCopy = entityCopy.parent;
         }
-        folderNames ~= this.outputDir;
+        folderNames ~= this.outputDirBasePath;
         folderNames.reverse();
         info("Path: ",  folderNames.join("/"));
         return folderNames.join("/");
+    }
+
+    private immutable(string) getClassPackageLine(in Container parent) const{
+            return "\n";
+    }
+
+    private immutable(string) getClassPackageLine(in Component parent) const {
+        Rebindable!(const(Component)) parentRebindable = parent;
+        string[] packagePath = [];
+        while(true){
+            packagePath ~= parentRebindable.name;
+            if(auto componentCheckInstance = cast(Component)parentRebindable.parent){
+                parentRebindable = componentCheckInstance;
+            } else{
+                break;
+            }
+        }
+        packagePath.reverse;
+        string packageLine = packagePath.join(".");
+        packageLine ~= ";\n";
+        return packageLine;
     }
 }
 
