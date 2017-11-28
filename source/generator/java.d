@@ -19,6 +19,8 @@ class Java : Generator {
     //Working path modified when generating output
     Rebindable!(const(Container)) currentContainer;
 
+    private static immutable(string) TECHNOLOGY_JAVA = "Java";
+
     this(in TheWorld world, in string outputDir) {
     		super(world);
     		this.outputDirBasePath = outputDir;
@@ -35,7 +37,7 @@ class Java : Generator {
 
     void generate(in Container container){
         info("Generating contents of container ", container.name);
-        assert(container.technology is "Java");
+        assert(container.technology is TECHNOLOGY_JAVA);
         this.currentContainer = container;
         immutable(string) outputDir = getOutputDir(container);
         enforce(Generator.createFolder(outputDir));
@@ -72,42 +74,64 @@ class Java : Generator {
 
     void generateClass(Parent)(in Class clazz, in Parent parent, in string outputDir) const{
         info("Generating class " , clazz.name);
+
+        //generating file to write to
         auto file = Generator.createFile([outputDir, clazz.name ~ ".java"]);
         auto lockingTextWriter = file.lockingTextWriter();
-        format(lockingTextWriter, 0, "package %s;\n", getClassPackageLine(parent));
-        //TODO asssert that "Java" keys exist in protection and containerType attributes
-        format(lockingTextWriter, 0, "%s %s %s{", clazz.protection["Java"], clazz.containerType["Java"], clazz.name );
 
-        //foreach(member ; MemRange!(const MemberVariable)(clazz.members)){
-        //    //TODO generateMemeber
-        //}
+        //generating package line
+        format(lockingTextWriter, 0, getClassPackageLine(parent));
+        //TODO asssert that "Java" keys exist in protection and containerType attributes
+
+        //generating class deklaration
+        format(lockingTextWriter, 0, "%s %s %s{ \n", clazz.protection[TECHNOLOGY_JAVA], clazz.containerType[TECHNOLOGY_JAVA], clazz.name );
+
+        //generating members
+        //MemRange is an InputRange
+        generateMembers(lockingTextWriter, clazz.members);
+
         format(lockingTextWriter, 0, "\n}");
     }
 
-    void generateMember(Out, Mem : Member)(ref Out lockingTextWriter, bool first, ref Mem member ){
-        if(is(member : MemberVariable)){
-            //TODO
-        } else if(is(member : MemberFunction)){
-            //TODO
-        } else{
-            //TODO throw some exception
+    void generateMembers(Out)(ref Out lockingTextWriter, in Member[] members) const{
+        const(MemberVariable)[] memberVariables;
+        const(MemberFunction)[] memberFunctions;
+        //sort members
+        foreach(member; members){
+            if(auto memberVariable = cast(MemberVariable)member){
+                memberVariables ~= memberVariable;
+            } else if(auto memberFunction = cast(MemberFunction)member){
+                memberFunctions ~= memberFunction;
+            }
         }
-        //TODO
+        //generate member variables
+        foreach(memberVariable; memberVariables){
+            generateMemberVariable(lockingTextWriter, memberVariable);
+        }
+        foreach(memberFunction; memberFunctions){
+            generateMemberFunction(lockingTextWriter, memberFunction);
+        }
     }
 
-    void generateMemberVariable(Out)(ref Out lockingTextWriter, ref MemberVariable memberVariable){
-        //TODO
+    void generateMemberVariable(Out)(ref Out lockingTextWriter, in MemberVariable memberVariable) const{
+        //TODO assert that modifiers exist
+        string protection = memberVariable.protection[TECHNOLOGY_JAVA];
+        const(string) languageSpecificAttributes = memberVariable.langSpecificAttributes[TECHNOLOGY_JAVA].join(" ");
+        const(string) type = memberVariable.type.typeToLanguage[TECHNOLOGY_JAVA];
+        const(string) name = memberVariable.name;
+
+        format(lockingTextWriter, 1, "%s %s %s %s;\n", protection, languageSpecificAttributes, type, name);
     }
 
-    void generateProtection(Out, PE : ProtectedEntity)(Out lockingTextWriter, ref PE protectedEntitiy){
-        //TODO
-    }
-
-    void generateMemberFunction(Out)(ref Out lockingTextWriter, ref MemberFunction memberFunction){
+    void generateMemberFunction(Out)(ref Out lockingTextWriter, in MemberFunction memberFunction) const{
         //TODO
     }
 
     void generateMemberFunctionParameter(Out)(ref Out lockingTextWriter, ref MemberVariable parameter){
+        //TODO
+    }
+
+    string determineProtectionString(Out, PE : ProtectedEntity)(ref Out lockingTextWriter, ref PE protectedEntitiy){
         //TODO
     }
 
@@ -130,23 +154,24 @@ class Java : Generator {
     }
 
     private immutable(string) getClassPackageLine(in Container parent) const{
-            return "\n";
+            return "\n;";
     }
 
     private immutable(string) getClassPackageLine(in Component parent) const {
         Rebindable!(const(Component)) parentRebindable = parent;
-        string[] packagePath = [];
+        string[] packagePathReverse = [];
         while(true){
-            packagePath ~= parentRebindable.name;
+            packagePathReverse ~= parentRebindable.name;
             if(auto componentCheckInstance = cast(Component)parentRebindable.parent){
                 parentRebindable = componentCheckInstance;
             } else{
                 break;
             }
         }
-        packagePath.reverse;
-        string packageLine = packagePath.join(".");
-        packageLine ~= ";\n";
+        packagePathReverse.reverse;
+        string packagePath = packagePathReverse.join(".");
+        packagePath ~= ";\n";
+        string packageLine = "package " ~ packagePath;
         return packageLine;
     }
 }
