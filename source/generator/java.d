@@ -9,9 +9,9 @@ import model.component;
 import model.container;
 import std.exception : enforce;
 import std.typecons;
-import std.array : join, replace;
+import std.array : join, replace, array;
 import std.experimental.logger;
-import std.algorithm: map;
+import std.algorithm: map, filter;
 import std.algorithm.mutation : reverse;
 import std.format;
 import containers.dynamicarray;
@@ -84,7 +84,10 @@ class Java : Generator {
         generator.format(lockingTextWriter, 0, getClassPackageLine(parent));
 
         //generating class deklaration
-        generator.format(lockingTextWriter, 0, "%s %s %s{ \n", clazz.protection[TECHNOLOGY_JAVA], clazz.containerType[TECHNOLOGY_JAVA], clazz.name );
+        immutable string line = [clazz.protection[TECHNOLOGY_JAVA], clazz.containerType[TECHNOLOGY_JAVA], clazz.name]
+                .filter!(str => str.length > 0)
+                .join(" ");
+        generator.format(lockingTextWriter, 0, "%s{ \n", line);
 
         generateMembers(lockingTextWriter, clazz.members);
 
@@ -116,7 +119,8 @@ class Java : Generator {
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(memberVariable);
         const(string) type = memberVariable.type.typeToLanguage[TECHNOLOGY_JAVA];
         const(string) name = memberVariable.name;
-        generator.format(lockingTextWriter, 1, "%s %s %s %s;\n", protection, languageSpecificAttributes, type, name);
+        string[] container = [protection, languageSpecificAttributes, type, name];
+        generator.format(lockingTextWriter, 1, "%s;\n", container.join(" "));
     }
 
     void generateMemberFunction(Out)(ref Out lockingTextWriter, in MemberFunction memberFunction) const{
@@ -125,8 +129,9 @@ class Java : Generator {
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(memberFunction);
         const(string) type = memberFunction.returnType.typeToLanguage[TECHNOLOGY_JAVA];
         const(string) name = memberFunction.name;
+        const(string) functionString = [protection, languageSpecificAttributes, type, name].filter!(str => str.length > 0).join(" ");
         const(string) parameterString = memberFunction.parameter[].map!(parameter => getMemberFunctionParameter(parameter)).join(", ");
-        generator.format(lockingTextWriter, 1, "%s %s %s %s (%s);", protection, languageSpecificAttributes, type, name, parameterString);
+        generator.format(lockingTextWriter, 1, "%s(%s);", functionString, parameterString);
     }
 
     string getMemberFunctionParameter(in MemberVariable parameter) const{
@@ -134,7 +139,7 @@ class Java : Generator {
         const(string) name = parameter.name;
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(parameter);
         const(string) type = parameter.type.typeToLanguage[TECHNOLOGY_JAVA];
-        return std.format.format("%s %s %s", languageSpecificAttributes, type, name);
+        return [languageSpecificAttributes, type, name].filter!(str => str.length > 0).join(" ");
     }
 
     void validateMemberFunctionParameter(in MemberVariable memberVariable) const{
