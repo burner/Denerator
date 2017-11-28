@@ -84,18 +84,25 @@ void appModel(){
     Class selectPlaylistPresenter = world.newClass("SelectPlaylistPresenter", planning_Presenter_UserInterface);
     selectPlaylistPresenter.containerType["Java"] = "class";
     selectPlaylistPresenter.typeToLanguage["Java"] = selectPlaylistPresenter.name;
+    selectPlaylistPresenter.protection["Java"] = "public";
 
     Class selectPlaylistView = world.newClass("SelectPlaylistView", planning_View_UserInterface);
     selectPlaylistView.containerType["Java"] = "class";
     selectPlaylistView.typeToLanguage["Java"] = selectPlaylistView.name;
+    selectPlaylistView.protection["Java"] = "public";
 
     Class selectPlaylistContract = world.newClass("SelectPlaylistContract", planning_Contract_UserInterface);
     selectPlaylistContract.containerType["Java"] = "interface";
     selectPlaylistContract.typeToLanguage["Java"] = selectPlaylistContract.name;
+    selectPlaylistContract.protection["Java"] = "public";
 
         //members
         MemberVariable playlistView = selectPlaylistPresenter.newMemberVariable("playlistView");
         playlistView.type = world.getType("SelectPlaylistView");
+        playlistView.type.typeToLanguage["Java"] = playlistView.type.name;
+        playlistView.protection["Java"] = "private";
+        playlistView.langSpecificAttributes["Java"] = [];
+
 
         //member functions
         MemberFunction fillPlaylistFunction = selectPlaylistPresenter.newMemberFunction("fillPlaylist");
