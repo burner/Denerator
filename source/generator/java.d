@@ -120,34 +120,37 @@ class Java : Generator {
 
     void generateClass(Parent)(in Class clazz, in Parent parent, in string outputDir) {
         string[] requestedTypes;
-        //generating file to write to
-        immutable(string) path = [outputDir, clazz.name ~ ".java"].join("/");
-        auto file = Generator.createFile(path);
-        auto lockingTextWriter = file.lockingTextWriter();
-
-        //generating package line
-        const(string) classPackageLine = getClassPackageLine(parent);
-        generator.format(lockingTextWriter, 0, getClassPackageLine(parent));
-
         //for imports
         if(clazz.name in this.newTypeMap){
             this.newTypeMap[clazz.name] ~= [getPackagePath(parent) ~ "." ~ clazz.name];
         } else{
             this.newTypeMap[clazz.name] = [getPackagePath(parent) ~ "." ~ clazz.name];
         }
+        if(!clazz.doNotGenerate){
+        //generating file to write to
+            immutable(string) path = [outputDir, clazz.name ~ ".java"].join("/");
+            auto file = Generator.createFile(path);
+            auto lockingTextWriter = file.lockingTextWriter();
 
-        //mark this as a new type for imports
-        immutable string line = [clazz.protection[TECHNOLOGY_JAVA], clazz.containerType[TECHNOLOGY_JAVA], clazz.name]
-                .filter!(str => str.length > 0)
-                .join(" ");
-        generator.format(lockingTextWriter, 0, "%s{ \n", line);
+            //generating package line
+            const(string) classPackageLine = getClassPackageLine(parent);
+            generator.format(lockingTextWriter, 0, getClassPackageLine(parent));
 
-        generateMembers(lockingTextWriter, clazz.members, requestedTypes);
 
-        generator.format(lockingTextWriter, 0, "\n}");
 
-        //mark types needed for imports
-        this.requestedTypeMap[path] = requestedTypes;
+            //mark this as a new type for imports
+            immutable string line = [clazz.protection[TECHNOLOGY_JAVA], clazz.containerType[TECHNOLOGY_JAVA], clazz.name]
+                    .filter!(str => str.length > 0)
+                    .join(" ");
+            generator.format(lockingTextWriter, 0, "%s{ \n", line);
+
+            generateMembers(lockingTextWriter, clazz.members, requestedTypes);
+
+            generator.format(lockingTextWriter, 0, "\n}");
+
+            //mark types needed for imports
+            this.requestedTypeMap[path] = requestedTypes;
+        }
     }
 
     void generateMembers(Out)(Out lockingTextWriter, in Member[] members, ref string[] requestedTypes) {
@@ -199,12 +202,12 @@ class Java : Generator {
     }
 
     string getTypeString(in Type type, ref string[] requestedTypes) {
-            string typeJavaName = type.typeToLanguage[TECHNOLOGY_JAVA];
-            if(!isPrimitive(type)){
-                requestedTypes ~= type.name;
-            }
-            return typeJavaName;
+        string typeJavaName = type.typeToLanguage[TECHNOLOGY_JAVA];
+        if(!isPrimitive(type)){
+            requestedTypes ~= type.name;
         }
+        return typeJavaName;
+    }
 
     bool isPrimitive(in Type type){
         bool isPrimitiveType = false;
