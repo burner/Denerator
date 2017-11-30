@@ -119,6 +119,7 @@ class Java : Generator {
     }
 
     void generateClass(Parent)(in Class clazz, in Parent parent, in string outputDir) {
+        validateClass(clazz);
         string[] requestedTypes;
         //for imports
         if(clazz.name in this.newTypeMap){
@@ -136,10 +137,14 @@ class Java : Generator {
             const(string) classPackageLine = getClassPackageLine(parent);
             generator.format(lockingTextWriter, 0, getClassPackageLine(parent));
 
-
-
             //mark this as a new type for imports
-            immutable string line = [clazz.protection[TECHNOLOGY_JAVA], clazz.containerType[TECHNOLOGY_JAVA], clazz.name]
+            string protection = "";
+            if(TECHNOLOGY_JAVA in clazz.protection){
+                protection = clazz.protection[TECHNOLOGY_JAVA];
+            } else{
+                info(std.format.format("for class %s no protection was defined ", clazz.name));
+            }
+            immutable string line = [protection, clazz.containerType[TECHNOLOGY_JAVA], clazz.name]
                     .filter!(str => str.length > 0)
                     .join(" ");
             generator.format(lockingTextWriter, 0, "%s{ \n", line);
@@ -209,7 +214,7 @@ class Java : Generator {
         return typeJavaName;
     }
 
-    bool isPrimitive(in Type type){
+    bool isPrimitive(in Type type) const{
         bool isPrimitiveType = false;
             foreach(primitiveType ; primitiveTypes){
                 if(type.typeToLanguage[TECHNOLOGY_JAVA] == primitiveType){
@@ -238,7 +243,7 @@ class Java : Generator {
     }
 
     private immutable(string) getClassPackageLine(in Container parent) const{
-            return "\n;";
+            return "\n";
     }
 
     private immutable(string) getClassPackageLine(in Component parent) const {
@@ -281,6 +286,14 @@ class Java : Generator {
 
 /* validation *********************************************************************************************************/
 
+    void validateClass(in Class clazz) const{
+        import containers.hashset;
+        assert(!(clazz.containerType is null), std.format.format("The container type for class %s was not defined", clazz.name));
+        auto validJavaContainers =  HashSet!(string)(2);
+        validJavaContainers.put("interface");
+        validJavaContainers.put("class");
+        assert(clazz.containerType[TECHNOLOGY_JAVA] in validJavaContainers, );
+    }
     void validateMemberFunction(in MemberFunction memberFunction) const{
         if(memberFunction.name is null){
             throw new Exception("The name of a member function must be defined.");
