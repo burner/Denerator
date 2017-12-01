@@ -51,7 +51,6 @@ class Java : Generator {
         }
     }
 
-
     //For these types no further imports are required
     string[] primitiveTypes = ["void", "Void", "byte", "Byte", "short", "Short", "int", "Integer", "long", "Long",
                 "float", "Float", "double", "Double", "String", "boolean", "Boolean", "char", "Character"];
@@ -120,24 +119,6 @@ class Java : Generator {
         }
     }
 
-    string getImportLines(in string[] requestedTypes){
-        string importLines;
-        foreach(requestedType; requestedTypes){
-            if(requestedType in this.newTypeMap){
-                string[] packages = this.newTypeMap[requestedType];
-                if(packages.length > 1){
-                    error(std.format.format("More than one declaration of class %s can be found. The import has to be executed manually.", requestedType));
-                    break;
-                }
-                importLines ~= "import " ~ packages[0] ~ ";\n";
-            }
-            else{
-                error(std.format.format("Requested type %s could not be found.", requestedType));
-            }
-        }
-        return importLines;
-    }
-
     void generateComponent(in Component component){
         immutable(string) outputDir = getOutputDir(component);
         enforce(Generator.createFolder(outputDir));
@@ -191,6 +172,24 @@ class Java : Generator {
             this.requestedTypes.reset();
         }
     }
+
+    string getImportLines(in string[] requestedTypes){
+        string importLines;
+        foreach(requestedType; requestedTypes){
+            if(requestedType in this.newTypeMap){
+                string[] packages = this.newTypeMap[requestedType];
+                if(packages.length > 1){
+                    error(std.format.format("More than one declaration of class %s can be found. The import has to be executed manually.", requestedType));
+                    break;
+                }
+                importLines ~= "import " ~ packages[0] ~ ";\n";
+            }
+            else{
+                error(std.format.format("Requested type %s could not be found.", requestedType));
+            }
+        }
+        return importLines;
+     }
 
     string getImplementsExpression(in Class clazz){
         import model.connections : Realization;
