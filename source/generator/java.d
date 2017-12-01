@@ -19,6 +19,39 @@ import containers.hashmap;
 import containers.hashset;
 
 class Java : Generator {
+
+    struct SimpleSet(T){
+        T[] container;
+
+        void put(T element){
+            if(!this.contains(element)){
+                container ~= element;
+            }
+        }
+
+        void reset(){
+            this.container = null;
+        }
+
+        bool contains(T toCheck){
+            foreach(element; container){
+                if(element == toCheck){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        T[] opSlice(int start, int end){
+            return container[start..end];
+        }
+
+        @property int opDollar(){
+            return container.length;
+        }
+    }
+
+
     //For these types no further imports are required
     string[] primitiveTypes = ["void", "Void", "byte", "Byte", "short", "Short", "int", "Integer", "long", "Long",
                 "float", "Float", "double", "Double", "String", "boolean", "Boolean", "char", "Character"];
@@ -26,6 +59,8 @@ class Java : Generator {
     string[][string] newTypeMap;
     //e.g. [path_to_class_file] = [requested_class_name1, ...]
     string[][string] requestedTypeMap;
+    //for containing the requested dependencies of one class
+    SimpleSet!(string) requestedTypes;
     //The base path under which all files shall be placed
     immutable(string) outputDirBasePath;
     //Working path modified when generating output
@@ -121,7 +156,7 @@ class Java : Generator {
 
     void generateClass(Parent)(in Class clazz, in Parent parent, in string outputDir) {
         validateClass(clazz);
-        string[] requestedTypes;
+
         //for imports
         if(clazz.name in this.newTypeMap){
             this.newTypeMap[clazz.name] ~= [getPackagePath(parent) ~ "." ~ clazz.name];
@@ -142,35 +177,36 @@ class Java : Generator {
             if(TECHNOLOGY_JAVA in clazz.protection){
                 protection = clazz.protection[TECHNOLOGY_JAVA];
             }
-            immutable string line = [protection, clazz.containerType[TECHNOLOGY_JAVA], clazz.name, getImplementsExpression(clazz, requestedTypes)]
+            immutable string line = [protection, clazz.containerType[TECHNOLOGY_JAVA], clazz.name, getImplementsExpression(clazz)]
                     .filter!(str => str.length > 0)
                     .join(" ");
             generator.format(lockingTextWriter, 0, "%s{ \n", line);
 
-            generateMembers(lockingTextWriter, clazz.members, requestedTypes);
+            generateMembers(lockingTextWriter, clazz.members);
 
             generator.format(lockingTextWriter, 0, "\n}");
 
             //mark types needed for imports
-            this.requestedTypeMap[path] = requestedTypes;
+            this.requestedTypeMap[path] = this.requestedTypes[0..$];
+            this.requestedTypes.reset();
         }
     }
 
-    string getImplementsExpression(in Class clazz, ref string[] requestedTypes){
+    string getImplementsExpression(in Class clazz){
         import model.connections : Realization;
         string implementsExpression = "";
         foreach(entity; this.world.connections){
             if(auto realization = cast(Realization) entity){
                 if(realization.from == clazz){
                     implementsExpression = "implements " ~ realization.to.name;
-                    requestedTypes ~= realization.to.name;
+                    requestedTypes.put(realization.to.name);
                 }
             }
         }
         return implementsExpression;
     }
 
-    void generateMembers(Out)(Out lockingTextWriter, in Member[] members, ref string[] requestedTypes) {
+    void generateMembers(Out)(Out lockingTextWriter, in Member[] members) {
         const(MemberVariable)[] memberVariables;
         const(MemberFunction)[] memberFunctions;
         //sort members
@@ -182,46 +218,46 @@ class Java : Generator {
             }
         }
         foreach(memberVariable; memberVariables){
-            generateMemberVariable(lockingTextWriter, memberVariable, requestedTypes);
+            generateMemberVariable(lockingTextWriter, memberVariable);
         }
         foreach(memberFunction; memberFunctions){
-            generateMemberFunction(lockingTextWriter, memberFunction, requestedTypes);
+            generateMemberFunction(lockingTextWriter, memberFunction);
         }
     }
 
-    void generateMemberVariable(Out)(Out lockingTextWriter, in MemberVariable memberVariable, ref string[] requestedTypes) {
+    void generateMemberVariable(Out)(Out lockingTextWriter, in MemberVariable memberVariable) {
         const(string) protection = getProtection(memberVariable);
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(memberVariable);
-        const(string) type = getTypeString(memberVariable.type, requestedTypes);
+        const(string) type = getTypeString(memberVariable.type);
         const(string) name = memberVariable.name;
         string[] container = [protection, languageSpecificAttributes, type, name];
         generator.format(lockingTextWriter, 1, "%s;\n", container.join(" "));
     }
 
 
-    void generateMemberFunction(Out)(Out lockingTextWriter, in MemberFunction memberFunction, ref string[] requestedTypes){
+    void generateMemberFunction(Out)(Out lockingTextWriter, in MemberFunction memberFunction){
         validateMemberFunction(memberFunction);
         const(string) protection = getProtection(memberFunction);
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(memberFunction);
-        const(string) type = getTypeString(memberFunction.returnType, requestedTypes);
+        const(string) type = getTypeString(memberFunction.returnType);
         const(string) name = memberFunction.name;
         const(string) functionString = [protection, languageSpecificAttributes, type, name].filter!(str => str.length > 0).join(" ");
-        const(string) parameterString = memberFunction.parameter[].map!(parameter => getMemberFunctionParameter(parameter, requestedTypes)).join(", ");
+        const(string) parameterString = memberFunction.parameter[].map!(parameter => getMemberFunctionParameter(parameter)).join(", ");
         generator.format(lockingTextWriter, 1, "%s(%s);", functionString, parameterString);
     }
 
-    string getMemberFunctionParameter(in MemberVariable parameter, ref string[] requestedTypes){
+    string getMemberFunctionParameter(in MemberVariable parameter){
         validateMemberFunctionParameter(parameter);
         const(string) name = parameter.name;
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(parameter);
-        const(string) type = getTypeString(parameter.type, requestedTypes);
+        const(string) type = getTypeString(parameter.type);
         return [languageSpecificAttributes, type, name].filter!(str => str.length > 0).join(" ");
     }
 
-    string getTypeString(in Type type, ref string[] requestedTypes) {
+    string getTypeString(in Type type) {
         string typeJavaName = type.typeToLanguage[TECHNOLOGY_JAVA];
         if(!isPrimitive(type)){
-            requestedTypes ~= type.name;
+            requestedTypes.put(type.name);
         }
         return typeJavaName;
     }
