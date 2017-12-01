@@ -16,6 +16,7 @@ import std.algorithm.mutation : reverse;
 import std.format;
 import containers.dynamicarray;
 import containers.hashmap;
+import containers.hashset;
 
 class Java : Generator {
     //For these types no further imports are required
@@ -137,14 +138,11 @@ class Java : Generator {
             const(string) classPackageLine = getClassPackageLine(parent);
             generator.format(lockingTextWriter, 0, getClassPackageLine(parent));
 
-            //mark this as a new type for imports
             string protection = "";
             if(TECHNOLOGY_JAVA in clazz.protection){
                 protection = clazz.protection[TECHNOLOGY_JAVA];
-            } else{
-                info(std.format.format("for class %s no protection was defined ", clazz.name));
             }
-            immutable string line = [protection, clazz.containerType[TECHNOLOGY_JAVA], clazz.name]
+            immutable string line = [protection, clazz.containerType[TECHNOLOGY_JAVA], clazz.name, getImplementsExpression(clazz, requestedTypes)]
                     .filter!(str => str.length > 0)
                     .join(" ");
             generator.format(lockingTextWriter, 0, "%s{ \n", line);
@@ -156,6 +154,20 @@ class Java : Generator {
             //mark types needed for imports
             this.requestedTypeMap[path] = requestedTypes;
         }
+    }
+
+    string getImplementsExpression(in Class clazz, ref string[] requestedTypes){
+        import model.connections : Realization;
+        string implementsExpression = "";
+        foreach(entity; this.world.connections){
+            if(auto realization = cast(Realization) entity){
+                if(realization.from == clazz){
+                    implementsExpression = "implements " ~ realization.to.name;
+                    requestedTypes ~= realization.to.name;
+                }
+            }
+        }
+        return implementsExpression;
     }
 
     void generateMembers(Out)(Out lockingTextWriter, in Member[] members, ref string[] requestedTypes) {
