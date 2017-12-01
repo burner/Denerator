@@ -158,7 +158,7 @@ class Java : Generator {
             if(TECHNOLOGY_JAVA in clazz.protection){
                 protection = clazz.protection[TECHNOLOGY_JAVA];
             }
-            immutable string line = [protection, clazz.containerType[TECHNOLOGY_JAVA], clazz.name, getImplementsExpression(clazz)]
+            immutable string line = [protection, clazz.containerType[TECHNOLOGY_JAVA], clazz.name, getExtendsExpression(clazz), getImplementsExpression(clazz)]
                     .filter!(str => str.length > 0)
                     .join(" ");
             generator.format(lockingTextWriter, 0, "%s{ \n", line);
@@ -203,6 +203,18 @@ class Java : Generator {
             }
         }
         return implementsExpression;
+    }
+
+    string getExtendsExpression(in Class clazz){
+        import model.connections : Generalization;
+        string extendsExpression = "";
+        foreach(entity; this.world.connections){
+            if(auto generalization = cast(Generalization) entity){
+                extendsExpression = "extends " ~ generalization.to.name;
+                requestedTypes.put(generalization.to.name);
+            }
+        }
+        return extendsExpression;
     }
 
     void generateMembers(Out)(Out lockingTextWriter, in Member[] members) {
