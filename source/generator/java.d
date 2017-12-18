@@ -114,7 +114,6 @@ class Java : Generator {
                 writeFile.write(getImportLines(requestedTypes));
                 writeFile.write(fileContent);
                 writeFile.close();
-
             }
         }
     }
@@ -158,7 +157,12 @@ class Java : Generator {
             if(TECHNOLOGY_JAVA in clazz.protection){
                 protection = clazz.protection[TECHNOLOGY_JAVA];
             }
-            immutable string line = [protection, clazz.containerType[TECHNOLOGY_JAVA], clazz.name, getExtendsExpression(clazz), getImplementsExpression(clazz)]
+            immutable string line = [protection,
+                    getLanguageSpecificAttributes(clazz),
+                     clazz.containerType[TECHNOLOGY_JAVA],
+                      clazz.name,
+                       getExtendsExpression(clazz),
+                        getImplementsExpression(clazz)]
                     .filter!(str => str.length > 0)
                     .join(" ");
             generator.format(lockingTextWriter, 0, "%s{ \n", line);
@@ -215,6 +219,14 @@ class Java : Generator {
             }
         }
         return extendsExpression;
+    }
+
+    string getLanguageSpecificAttributes(in Class clazz){
+        if(clazz.languageSpecificAttributes){
+            return clazz.languageSpecificAttributes[TECHNOLOGY_JAVA].join(" ");
+        } else{
+            return "";
+        }
     }
 
     void generateMembers(Out)(Out lockingTextWriter, in Member[] members) {
