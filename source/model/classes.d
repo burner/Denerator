@@ -20,7 +20,11 @@ class Class : Type {
 	import std.format : format;
 
 	Member[] members;
+	//Technology as key, type as value e.g. containerType["Java"] = "interface"
 	StringEntityMap!(string) containerType;
+
+    //like abstract final etc in java
+	string[][string] languageSpecificAttributes;
 
 	Entity[] parents;
 
@@ -39,6 +43,11 @@ class Class : Type {
 		//assert(false);
 	}
 
+    /**
+     * For copying classes containing all of its members of an old world to a new world.
+     * @param old The class within the old world to copy
+     * @param newWorld The new world that the new class is inserted to.
+     */
 	void realCCtor(in Class old, TheWorld newWorld) {
 		foreach(const(Member) value; old.members) {
 			if(auto mf = cast(const MemberFunction)value) {
@@ -207,6 +216,7 @@ class Class : Type {
 
 class Member : ProtectedEntity {
 	string[][string] langSpecificAttributes;
+
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
@@ -300,6 +310,7 @@ class MemberFunction : Member {
 		return np;
 	}
 }
+
 
 string[] pathToRoot(in Entity en) {
 	import std.array : empty;
