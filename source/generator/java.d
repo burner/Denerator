@@ -14,6 +14,7 @@ import std.experimental.logger;
 import std.algorithm: map, filter;
 import std.algorithm.mutation : reverse;
 import std.format;
+import std.regex;
 import containers.dynamicarray;
 import containers.hashmap;
 import containers.hashset;
@@ -109,9 +110,10 @@ class Java : Generator {
                     fileContent ~= readFile.readln();
                 }
                 readFile.close();
+                string[] expandedTypes = expandGenericTypes(requestedTypes);
                 File writeFile = File(path, "w");
                 writeFile.write(packageLine);
-                writeFile.write(getImportLines(requestedTypes));
+                writeFile.write(getImportLines(expandedTypes));
                 writeFile.write(fileContent);
                 writeFile.close();
             }
@@ -193,7 +195,37 @@ class Java : Generator {
             }
         }
         return importLines;
-     }
+    }
+
+    /**
+     * If a type within notExpandedTypes is of java generic type, it will get expanded.
+     * E.g. expandGenericTypes(["List<String>"]) will return ["List", "String"]
+     * If the provided types are not of java generic type, thexy will just be returned.
+     * @param notExpandedTypes The types to expand.
+     * @return Expanded types.
+     */
+    string[] expandGenericTypes(in string[] notExpandedTypes) const{
+        string[] result;
+        foreach(type; notExpandedTypes){
+            if(isGeneric(type)){
+                auto pattern = regex("<|>|, ");
+                auto genericTypes = type.split(pattern);
+                result ~= genericTypes[0..$-1].dup;
+            } else{
+                result ~= type.dup;
+            }
+        }
+        return result;
+    }
+
+    bool isGeneric(in string type) const{
+        auto pattern = regex("([A-Z]|[a-z])*<([A-Z]|[a-z])*>");
+        if(type.matchAll(pattern).empty){
+            return false;
+        } else{
+            return true;
+        }
+    }
 
     string getImplementsExpression(in Class clazz){
         import model.connections : Realization;
@@ -202,7 +234,7 @@ class Java : Generator {
             if(auto realization = cast(Realization) entity){
                 if(realization.from == clazz){
                     implementsExpression = "implements " ~ realization.to.name;
-                    requestedTypes.put(realization.to.name);
+                    this.requestedTypes.put(realization.to.name);
                 }
             }
         }
@@ -215,7 +247,7 @@ class Java : Generator {
         foreach(entity; this.world.connections){
             if(auto generalization = cast(Generalization) entity){
                 extendsExpression = "extends " ~ generalization.to.name;
-                requestedTypes.put(generalization.to.name);
+                this.requestedTypes.put(generalization.to.name);
             }
         }
         return extendsExpression;
@@ -280,7 +312,7 @@ class Java : Generator {
     string getTypeString(in Type type) {
         string typeJavaName = type.typeToLanguage[TECHNOLOGY_JAVA];
         if(!isPrimitive(type)){
-            requestedTypes.put(type.name);
+            this.requestedTypes.put(type.name);
         }
         return typeJavaName;
     }
