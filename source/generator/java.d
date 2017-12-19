@@ -88,7 +88,7 @@ class Java : Generator {
         immutable(string) outputDir = getOutputDir(container);
         enforce(Generator.createFolder(outputDir));
 
-        //generate classes
+        //generate classes in top level folder
         foreach(value; container.classes){
             const(Class) clazz = value;
             generateClass!(Container)(clazz, container, outputDir);
@@ -180,7 +180,8 @@ class Java : Generator {
     }
 
     string getImportLines(in string[] requestedTypes){
-        string importLines;
+        import std.algorithm;
+        string[] importLines;
         foreach(requestedType; requestedTypes){
             if(requestedType in this.newTypeMap){
                 string[] packages = this.newTypeMap[requestedType];
@@ -188,13 +189,16 @@ class Java : Generator {
                     error(std.format.format("More than one declaration of class %s can be found. The import has to be executed manually.", requestedType));
                     break;
                 }
-                importLines ~= "import " ~ packages[0] ~ ";\n";
+                string importLine = "import " ~ packages[0] ~ ";\n";
+                if(!canFind(importLines, importLine)){
+                    importLines ~= importLine;
+                }
             }
             else{
                 error(std.format.format("Requested type %s could not be found.", requestedType));
             }
         }
-        return importLines;
+        return importLines.join("");
     }
 
     /**
