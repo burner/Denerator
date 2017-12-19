@@ -298,7 +298,7 @@ class Java : Generator {
         const(string) name = memberFunction.name;
         const(string) functionString = [protection, languageSpecificAttributes, type, name].filter!(str => str.length > 0).join(" ");
         const(string) parameterString = memberFunction.parameter[].map!(parameter => getMemberFunctionParameter(parameter)).join(", ");
-        generator.format(lockingTextWriter, 1, "%s(%s);", functionString, parameterString);
+        generator.format(lockingTextWriter, 1, "%s(%s);\n", functionString, parameterString);
     }
 
     string getMemberFunctionParameter(in MemberVariable parameter){
