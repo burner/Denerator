@@ -140,10 +140,11 @@ class Java : Generator {
         validateClass(clazz);
 
         //for imports
+        string packagePath = getPackagePath(parent);
         if(clazz.name in this.newTypeMap){
-            this.newTypeMap[clazz.name] ~= [getPackagePath(parent) ~ "." ~ clazz.name];
+            this.newTypeMap[clazz.name] ~= [packagePath ~ "." ~ clazz.name];
         } else{
-            this.newTypeMap[clazz.name] = [getPackagePath(parent) ~ "." ~ clazz.name];
+            this.newTypeMap[clazz.name] = [packagePath ~ "." ~ clazz.name];
         }
         if(!clazz.doNotGenerate){
         //generating file to write to
@@ -155,21 +156,15 @@ class Java : Generator {
             const(string) classPackageLine = getClassPackageLine(parent);
             generator.format(lockingTextWriter, 0, getClassPackageLine(parent));
 
-            string protection = "";
-            if(TECHNOLOGY_JAVA in clazz.protection){
-                protection = clazz.protection[TECHNOLOGY_JAVA];
-            }
-            immutable string line = [protection,
-                    getLanguageSpecificAttributes(clazz),
-                     clazz.containerType[TECHNOLOGY_JAVA],
-                      clazz.name,
-                       getExtendsExpression(clazz),
-                        getImplementsExpression(clazz)]
-                    .filter!(str => str.length > 0)
-                    .join(" ");
+            immutable string line = getClassDeclaration(clazz);
+
             generator.format(lockingTextWriter, 0, "%s{ \n", line);
 
             generateMembers(lockingTextWriter, clazz.members);
+
+            foreach(innerClass; clazz.classes){
+                generateInnerClass(lockingTextWriter, innerClass, clazz, parent);
+            }
 
             generator.format(lockingTextWriter, 0, "\n}");
 
@@ -177,6 +172,38 @@ class Java : Generator {
             this.requestedTypeMap[path] = this.requestedTypes[0..$];
             this.requestedTypes.reset();
         }
+    }
+
+    void generateInnerClass(Out, C)(Out lockingTextWriter, in Class innerClass, in Class parent, C container) {
+        string packagePath = getPackagePath(container);
+        string innerClassName = parent.name ~ "." ~ innerClass.name;
+        if(innerClassName in this.newTypeMap){
+            this.newTypeMap[innerClassName] ~= [packagePath ~ "." ~ innerClassName];
+        } else{
+            this.newTypeMap[innerClassName] = [packagePath ~ "." ~ innerClassName];
+        }
+        immutable string declaration = getClassDeclaration(innerClass);
+        generator.format(lockingTextWriter, 0, "%s{ \n", declaration);
+
+        generateMembers(lockingTextWriter, innerClass.members);
+
+        generator.format(lockingTextWriter, 0, "\n}");
+    }
+
+    immutable(string) getClassDeclaration(in Class clazz){
+        string protection = "";
+        if(TECHNOLOGY_JAVA in clazz.protection){
+            protection = clazz.protection[TECHNOLOGY_JAVA];
+        }
+        immutable string declaration = [protection,
+                                    getLanguageSpecificAttributes(clazz),
+                                     clazz.containerType[TECHNOLOGY_JAVA],
+                                      clazz.name,
+                                       getExtendsExpression(clazz),
+                                        getImplementsExpression(clazz)]
+                                    .filter!(str => str.length > 0)
+                                    .join(" ");
+        return declaration;
     }
 
     string getImportLines(in string[] requestedTypes){
@@ -204,7 +231,7 @@ class Java : Generator {
     /**
      * If a type within notExpandedTypes is of java generic type, it will get expanded.
      * E.g. expandGenericTypes(["List<String>"]) will return ["List", "String"]
-     * If the provided types are not of java generic type, thexy will just be returned.
+     * If the provided types are not of java generic type, they will just be returned.
      * @param notExpandedTypes The types to expand.
      * @return Expanded types.
      */
@@ -314,6 +341,7 @@ class Java : Generator {
     }
 
     string getTypeString(in Type type) {
+        assert(TECHNOLOGY_JAVA in type.typeToLanguage);
         string typeJavaName = type.typeToLanguage[TECHNOLOGY_JAVA];
         if(!isPrimitive(type)){
             this.requestedTypes.put(type.name);
