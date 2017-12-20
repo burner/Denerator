@@ -260,16 +260,16 @@ class Java : Generator {
 
     string getImplementsExpression(in Class clazz){
         import model.connections : Realization;
-        string implementsExpression = "";
+        string[] implementedEntities;
         foreach(entity; this.world.connections){
             if(auto realization = cast(Realization) entity){
                 if(realization.from == clazz){
-                    implementsExpression = "implements " ~ realization.to.name;
+                    implementedEntities ~= realization.to.name;
                     this.requestedTypes.put(realization.to.name);
                 }
             }
         }
-        return implementsExpression;
+        return "implements " ~ implementedEntities.join(", ");
     }
 
     string getExtendsExpression(in Class clazz){
