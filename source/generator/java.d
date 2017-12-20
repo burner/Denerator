@@ -235,22 +235,37 @@ class Java : Generator {
      * @param notExpandedTypes The types to expand.
      * @return Expanded types.
      */
-    string[] expandGenericTypes(in string[] notExpandedTypes) const{
-        string[] result;
-        foreach(type; notExpandedTypes){
-            if(isGeneric(type)){
-                auto pattern = regex("<|>|, ");
-                auto genericTypes = type.split(pattern);
-                result ~= genericTypes[0..$-1].dup;
-            } else{
-                result ~= type.dup;
+    string[] expandGenericTypes(in string[] notExpandedTypes){
+        import std.algorithm;
+        string[] types = notExpandedTypes.dup;
+        auto pattern = regex("<|>|, *");
+        while(containsGeneric(types)){
+            foreach(type; types){
+                if(isGeneric(type)){
+                    logf(type);
+                    auto genericTypes = type.split(pattern);
+                    types ~= genericTypes[0..$];
+                    types = types.remove!( t => t == type);
+                    types = types.remove!( t => t == "");
+                    logf(types.join(", "));
+                }
             }
         }
-        return result;
+
+        return types;
+    }
+
+    bool containsGeneric(in string[] types){
+        foreach(type ; types){
+            if(isGeneric(type)){
+                return true;
+            }
+        }
+        return false;
     }
 
     bool isGeneric(in string type) const{
-        auto pattern = regex("([A-Z]|[a-z])*<([A-Z]|[a-z])*>");
+        auto pattern = regex("([A-Z]|[a-z])*<.*>");
         if(type.matchAll(pattern).empty){
             return false;
         } else{
