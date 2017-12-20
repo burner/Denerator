@@ -284,7 +284,7 @@ class Java : Generator {
                 }
             }
         }
-        return "implements " ~ implementedEntities.join(", ");
+        return implementedEntities.join(", ") != "" ? "implements " ~ implementedEntities.join(", ") : "";
     }
 
     string getExtendsExpression(in Class clazz){
