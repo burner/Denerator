@@ -67,7 +67,7 @@ class Container : Entity {
 	}
 
 	SearchResult holdsEntity(const Entity needle) const {
-		const(Entity) tmp = holdsEntityImpl(needle, this.components, this.classes);
+		const(Entity) tmp = holdsEntityImpl(needle, this.components, this.classes, this.enums);
 		if(tmp !is null) {
 			return SearchResult(tmp, [super.name]);
 		} else {
@@ -113,7 +113,6 @@ class Container : Entity {
 					return cls.get(path);
 				}
 			}
-            //TODO implement support for enums
             foreach(const(string) name, const(Enum) en; this.enums){
                 if(name == fr){
                     return en.get(path);
