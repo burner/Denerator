@@ -211,7 +211,7 @@ class Class : Type {
 					return mem.get(path);
 				}
 			}
-
+            //TODO add support for inner classes / enums
 			return this;
 		}
 	}
@@ -287,6 +287,96 @@ class MemberVariable : Member {
 			this.type = world.getType(old.type.name);
 		}
 	}
+}
+
+class Enum : Type{
+    import std.algorithm : remove;
+    import std.array : empty, front;
+
+    EnumConstant[] enumConstants;
+    Constructor constructor;
+    Member[] members;
+    const(Entity)[] parents;
+
+    this(in const(string) name){
+        super(name, null);
+    }
+
+    void addEnumConstant(EnumConstant enumConstant){
+        import std.algorithm;
+        if(this.enumConstants.canFind!(enumConst => enumConst.name == enumConst.name)){
+            throw new Exception(std.format.format("EnumConstant %s has already been defined. ", enumConstant.name));
+        } else {
+            this.enumConstants ~= enumConstant;
+        }
+    }
+
+    void setConstructor(Constructor constructor){
+        this.constructor = constructor;
+    }
+
+    void removeParent(in Entity parent){
+        //opEquals of Entity checks for name equality
+        this.parents = remove!(par => par == parent)(this.parents);
+    }
+
+    const(Entity) get(string[] path){
+        return this.getImpl(path);
+    }
+
+    const(Entity) getImpl(string[] path){
+        if(path.empty){
+            return this;
+        } else{
+            string fr = path.front;
+            const(string[]) newPath = path[1..$];
+            foreach(const(Member) mem; members) {
+                if(mem.name == fr) {
+                    return mem.get(path);
+                }
+            }
+        }
+        return this;
+    }
+}
+
+/**
+ * Defines a constant within an enum: E.g. in Java programming language this could be:
+ *  enum Planet{
+ *      MARS(12.38, 10.0) //EnumConstant
+ *      ...
+ *  }
+ */
+class EnumConstant : Entity{
+    string[] values;
+
+    this(in string name, in Entity parent){
+        super(name, parent);
+    }
+
+    void setValues(string[] values){
+        this.values = values;
+    }
+}
+
+/**
+ * Defines a constructor for an enum.
+ */
+class Constructor : Member{
+    MemberVariable[] parameters;
+
+    this(in string name, in Entity parent) {
+        super(name, parent);
+    }
+
+    void addParameter(MemberVariable parameter){
+        import std.algorithm;
+        if(this.parameters.canFind!(par => par.name == parameter.name && parameter.type.name == par.type.name)){
+            throw new Exception(std.format.format("%s is already present in parameters", parameter.name));
+        } else{
+            this.parameters ~= parameter;
+        }
+    }
 }
 
 unittest {
