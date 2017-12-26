@@ -110,9 +110,9 @@ class Class : Type {
         throw new Exception(std.format.format("Inner class %s could not be found.", name));
 	}
 
-	Class newInnerClass(in string name){
-	    Class clazz = new Class(name);
-	    this.classes[name] = clazz;
+	Class addInnerClass(Class clazz){
+	    this.classes[clazz.name] = clazz;
+	    clazz.parents ~= this;
 	    return clazz;
 	}
 
@@ -135,7 +135,6 @@ class Class : Type {
 					S.stringof, name));
 			}
 		}
-
 		this.members ~= new S(name, this);
 		return cast(S)this.members.back();
 	}
@@ -146,6 +145,7 @@ class Class : Type {
 	CopyConstness!(T,S) getImpl(S,this T)(in string name) {
 	    // why is the class not returned?
 		foreach(mem; this.members) {
+		    //what happens here?
 			if(name == mem.name && (cast(typeof(return))mem) !is null) {
 				return cast(typeof(return))mem;
 			}
@@ -186,7 +186,6 @@ class Class : Type {
 					return tmp;
 				}
 			}
-
 			return null;
 		}
 	}
