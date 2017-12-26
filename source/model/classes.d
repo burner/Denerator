@@ -319,11 +319,11 @@ class Enum : Type{
         this.parents = remove!(par => par == parent)(this.parents);
     }
 
-    const(Entity) get(string[] path){
+    override const(Entity) get(string[] path) const {
         return this.getImpl(path);
     }
 
-    const(Entity) getImpl(string[] path){
+    const(Entity) getImpl(string[] path) const {
         if(path.empty){
             return this;
         } else{
