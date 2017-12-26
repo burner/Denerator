@@ -19,7 +19,11 @@ class Class : Type {
 	import model.type : Type;
 	import std.format : format;
 
+    //inner classes: Map(string) -> Class
+    StringEntityMap!(Class) classes;
+
 	Member[] members;
+
 	//Technology as key, type as value e.g. containerType["Java"] = "interface"
 	StringEntityMap!(string) containerType;
 
@@ -97,6 +101,21 @@ class Class : Type {
 		return this.newImpl!MemberFunction(name);
 	}
 
+	CopyConstness!(T,Class) getMemberClass(this T)(in string name) const{
+        foreach(key, value; this.classes){
+            if(key == name){
+                return value;
+            }
+        }
+        throw new Exception(std.format.format("Inner class %s could not be found.", name));
+	}
+
+	Class newInnerClass(in string name){
+	    Class clazz = new Class(name);
+	    this.classes[name] = clazz;
+	    return clazz;
+	}
+
 	CopyConstness!(T,MemberVariable) getMemberVariable(this T)(in string name) {
 		return this.get!MemberVariable(name);
 	}
@@ -105,6 +124,9 @@ class Class : Type {
 		return this.get!MemberFunction(name);
 	}
 
+    /**
+     * Adds a new member to this.members and returns it.
+     */
 	S newImpl(S)(in string name) {
 		import std.array : back;
 		foreach(mem; this.members) {
@@ -118,7 +140,11 @@ class Class : Type {
 		return cast(S)this.members.back();
 	}
 
+    /**
+     * Gets a member of this.members.
+     */
 	CopyConstness!(T,S) getImpl(S,this T)(in string name) {
+	    // why is the class not returned?
 		foreach(mem; this.members) {
 			if(name == mem.name && (cast(typeof(return))mem) !is null) {
 				return cast(typeof(return))mem;
@@ -128,6 +154,10 @@ class Class : Type {
 			S.stringof, name));
 	}
 
+    /**
+     * Determines if this class or its parents (specified by their names) are present within store.
+     * If so, the name of the entity is returned. Else an empty string is returned.
+     */
 	override string areYouIn(ref in StringHashSet store) const {
 		if(this.name in store) {
 			return this.name;
@@ -213,6 +243,7 @@ class Class : Type {
 		}
 	}
 }
+
 
 class Member : ProtectedEntity {
 	string[][string] langSpecificAttributes;
@@ -311,7 +342,6 @@ class MemberFunction : Member {
 	}
 }
 
-
 string[] pathToRoot(in Entity en) {
 	import std.array : empty;
 	if(auto c = cast(const(Class))en) {
@@ -322,3 +352,4 @@ string[] pathToRoot(in Entity en) {
 		return [en.pathToRoot()];
 	}
 }
+
