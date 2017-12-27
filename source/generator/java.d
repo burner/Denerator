@@ -242,12 +242,10 @@ class Java : Generator {
         while(containsGeneric(types)){
             foreach(type; types){
                 if(isGeneric(type)){
-                    logf(type);
                     auto genericTypes = type.split(pattern);
                     types ~= genericTypes[0..$];
                     types = types.remove!( t => t == type);
                     types = types.remove!( t => t == "");
-                    logf(types.join(", "));
                 }
             }
         }
