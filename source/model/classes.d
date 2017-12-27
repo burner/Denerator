@@ -296,6 +296,7 @@ class Enum : Type{
     Constructor constructor;
     Member[] members;
     Entity[] parents;
+    DoNotGenerate doNotGenerate;
 
     this(in const(string) name){
         super(name, null);
