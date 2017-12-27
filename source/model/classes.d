@@ -295,7 +295,7 @@ class Enum : Type{
     EnumConstant[] enumConstants;
     Constructor constructor;
     Member[] members;
-    const(Entity)[] parents;
+    Entity[] parents;
 
     this(in const(string) name){
         super(name, null);
@@ -303,8 +303,9 @@ class Enum : Type{
 
     void addEnumConstant(EnumConstant enumConstant){
         import std.algorithm;
+        import std.format;
         if(this.enumConstants.canFind!(enumConst => enumConst.name == enumConst.name)){
-            throw new Exception(std.format.format("EnumConstant %s has already been defined. ", enumConstant.name));
+            throw new Exception(format("EnumConstant %s has already been defined. ", enumConstant.name));
         } else {
             this.enumConstants ~= enumConstant;
         }
@@ -314,14 +315,37 @@ class Enum : Type{
         this.constructor = constructor;
     }
 
-    void removeParent(in Entity parent){
-        //opEquals of Entity checks for name equality
-        this.parents = remove!(par => par == parent)(this.parents);
+    //TODO refactor this as a mixin
+    void removeParent(Entity parent){
+        import std.algorithm.mutation : remove;
+        import std.algorithm.searching : countUntil;
+        import std.experimental.logger;
+
+        int getParentIndex(Entity par) {
+            foreach(int idx, it; this.parents) {
+                if(it is par) {
+                    return idx;
+                }
+            }
+            return -1;
+        }
+
+        auto idx = getParentIndex(parent);
+
+        if(idx != -1) {
+            this.parents = remove(this.parents, idx);
+        } else {
+            logf("!%s %s %s", this.name, parent.name, this.parents);
+        }
     }
 
     override const(Entity) get(string[] path) const {
-        return this.getImpl(path);
-    }
+    		return this.getImpl(path);
+    	}
+
+    override Entity get(string[] path) {
+    		return cast(Entity)this.getImpl(path);
+    	}
 
     const(Entity) getImpl(string[] path) const {
         if(path.empty){
@@ -370,8 +394,9 @@ class Constructor : Member{
 
     void addParameter(MemberVariable parameter){
         import std.algorithm;
+        import std.format;
         if(this.parameters.canFind!(par => par.name == parameter.name && parameter.type.name == par.type.name)){
-            throw new Exception(std.format.format("%s is already present in parameters", parameter.name));
+            throw new Exception(format("%s is already present in parameters", parameter.name));
         } else{
             this.parameters ~= parameter;
         }
