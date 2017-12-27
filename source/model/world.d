@@ -16,7 +16,7 @@ class TheWorld : Entity {
 	import model.container : Container;
 	import model.world : SearchResult;
 	import model.actor : Actor;
-	import model.classes : Class;
+	import model.classes : Class, Enum;
 	import model.softwaresystem : SoftwareSystem;
 	import model.hardwaresystem : HardwareSystem;
 	import model.type : Type;
@@ -39,6 +39,8 @@ class TheWorld : Entity {
 		foreach(const(string) name, const(Type) t; old.typeContainerMapping) {
 			if(auto c = cast(const(Class))t) {
 				this.typeContainerMapping[name] = new Class(name);
+			} else if(auto en = cast(Enum)t){
+			    this.typeContainerMapping[name] = new Enum(name);
 			} else {
 				this.typeContainerMapping[name] = new Type(t, this);
 			}
@@ -100,7 +102,7 @@ class TheWorld : Entity {
 
 	auto search(const(Entity) needle) inout {
 		assert(needle !is null);
-
+        //typeContainerMapping holds types, classes and enums
 		const(Entity) mnp = holdsEntityImpl(needle, this.actors,
 					this.softwareSystems, this.hardwareSystems,
 					this.typeContainerMapping, this.connections);
@@ -288,10 +290,13 @@ class TheWorld : Entity {
 		}
 	}
 
-	/** Gets a class from one of the containers and adds them to all other
-	containers. If the Class can't be find by its name it is created and added
-	to all containers.
-	*/
+    /**
+     *  Adds a new class to given entities.
+     *  @param name The name of the new class
+     *  @param stuffThatHoldsClasses container being able to hold classes.
+     *  @throws Exception if this type has already been defined.
+     *  @throws Exception if a entity that should hold the class already contains this class.
+     */
 	Class newClass(T...)(const(string) name, T stuffThatHoldsClasses) {
 		Class ret;
 		if(name in this.typeContainerMapping) {
@@ -313,12 +318,53 @@ class TheWorld : Entity {
 		return ret;
 	}
 
+    /**
+     *  Adds a new enum to given entities.
+     *  @param name The name of the new enum
+     *  @param stuffThatHoldsClasses container being able to hold enums.
+     *  @throws Exception if this type has already been defined.
+     *  @throws Exception if a entity that should hold the class already contains this class.
+     */
+	Enum newEnum(T...)(const(string) name, T stuffThatHoldsEnums) {
+	    Enum ret;
+	    if(name in this.typeContainerMapping) {
+	        throw new Exception("Enum '%s' already exists", name);
+	    } else{
+	        this.typeContainerMapping[name] = new Enum(name);
+	        ret = cast(Enum)this.typeContainerMapping[name];
+	    }
+
+	    foreach(it; stuffThatHoldsClasses) {
+	        ensure(it !is null, "Container to hold ", name, " was null");
+	        if(name !in it.enums){
+	            it.classes[name] = ret;
+	            ret.parents ~= it;
+	        } else {
+	            ensure(false, "Enum ", name, " is already in ", it);
+	        }
+	    }
+	    return ret;
+	}
+
 	CopyConstness!(T,Class) getClass(this T)(const(string) name) {
 		if(name in this.typeContainerMapping) {
 			return cast(Class)this.typeContainerMapping[name];
 		} else {
 			throw new Exception(format("Class '%s' does not exists", name));
 		}
+	}
+
+    /**
+     * Gets the enum specified by 'name'.
+     * @param name The name of the enum to find.
+     * @throws Exception if no value for parameter name exists.
+     */
+	CopyConstness!(T, Enum) getEnum(this T)(const(string) name){
+	    if(name in this.typeContainerMapping){
+	        return cast(Enum)this.typeContainerMapping[name];
+	    } else{
+	        throw new Exception(format("Enum '%s' does not exist", name));
+	    }
 	}
 
 	override string areYouIn(ref in StringHashSet store) const {
