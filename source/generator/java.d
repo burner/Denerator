@@ -83,7 +83,7 @@ class Java : Generator {
     override void generate(string technology){}
 
     void generate(in Container container){
-        assert(container.technology is TECHNOLOGY_JAVA);
+        enforce(container.technology is TECHNOLOGY_JAVA);
         this.currentContainer = container;
         immutable(string) outputDir = getOutputDir(container);
         enforce(Generator.createFolder(outputDir));
@@ -92,6 +92,12 @@ class Java : Generator {
         foreach(value; container.classes){
             const(Class) clazz = value;
             generateClass!(Container)(clazz, container, outputDir);
+        }
+
+        logf("Generating enums soon");
+        foreach(value; container.enums){
+            const(Enum) en = value;
+            generateEnum!(Container)(en, container, outputDir);
         }
 
         //generate component
@@ -129,6 +135,12 @@ class Java : Generator {
             generateClass!(Component)(clazz, component, outputDir);
         }
 
+        //generate enums
+        foreach(value; component.enums){
+            const(Enum) en = value;
+            generateEnum!(Component)(en, component, outputDir);
+        }
+
         //generate subcomponents
         foreach(value; component.subComponents){
             const(Component) component = value;
@@ -136,16 +148,89 @@ class Java : Generator {
         }
     }
 
+    void generateEnum(Parent)(in Enum en, in Parent parent, in string outputDir){
+        //TODO some validation.
+        string packagePath = getPackagePath(parent);
+        addNewType(packagePath, en.name);
+        if(!en.doNotGenerate){
+            //generate the files to write to
+            immutable(string) path = [outputDir, en.name ~".java"].join("/");
+            auto file = Generator.createFile(path);
+            auto lockingTextWriter = file.lockingTextWriter();
+
+            //generate package line
+            const(string) enumPackageLine = getClassPackageLine(parent);
+            generator.format(lockingTextWriter, 0, enumPackageLine);
+
+            immutable(string) declaration = getEnumDeclaration(en);
+
+            generator.format(lockingTextWriter, 0, "%s{ \n", declaration);
+
+            generateEnumValues(lockingTextWriter, en);
+
+            generateConstructor(lockingTextWriter, en.constructor);
+
+            generateMembers(lockingTextWriter, en.members);
+            generator.format(lockingTextWriter, 0, "}");
+        }
+    }
+
+    void generateEnumValues(Out)(Out lockingTextWriter, in Enum en){
+        //TODO cross check with constructor number of parameters
+        foreach(constant; en.enumConstants){
+            string valueLine = constant.name;
+                int ctr = 0;
+                if(valueLine.length){
+                    valueLine ~= "(";
+                    foreach(value; constant.values){
+                        valueLine ~= value;
+                    }
+                    if(ctr == valueLine.length){
+                        valueLine ~= ");";
+                    } else{
+                        valueLine ~= "),";
+                    }
+                }
+            generator.format(lockingTextWriter, 1, valueLine);
+        }
+    }
+
+    void generateConstructor(Out)(Out lockingTextWriter, in Constructor constructor){
+        if(constructor !is null){
+            string protection = "";
+            if(TECHNOLOGY_JAVA in constructor.protection){
+                protection = constructor.protection[TECHNOLOGY_JAVA];
+            }
+            string constr = [protection, constructor.name].join(" ");
+            string[] params;
+            foreach(parameter; constructor.parameters){
+                params ~= [parameter.type.typeToLanguage[TECHNOLOGY_JAVA], parameter.name].join(" ");
+            }
+            constr ~= "(" ~ params.join(", ") ~ "){\n";
+            generator.format(lockingTextWriter, 1, constr);
+            string[] vars;
+            foreach(parameter; constructor.parameters){
+                vars ~= "this." ~ parameter.name ~ " = " ~ parameter.name ~ ";\n";
+            }
+            generator.format(lockingTextWriter, 2, vars.join(""));
+            generator.format(lockingTextWriter, 1, "}\n");
+        }
+    }
+
+    immutable(string) getEnumDeclaration(in Enum en){
+        string protection = "";
+        if(TECHNOLOGY_JAVA in en.protection){
+            protection = en.protection[TECHNOLOGY_JAVA];
+        }
+        immutable string declaration = [protection, "enum", en.name].join(" ");
+        return declaration;
+    }
+
     void generateClass(Parent)(in Class clazz, in Parent parent, in string outputDir) {
         validateClass(clazz);
-
         //for imports
         string packagePath = getPackagePath(parent);
-        if(clazz.name in this.newTypeMap){
-            this.newTypeMap[clazz.name] ~= [packagePath ~ "." ~ clazz.name];
-        } else{
-            this.newTypeMap[clazz.name] = [packagePath ~ "." ~ clazz.name];
-        }
+        addNewType(packagePath, clazz.name);
         if(!clazz.doNotGenerate){
         //generating file to write to
             immutable(string) path = [outputDir, clazz.name ~ ".java"].join("/");
@@ -154,7 +239,7 @@ class Java : Generator {
 
             //generating package line
             const(string) classPackageLine = getClassPackageLine(parent);
-            generator.format(lockingTextWriter, 0, getClassPackageLine(parent));
+            generator.format(lockingTextWriter, 0, classPackageLine);
 
             immutable string line = getClassDeclaration(clazz);
 
@@ -171,6 +256,20 @@ class Java : Generator {
             //mark types needed for imports
             this.requestedTypeMap[path] = this.requestedTypes[0..$];
             this.requestedTypes.reset();
+        }
+    }
+
+    /**
+     * Adds a new entry to this.newTypeMap. The key will be the name of the new type.
+     * The value will be an array of all the package paths that a type with this name is contained in.
+     * @param The path to the new type e.g. com.package.name
+     * @param The name of the newly created type.
+     */
+    void addNewType(in string packagePath, in string typeName){
+        if(typeName in this.newTypeMap){
+            this.newTypeMap[typeName] ~= [packagePath ~ "." ~ typeName];
+        } else{
+            this.newTypeMap[typeName] = [packagePath ~ "." ~ typeName];
         }
     }
 
@@ -402,11 +501,12 @@ class Java : Generator {
     }
 
     private immutable(string) getPackagePath(C)(in C parent) const{
-        Rebindable!(const(Component)) parentRebindable = cast(Component)parent;
+        assert(typeof(parent).stringof == "const(Component)" || typeof(parent).stringof == "const(Container)");
+        Rebindable!(const(C)) parentRebindable = cast(C)parent;
         string[] packagePathReverse = [];
         while(true){
             packagePathReverse ~= parentRebindable.name;
-            if(auto componentCheckInstance = cast(Component)parentRebindable.parent){
+            if(auto componentCheckInstance = cast(C)parentRebindable.parent){
                 parentRebindable = componentCheckInstance;
             } else{
                 break;
