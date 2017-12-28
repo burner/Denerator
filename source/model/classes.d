@@ -312,8 +312,9 @@ class Enum : Type{
         }
     }
 
-    void setConstructor(Constructor constructor){
-        this.constructor = constructor;
+    Constructor setConstructor(){
+        this.constructor = new Constructor(this.name, this);
+        return this.constructor;
     }
 
     //TODO refactor this as a mixin
@@ -393,13 +394,24 @@ class Constructor : Member{
         super(name, parent);
     }
 
-    void addParameter(MemberVariable parameter){
+    /**
+     * Adds a parameter to this.parameters. Therefore it generates a new MemberVariable and sets its name, parent and type.
+     * For further modifications of the parameter a reference to the generated parameter is returned.
+     * @param name The name of the parameter
+     * @param type The type of the parameter
+     * @throws Exception if a parameter with the same name is already present
+     * @return The newly created parameter
+     */
+    MemberVariable addParameter(string name, Type type){
         import std.algorithm;
         import std.format;
-        if(this.parameters.canFind!(par => par.name == parameter.name && parameter.type.name == par.type.name)){
-            throw new Exception(format("%s is already present in parameters", parameter.name));
+        if(this.parameters.canFind!(par => par.name == name)){
+            throw new Exception(format("%s is already present in parameters", name));
         } else{
+            MemberVariable parameter = new MemberVariable(name, this);
+            parameter.type = type;
             this.parameters ~= parameter;
+            return parameter;
         }
     }
 }
