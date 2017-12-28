@@ -334,10 +334,10 @@ class TheWorld : Entity {
 	        ret = cast(Enum)this.typeContainerMapping[name];
 	    }
 
-	    foreach(it; stuffThatHoldsClasses) {
+	    foreach(it; stuffThatHoldsEnums) {
 	        ensure(it !is null, "Container to hold ", name, " was null");
 	        if(name !in it.enums){
-	            it.classes[name] = ret;
+	            it.enums[name] = ret;
 	            ret.parents ~= it;
 	        } else {
 	            ensure(false, "Enum ", name, " is already in ", it);
