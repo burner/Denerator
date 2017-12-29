@@ -94,7 +94,6 @@ class Java : Generator {
             generateClass!(Container)(clazz, container, outputDir);
         }
 
-        logf("Generating enums soon");
         foreach(value; container.enums){
             const(Enum) en = value;
             generateEnum!(Container)(en, container, outputDir);
@@ -164,9 +163,14 @@ class Java : Generator {
 
             immutable(string) declaration = getEnumDeclaration(en);
 
-            generator.format(lockingTextWriter, 0, "%s{ \n", declaration);
+            generator.format(lockingTextWriter, 0, declaration ~ "{ \n");
 
-            generateEnumValues(lockingTextWriter, en);
+            //generating member variables based on the parameters of the constructor, because an enum is a well defined set of constants
+            foreach(memberVariable; en.constructor.parameters){
+                generateMemberVariable(lockingTextWriter, memberVariable);
+            }
+
+            generateEnumValues(lockingTextWriter, en.enumConstants);
 
             generateConstructor(lockingTextWriter, en.constructor);
 
@@ -175,21 +179,22 @@ class Java : Generator {
         }
     }
 
-    void generateEnumValues(Out)(Out lockingTextWriter, in Enum en){
+    void generateEnumValues(Out)(Out lockingTextWriter, in EnumConstant[] enumConstants){
         //TODO cross check with constructor number of parameters
-        foreach(constant; en.enumConstants){
+        int ctr = 1;
+        foreach(constant; enumConstants){
             string valueLine = constant.name;
-                int ctr = 0;
-                if(valueLine.length){
+                if(enumConstants.length){
                     valueLine ~= "(";
                     foreach(value; constant.values){
                         valueLine ~= value;
                     }
-                    if(ctr == valueLine.length){
-                        valueLine ~= ");";
+                    if(ctr == enumConstants.length){
+                        valueLine ~= ");\n";
                     } else{
-                        valueLine ~= "),";
+                        valueLine ~= "),\n";
                     }
+                    ctr++;
                 }
             generator.format(lockingTextWriter, 1, valueLine);
         }
@@ -222,7 +227,9 @@ class Java : Generator {
         if(TECHNOLOGY_JAVA in en.protection){
             protection = en.protection[TECHNOLOGY_JAVA];
         }
-        immutable string declaration = [protection, "enum", en.name].join(" ");
+        immutable string declaration = [protection, "enum", en.name]
+            .filter!(str => str.length > 0)
+            .join(" ");
         return declaration;
     }
 
@@ -429,7 +436,7 @@ class Java : Generator {
         const(string) type = getTypeString(memberVariable.type);
         const(string) name = memberVariable.name;
         string[] container = [protection, languageSpecificAttributes, type, name];
-        generator.format(lockingTextWriter, 1, "%s;\n", container.join(" "));
+        generator.format(lockingTextWriter, 1, "%s;\n", container.filter!(str => str.length > 1).join(" "));
     }
 
 
