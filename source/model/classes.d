@@ -294,7 +294,6 @@ class Enum : Type{
 
     EnumConstant[] enumConstants;
     Constructor constructor;
-    Member[] members;
     Entity[] parents;
     DoNotGenerate doNotGenerate;
 
@@ -352,17 +351,6 @@ class Enum : Type{
     	}
 
     const(Entity) getImpl(string[] path) const {
-        if(path.empty){
-            return this;
-        } else{
-            string fr = path.front;
-            const(string[]) newPath = path[1..$];
-            foreach(const(Member) mem; members) {
-                if(mem.name == fr) {
-                    return mem.get(path);
-                }
-            }
-        }
         return this;
     }
 }
