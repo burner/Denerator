@@ -302,13 +302,15 @@ class Enum : Type{
         super(name, null);
     }
 
-    void addEnumConstant(EnumConstant enumConstant){
+    EnumConstant addEnumConstant(string name){
         import std.algorithm;
         import std.format;
-        if(this.enumConstants.canFind!(enumConst => enumConst.name == enumConst.name)){
-            throw new Exception(format("EnumConstant %s has already been defined. ", enumConstant.name));
+        if(this.enumConstants.canFind!(enumConst => enumConst.name == name)){
+            throw new Exception(format("EnumConstant %s has already been defined. ", name));
         } else {
+            auto enumConstant = new EnumConstant(name, this);
             this.enumConstants ~= enumConstant;
+            return enumConstant;
         }
     }
 
