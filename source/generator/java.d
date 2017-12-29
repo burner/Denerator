@@ -162,19 +162,16 @@ class Java : Generator {
             generator.format(lockingTextWriter, 0, enumPackageLine);
 
             immutable(string) declaration = getEnumDeclaration(en);
-
             generator.format(lockingTextWriter, 0, declaration ~ "{ \n");
 
-            //generating member variables based on the parameters of the constructor, because an enum is a well defined set of constants
-            foreach(memberVariable; en.constructor.parameters){
-                generateMemberVariable(lockingTextWriter, memberVariable);
-            }
-
             generateEnumValues(lockingTextWriter, en.enumConstants);
-
+            //generating member variables based on the parameters of the constructor, because an enum is a well defined set of constants
+            if(en.constructor){
+                foreach(memberVariable; en.constructor.parameters){
+                    generateMemberVariable(lockingTextWriter, memberVariable);
+                }
+            }
             generateConstructor(lockingTextWriter, en.constructor);
-
-            generateMembers(lockingTextWriter, en.members);
             generator.format(lockingTextWriter, 0, "}");
         }
     }
