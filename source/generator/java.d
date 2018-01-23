@@ -435,13 +435,16 @@ class Java : Generator {
     }
 
     void generateAssociations(Out)(Out lockingTextWriter, in Class clazz){
-        import std.uni : toLower;
         foreach(connection; this.world.connections.byValue()){
-            if(clazz is connection.to){
-                if(Composition composition = cast(Composition)connection){
-                    generateComposition(lockingTextWriter, composition, clazz);
-                } else if(Aggregation aggregation = cast(Aggregation)connection){
-                    generateAggregation(lockingTextWriter, aggregation, clazz);
+            foreach(connectionType; AliasSeq!(const(Aggregation), const(Composition))){
+                if(auto typedConnection = cast(connectionType)connection){
+                    if(clazz is typedConnection.to){
+                        if(Composition composition = cast(Composition)connection){
+                            generateComposition(lockingTextWriter, composition, clazz);
+                        } else if(Aggregation aggregation = cast(Aggregation)connection){
+                            generateAggregation(lockingTextWriter, aggregation, clazz);
+                        }
+                    }
                 }
             }
         }
@@ -463,6 +466,7 @@ class Java : Generator {
      * compositions "from" entity. Otherwise it will be of type List<from-Type>.
      */
     void generateDirectedAssociation(Out, Con : ConnectionImpl)(Out lockingTextWriter, in Con directedConnection, in Class clazz){
+        import std.uni : toLower;
         if(directedConnection.fromCnt.high > 1){
             char[] mvNameTmp = directedConnection.from.name.dup;
             mvNameTmp = cast(char[])(cast(char)(mvNameTmp[0].toLower) ~ mvNameTmp[1..$] ~ 's');
