@@ -4,9 +4,12 @@ import std.stdio;
 import generator;
 import model.world;
 import model.classes;
-import model.entity;
 import model.component;
 import model.container;
+import model.connections;
+import model.entity;
+import model.type;
+import std.meta : AliasSeq;
 import std.exception : enforce;
 import std.typecons;
 import std.array : join, replace, array;
@@ -18,6 +21,7 @@ import std.regex;
 import containers.dynamicarray;
 import containers.hashmap;
 import containers.hashset;
+import util : chain;
 
 class Java : Generator {
 
@@ -249,11 +253,11 @@ class Java : Generator {
 
             generator.format(lockingTextWriter, 0, "%s{ \n", line);
 
-            generateMembers(lockingTextWriter, clazz.members);
+            generateMembers(lockingTextWriter, clazz);
 
-            foreach(innerClass; clazz.classes){
-                generateInnerClass(lockingTextWriter, innerClass, clazz, parent);
-            }
+            //foreach(innerClass; clazz.classes){
+            //    generateInnerClass(lockingTextWriter, innerClass, clazz, parent);
+            //}
 
             generator.format(lockingTextWriter, 0, "\n}");
 
@@ -408,22 +412,82 @@ class Java : Generator {
         }
     }
 
-    void generateMembers(Out)(Out lockingTextWriter, in Member[] members) {
+    void generateMembers(Out)(Out lockingTextWriter, in Class clazz) {
         const(MemberVariable)[] memberVariables;
         const(MemberFunction)[] memberFunctions;
         //sort members
-        foreach(member; members){
+        foreach(member; clazz.members){
             if(auto memberVariable = cast(MemberVariable)member){
                 memberVariables ~= memberVariable;
             } else if(auto memberFunction = cast(MemberFunction)member){
                 memberFunctions ~= memberFunction;
             }
         }
+        generateAssociations(lockingTextWriter, clazz);
+
         foreach(memberVariable; memberVariables){
             generateMemberVariable(lockingTextWriter, memberVariable);
         }
+
         foreach(memberFunction; memberFunctions){
             generateMemberFunction(lockingTextWriter, memberFunction);
+        }
+    }
+
+    void generateAssociations(Out)(Out lockingTextWriter, in Class clazz){
+        import std.uni : toLower;
+        foreach(connection; this.world.connections.byValue()){
+            if(clazz is connection.to){
+                if(Composition composition = cast(Composition)connection){
+                    generateComposition(lockingTextWriter, composition, clazz);
+                } else if(Aggregation aggregation = cast(Aggregation)connection){
+                    generateAggregation(lockingTextWriter, aggregation, clazz);
+                }
+            }
+        }
+    }
+
+    void generateComposition(Out)(Out lockingTextWriter, in Composition composition, in Class clazz){
+        generateDirectedAssociation(lockingTextWriter, composition, clazz);
+        //TODO difference between aggreagtion and composition
+    }
+
+    void generateAggregation(Out)(Out lockingTextWriter, in Aggregation aggregation, in Class clazz){
+        generateDirectedAssociation(lockingTextWriter, aggregation, clazz);
+    }
+
+
+    /**
+     * Generates a member variable within the compositions "to" entity.
+     * This member variable will be protected and if its ConnectionCounts "high" value is smaller than 1 it will be of type
+     * compositions "from" entity. Otherwise it will be of type List<from-Type>.
+     */
+    void generateDirectedAssociation(Out, Con : ConnectionImpl)(Out lockingTextWriter, in Con directedConnection, in Class clazz){
+        if(directedConnection.fromCnt.high > 1){
+            char[] mvNameTmp = directedConnection.from.name.dup;
+            mvNameTmp = cast(char[])(cast(char)(mvNameTmp[0].toLower) ~ mvNameTmp[1..$] ~ 's');
+            immutable(const(char)[]) mvName = mvNameTmp.idup;
+            MemberVariable mv = new MemberVariable(mvName, null);
+            immutable(string) typeName = "List<" ~ directedConnection.from.name ~ ">";
+            auto type = typeName in this.world.typeContainerMapping;
+            if(type){
+                mv.type = cast(Type)*type;
+            } else{
+                logf("Type %s did not exist. I am adding it anyway.", typeName);
+                Type generatedType = new Type(typeName, this.world);
+                generatedType.typeToLanguage["Java"] = typeName;
+                mv.type = generatedType;
+            }
+            mv.protection["Java"] = "protected";
+            generateMemberVariable(lockingTextWriter, mv);
+        } else{
+            char[] mvNameTmp = directedConnection.from.name.dup;
+            mvNameTmp[0] = cast(char)mvNameTmp[0].toLower;
+            immutable(const(char)[]) mvName = mvNameTmp.idup;
+            MemberVariable mv = new MemberVariable(mvName, null);
+            mv.type = cast(Type)world.getType(directedConnection.from.name);
+            mv.protection["Java"] = "protected";
+            generateMemberVariable(lockingTextWriter, mv);
         }
     }
 
@@ -551,7 +615,7 @@ class Java : Generator {
             throw new Exception("The name of a member function must be defined.");
         }
         if(memberFunction.returnType is null){
-            throw new Exception(std.format.format("A type must be defined for %s but type was null"), memberFunction.name);
+            throw new Exception(std.format.format("A type must be defined for %s but type was null", memberFunction.name));
         }
         if(!(TECHNOLOGY_JAVA in memberFunction.returnType.typeToLanguage)){
             throw new Exception(std.format.format("The type %s cannot be translated to java because typeToLanguage has not been provided.", memberFunction.returnType.name));
