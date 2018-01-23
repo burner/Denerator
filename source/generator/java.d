@@ -255,9 +255,9 @@ class Java : Generator {
 
             generateMembers(lockingTextWriter, clazz);
 
-            //foreach(innerClass; clazz.classes){
-            //    generateInnerClass(lockingTextWriter, innerClass, clazz, parent);
-            //}
+            foreach(innerClass; clazz.classes){
+                generateInnerClass(lockingTextWriter, innerClass, clazz, parent);
+            }
 
             generator.format(lockingTextWriter, 0, "\n}");
 
@@ -282,6 +282,7 @@ class Java : Generator {
     }
 
     void generateInnerClass(Out, C)(Out lockingTextWriter, in Class innerClass, in Class parent, C container) {
+        //TODO call this method recursively
         string packagePath = getPackagePath(container);
         string innerClassName = parent.name ~ "." ~ innerClass.name;
         if(innerClassName in this.newTypeMap){
@@ -290,11 +291,11 @@ class Java : Generator {
             this.newTypeMap[innerClassName] = [packagePath ~ "." ~ innerClassName];
         }
         immutable string declaration = getClassDeclaration(innerClass);
-        generator.format(lockingTextWriter, 0, "%s{ \n", declaration);
+        generator.format(lockingTextWriter, 1, "%s{ \n", declaration);
 
-        generateMembers(lockingTextWriter, innerClass.members);
+        generateMembers(lockingTextWriter, innerClass, 2);
 
-        generator.format(lockingTextWriter, 0, "\n}");
+        generator.format(lockingTextWriter, 1, "}\n");
     }
 
     immutable(string) getClassDeclaration(in Class clazz){
@@ -412,7 +413,7 @@ class Java : Generator {
         }
     }
 
-    void generateMembers(Out)(Out lockingTextWriter, in Class clazz) {
+    void generateMembers(Out)(Out lockingTextWriter, in Class clazz, in int indent = 1) {
         const(MemberVariable)[] memberVariables;
         const(MemberFunction)[] memberFunctions;
         //sort members
@@ -426,11 +427,11 @@ class Java : Generator {
         generateAssociations(lockingTextWriter, clazz);
 
         foreach(memberVariable; memberVariables){
-            generateMemberVariable(lockingTextWriter, memberVariable);
+            generateMemberVariable(lockingTextWriter, memberVariable, indent);
         }
 
         foreach(memberFunction; memberFunctions){
-            generateMemberFunction(lockingTextWriter, memberFunction);
+            generateMemberFunction(lockingTextWriter, memberFunction, indent);
         }
     }
 
@@ -495,17 +496,17 @@ class Java : Generator {
         }
     }
 
-    void generateMemberVariable(Out)(Out lockingTextWriter, in MemberVariable memberVariable) {
+    void generateMemberVariable(Out)(Out lockingTextWriter, in MemberVariable memberVariable, in int indent = 1) {
         const(string) protection = getProtection(memberVariable);
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(memberVariable);
         const(string) type = getTypeString(memberVariable.type);
         const(string) name = memberVariable.name;
         string[] container = [protection, languageSpecificAttributes, type, name];
-        generator.format(lockingTextWriter, 1, "%s;\n", container.filter!(str => str.length > 1).join(" "));
+        generator.format(lockingTextWriter, indent, "%s;\n", container.filter!(str => str.length > 1).join(" "));
     }
 
 
-    void generateMemberFunction(Out)(Out lockingTextWriter, in MemberFunction memberFunction){
+    void generateMemberFunction(Out)(Out lockingTextWriter, in MemberFunction memberFunction, in int indent = 1){
         validateMemberFunction(memberFunction);
         const(string) protection = getProtection(memberFunction);
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(memberFunction);
@@ -513,7 +514,7 @@ class Java : Generator {
         const(string) name = memberFunction.name;
         const(string) functionString = [protection, languageSpecificAttributes, type, name].filter!(str => str.length > 0).join(" ");
         const(string) parameterString = memberFunction.parameter[].map!(parameter => getMemberFunctionParameter(parameter)).join(", ");
-        generator.format(lockingTextWriter, 1, "%s(%s);\n", functionString, parameterString);
+        generator.format(lockingTextWriter, indent, "%s(%s);\n", functionString, parameterString);
     }
 
     string getMemberFunctionParameter(in MemberVariable parameter){
