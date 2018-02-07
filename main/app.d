@@ -251,13 +251,7 @@ void appModel(){
             Class playlistDataFacade = world.newClass("PlaylistDataFacade", facade_UserInterface);
             generatedInterfaces ~= playlistDataFacade;
 
-            Class stopWatchStateFacade = world.newClass("StopwatchStateFacade", facade_UserInterface);
-            generatedInterfaces ~= stopWatchStateFacade;
 
-                //Enum stopwatchState = world.newEnum("StopwatchState", stopWatchStateFacade);
-                //stopwatchState.addEnumConstant("STARTED");
-                //stopwatchState.addEnumConstant("PAUSED");
-                //stopwatchState.addEnumConstant("ENDED");
 
         //models
         auto model_UserInterface = userInterface.newSubComponent("model");
@@ -335,6 +329,12 @@ void appModel(){
                 Class runningPresenter = world.newClass("RunningPresenter", running_Presenter_UserInteface);
                 generatedClasses ~= runningPresenter;
 
+                    Class binderConsumer = world.newClass("BinderConsumer", runningPresenter);
+                    generatedClasses ~= binderConsumer;
+
+                    Class stopwatchStateConsumer = world.newClass("StopwatchStateConsumer", runningPresenter);
+                    generatedClasses ~= stopwatchStateConsumer;
+
                 Class stopWatchPresenter = world.newClass("StopWatchPresenter", running_Presenter_UserInteface);
                 generatedClasses ~= stopWatchPresenter;
 
@@ -343,6 +343,12 @@ void appModel(){
 
                     Class stopWatchPresenter_State = world.newClass("State", stopWatchPresenter);
                     generatedInterfaces ~= stopWatchPresenter_State;
+
+                Enum stopwatchState = world.newEnum("StopwatchState", running_Presenter_UserInteface);
+                stopwatchState.addEnumConstant("STARTED");
+                stopwatchState.addEnumConstant("PAUSED");
+                stopwatchState.addEnumConstant("ENDED");
+                generatedEnums ~= stopwatchState;
 
             auto start_Presenter_UserInteface = presenter_UserInteface.newSubComponent("start");
 
@@ -540,6 +546,8 @@ void appModel(){
     java.newTypeMap["Service"] = ["android.app.Service"];
     java.newTypeMap["ConnectionStateCallback"] = ["com.spotify.sdk.android.player.ConnectionStateCallback"];
     java.newTypeMap["Player.NotificationCallback"] = ["com.spotify.sdk.android.player.Player"];
+    java.newTypeMap["Observer"] = ["io.reactivex.Observer"];
+
     java.generate(app);
 
     //Graphvic gv = new Graphvic(world, "GraphvizOutput");
@@ -621,7 +629,6 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
     //facade
     addFitnessDataFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addPlaylistDataFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
-    addStopwatchStateFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
 
 
     //view beans
@@ -659,6 +666,9 @@ void addExternalTypes(TheWorld world){
     Type observable_Double_ = world.newType("Observable<Double>");
     observable_Double_.typeToLanguage["Java"] = "Observable<Double>";
 
+    Type observable_StopwatchState_ = world.newType("Observable<StopwatchState>");
+    observable_StopwatchState_.typeToLanguage["Java"] = "Observable<StopwatchState>";
+
     Type subject_Double_ = world.newType("Subject<Double>");
     subject_Double_.typeToLanguage["Java"] = "Subject<Double>";
 
@@ -667,6 +677,9 @@ void addExternalTypes(TheWorld world){
 
     Type consumer_Binder_ = world.newType("Consumer<Binder>");
     consumer_Binder_.typeToLanguage["Java"] = "Consumer<Binder>";
+
+    Type consumer_StopwatchState_ = world.newType("Consumer<StopwatchState>");
+    consumer_StopwatchState_.typeToLanguage["Java"] = "Consumer<StopwatchState>";
 
     Type list_ExternalUrlBean_ = world.newType("List<ExternalUrlBean>");
     list_ExternalUrlBean_.typeToLanguage["Java"] = "List<ExternalUrlBean>";
@@ -731,6 +744,9 @@ void addExternalTypes(TheWorld world){
     Type list_SongBean_ = world.newType("List<SongBean>");
     list_SongBean_.typeToLanguage["Java"] = "List<SongBean>";
 
+    Type observer_stopwatchState_ = world.newType("Observer<StopwatchState>");
+    observer_stopwatchState_.typeToLanguage["Java"] = "Observer<StopwatchState>";
+
 }
 
 void generateGeneralizesRelationships(ref TheWorld world){
@@ -748,9 +764,6 @@ void generateGeneralizesRelationships(ref TheWorld world){
     Class intervalCounter = world.getClass("IntervalCounter");
     Type disposableObserver_Long_ = world.getType("DisposableObserver<Long>");
     world.newGeneralization("intervalCounter_disposableObserver_Long_Generalization", intervalCounter, disposableObserver_Long_);
-
-    Class runningContractPresenter = world.getClass("RunningContractPresenter");
-    world.newGeneralization("RunningContractPresenter_Consumer_Binder__Generalization", runningContractPresenter, consumer_Binder_);
 }
 
 void generateImplementsRelationships(ref TheWorld world){
@@ -813,6 +826,14 @@ void generateImplementsRelationships(ref TheWorld world){
 
     Class playlistDataFacade = world.getClass("PlaylistDataFacade");
     world.newRealization("RunningPresenter_PlaylistDataFacade_Realization", runningPresenter, playlistDataFacade);
+
+    Class binderConsumer = world.getClass("BinderConsumer");
+    Type consumer_Binder_ = world.getType("Consumer<Binder>");
+    world.newRealization("BinderConsumer_Consumer_Binder__Realization", binderConsumer, consumer_Binder_);
+
+    Class stopwatchStateConsumer = world.getClass("StopwatchStateConsumer");
+    Type consumer_StopwatchState_ = world.getType("Consumer<StopwatchState>");
+    world.newRealization("StopwatchStateConsumer_Consumer_StopwatchState__Realization", stopwatchStateConsumer, consumer_StopwatchState_);
 
     Class stopWatchPresenter = world.getClass("StopWatchPresenter");
     Class stopWatchContractPresenter = world.getClass("StopWatchContractPresenter");
@@ -1429,8 +1450,9 @@ void addStopWatchContractViewMembers(ref TheWorld world, ref MemberVariable[] pr
     setDigitalClock.returnType = world.getType("Void");
     setDigitalClock.addParameter("millisecondsSinceStart", world.getType("Long"));
 
-    MemberFunction showEndTrainingQuestion = stopWatchContractView.newMemberFunction("showEndTrainingQuestion");
-    showEndTrainingQuestion.returnType = world.getType("Void");
+    MemberFunction askEndTraining = stopWatchContractView.newMemberFunction("askEndTraining");
+    askEndTraining.returnType = world.getType("Observable<StopwatchState>");
+
 }
 
 void addRunningContractPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -1481,15 +1503,7 @@ void addPlaylistDataFacadeMembers(ref TheWorld world, ref MemberVariable[] prote
     Class playlistDataFacade = world.getClass("PlaylistDataFacade");
 
     MemberFunction getSongsOfSelectedPlaylist = playlistDataFacade.newMemberFunction("getSongsOfSelectedPlaylist");
-    getSongsOfSelectedPlaylist.returnType = world.getType("Observable<PlaylistBean>");
-
-}
-
-void addStopwatchStateFacadeMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
-    Class stopWatchStateFacade = world.getClass("StopwatchStateFacade");
-
-    MemberFunction publishState = stopWatchStateFacade.newMemberFunction("publishState");
-    publishState.returnType = world.getType("StopwatchState");
+    getSongsOfSelectedPlaylist.returnType = world.getType("Observable<SongBean>");
 
 }
 
@@ -1894,6 +1908,11 @@ void addRunningPresenterMembers(ref TheWorld world, ref MemberVariable[] protect
     MemberVariable songBeans = runningPresenter.newMemberVariable("songBeans");
     songBeans.type = world.getType("List<SongBean>");
     protectedMemberVariables ~= songBeans;
+
+    MemberVariable stopwatchState = runningPresenter.newMemberVariable("stopwatchState");
+    stopwatchState.type = world.getType("StopwatchState");
+    protectedMemberVariables ~= stopwatchState;
+
 }
 
 void addStopWatchPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -1907,9 +1926,13 @@ void addStopWatchPresenterMembers(ref TheWorld world, ref MemberVariable[] prote
     timeMillis.type = world.getType("Long");
     protectedMemberVariables ~= timeMillis;
 
-    MemberVariable started = stopWatchPresenter.newMemberVariable("started");
-    started.type = world.getType("Bool");
-    protectedMemberVariables ~= started;
+    MemberVariable stopwatchStateSubject = stopWatchPresenter.newMemberVariable("stopwatchStateObserver");
+    stopwatchStateSubject.type = world.getType("Observer<StopwatchState>");
+    protectedMemberVariables ~= stopwatchStateSubject;
+
+    MemberVarialke stopwatchStateConsumer = stopWatchPresenter.newMemberVariable("stopwatchStateConsumer");
+    stopwatchStateConsumer.type = world.getType("Consumer<StopwatchState>");
+    protectedMemberVariables ~= stopwatchStateConsumer;
 }
 
 void addStopWatchPresenter_IntervalCounterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
