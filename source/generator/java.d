@@ -357,7 +357,6 @@ class Java : Generator {
                 }
             }
         }
-
         return types;
     }
 
@@ -398,8 +397,10 @@ class Java : Generator {
         string extendsExpression = "";
         foreach(entity; this.world.connections){
             if(auto generalization = cast(Generalization) entity){
-                extendsExpression = "extends " ~ generalization.to.name;
-                this.requestedTypes.put(generalization.to.name);
+                if(generalization.from == clazz){
+                    extendsExpression = "extends " ~ generalization.to.name;
+                    this.requestedTypes.put(generalization.to.name);
+                }
             }
         }
         return extendsExpression;
