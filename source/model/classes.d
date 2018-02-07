@@ -129,12 +129,13 @@ class Class : Type {
      */
 	S newImpl(S)(in string name) {
 		import std.array : back;
-		foreach(mem; this.members) {
-			if(name == mem.name) {
-				throw new Exception(format("%s with name \"%s\" already present",
-					S.stringof, name));
-			}
-		}
+	    //removed following lines because they prevent method overloading.
+		//foreach(mem; this.members) {
+		//	if(name == mem.name) {
+		//		throw new Exception(format("%s with name \"%s\" already present",
+		//			S.stringof, name));
+		//	}
+		//}
 		this.members ~= new S(name, this);
 		return cast(S)this.members.back();
 	}
@@ -230,7 +231,11 @@ class Class : Type {
 
 	override string typeToLang(string lang) const {
 		return this.name;
-	}	
+	}
+
+	override string toString() const {
+    		return this.name;
+    	}
 
 	void toString(in int indent) const {
 		import std.stdio : writefln;
