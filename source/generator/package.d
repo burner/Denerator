@@ -87,6 +87,14 @@ void generateIndent(O)(ref O output, int indent) {
 	}
 }
 
+/**
+ * Prints a formatted string to an output range.
+ * @param output The output range
+ * @param indent The indentation of the string to print
+ * @param string The format string
+ * @param args The arguments, that shall be passed to the format string
+ *
+ */
 void format(O,Args...)(ref O output, int indent, in string str, Args args) 
 		if(isOutputRange!(O,string))
 {
@@ -147,7 +155,9 @@ auto entityRange(T,S)(S* src) {
 	return ret;
 }
 
+//is called like: entityRangeFrom!(const(Composition))(&this.world.connections, cls)
 auto entityRangeFrom(T,S,C)(S* src, C from) {
+    //with above call T.typeOf = const(Composition), S.typeOf = const(Composition)[string], from.typeOf = const(Class)
 	auto ret = EntityRange!(T,S,C)(src, from, null);
 	return ret;
 }
@@ -162,6 +172,10 @@ auto entityRangeFromTo(T,S,C)(S* src, C from, C to) {
 	return ret;
 }
 
+/**
+ * Range representing
+ */
+ //T.typeOf = const(Composition), S.typeOf = string[const(Composition)], C.typeOf = const(Class)
 struct EntityRange(T,S,C) {
 	import std.typecons : Rebindable, Unique, RefCounted;
 	Rebindable!(T) curFront;

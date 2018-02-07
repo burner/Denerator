@@ -1,5 +1,9 @@
 module util;
 
+/**
+ *
+ */
+ //__FILE__ and __LINE__ expand to the source file name and line number at the point of instantiation
 auto chain(ET = Exception, F, int line = __LINE__, string file = __FILE__, Args...)
 		(lazy F exp, lazy Args args)
 {
@@ -13,6 +17,9 @@ auto chain(ET = Exception, F, int line = __LINE__, string file = __FILE__, Args.
 struct First {
 	bool first = true;
 
+    /**
+     * Defines the functions to be called when this function is called for the first time or any subsequent time.
+     */
 	auto opCall(Frst,NtFrst)(auto ref Frst f, auto ref NtFrst n) {
 		import std.traits : isCallable;
 
