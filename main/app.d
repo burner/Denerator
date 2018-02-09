@@ -148,14 +148,26 @@ void appModel(){
         generatedInterfaces ~= locationService;
 
         Class runningService = world.newClass("RunningService", service_smtrain);
-        generatedInterfaces ~= runningService;
+        generatedClasses ~= runningService;
 
-            Enum notificationClickAction = world.newEnum("NotificationClickResult", service_smtrain);
-            notificationClickAction.addEnumConstant("RUN_PAUSE_ACTION_CLICK");
-            notificationClickAction.addEnumConstant("PLAY_PAUSE_MUSIC_ACTION_CLICK");
-            notificationClickAction.addEnumConstant("NEXT_SONG_ACTION_CLICK");
-            notificationClickAction.addEnumConstant("LAST_SONG_ACTION_CLICK");
+            Class speedConsumer = world.newClass("SpeedConsumer", runningService);
+            generatedClasses ~= speedConsumer;
 
+            Class distanceConsumer = world.newClass("DistanceConsumer", runningService);
+            generatedClasses ~= distanceConsumer;
+
+            Class clockConsumer = world.newClass("ClockConsumer", runningService);
+            generatedClasses ~= clockConsumer;
+
+            Class runningServiceBinder = world.newClass("RunningServiceBinder", runningService);
+            generatedClasses ~= runningServiceBinder;
+
+            Class notificationClickReceiver = world.newClass("NotificationClickReceiver", runningService);
+            generatedClasses ~= notificationClickReceiver;
+
+
+        Class runningServiceInterface = world.newClass("RunningServiceInterface", service_smtrain);
+        generatedInterfaces ~= runningServiceInterface;
 
         Class spotifyPlayerService = world.newClass("SpotifyPlayerService", service_smtrain);
         generatedClasses ~= spotifyPlayerService;
@@ -560,6 +572,10 @@ void appModel(){
     java.newTypeMap["Player.NotificationCallback"] = ["com.spotify.sdk.android.player.Player"];
     java.newTypeMap["Observer"] = ["io.reactivex.Observer"];
     java.newTypeMap["Context"] = ["android.content.Context"];
+    java.newTypeMap["Notification.Builder"] = ["android.app.Notification"];
+    java.newTypeMap["Notification.Action[]"] = ["android.app.Notification"];
+    java.newTypeMap["NotificationManager"] = ["android.app.NotificationManager"];
+    java.newTypeMap["BroadcastReceiver"] = ["android.content.BroadcastReceiver"];
 
     java.generate(app);
 
@@ -604,6 +620,7 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
     addClockServiceMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addLocationServiceMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addPlayerServiceMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addRunningServiceInterfaceMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addRunningServiceMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addSpotifyPlayerServiceMembers(world, protectedMemberVariables, abstractMemberFunctions);
 
@@ -672,6 +689,12 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
 }
 
 void addExternalTypes(TheWorld world){
+    Type consumer_Double_ = world.newType("Consumer<Double>");
+    consumer_Double_.typeToLanguage["Java"] = "Consumer<Double>";
+
+    Type consumer_Long_ = world.newType("Consumer<Long>");
+    consumer_Long_.typeToLanguage["Java"] = "Consumer<Long>";
+
     Type consumer_Pair_String_IntervalPlanningBean__ = world.newType("Consumer<Pair<String,IntervalPlanningBean>>");
     consumer_Pair_String_IntervalPlanningBean__.typeToLanguage["Java"] = "Consumer<Pair<String,IntervalPlanningBean>>";
 
@@ -689,6 +712,24 @@ void addExternalTypes(TheWorld world){
 
     Type publishSubject_Long_ = world.newType("Subject<Long>");
     publishSubject_Long_.typeToLanguage["Java"] = "Subject<Long>";
+
+    Type subject = world.newType("Subject");
+    subject.typeToLanguage["Java"] = "Subject";
+
+    Type notificationBuilder = world.newType("Notification.Builder");
+    notificationBuilder.typeToLanguage["Java"] = "Notification.Builder";
+
+    Type notificationManager = world.newType("NotificationManager");
+    notificationManager.typeToLanguage["Java"] = "NotificationManager";
+
+    Type notificationAction = world.newType("Notification.Action[]");
+    notificationAction.typeToLanguage["Java"] = "Notification.Action[]";
+
+    Type broadcastReceiver = world.newType("BroadcastReceiver");
+    broadcastReceiver.typeToLanguage["Java"] = "BroadcastReceiver";
+
+    Type binder = world.newType("Binder");
+    binder.typeToLanguage["Java"] = "Binder";
 
     Type consumer_FragmentCommand_ = world.newType("Consumer<FragmentCommand>");
     consumer_FragmentCommand_.typeToLanguage["Java"] = "Consumer<FragmentCommand>";
@@ -773,10 +814,6 @@ void addExternalTypes(TheWorld world){
 void generateGeneralizesRelationships(ref TheWorld world){
 
     //Service
-    Type consumer_Binder_ = world.getType("Consumer<Binder>");
-    Class runningService = world.getClass("RunningService");
-    world.newGeneralization("RunningService_Consumer_Binder__Realization", runningService, consumer_Binder_);
-
     Class spotifyPlayerService = world.getClass("SpotifyPlayerService");
     Type service = world.getType("Service");
     world.newGeneralization("SpotifyPlayerService_Service_Generalization", spotifyPlayerService, service);
@@ -784,6 +821,18 @@ void generateGeneralizesRelationships(ref TheWorld world){
     Class clockService = world.getClass("ClockService");
     world.newGeneralization("ClockService_Service_Generalization", clockService, service);
 
+    Class runningService = world.getClass("RunningService");
+    world.newGeneralization("RunningService_Service_Generalization", runningService, service);
+
+    //Binders
+    Class runningServiceBinder = world.getClass("RunningServiceBinder");
+    Type binder = world.getType("Binder");
+    world.newGeneralization("RunningServiceBinder_Binder_Generalization", runningServiceBinder, binder);
+
+    ////Broadcast receivers
+    //Class notificationClickReceiver = world.getClass("NotificationClickReceiver");
+    //Type broadcastReceiver = world.getClass("BroadcastReceiver");
+    //world.newGeneralization("NotificationClickReceiver_BroadcastReceiver_Generalization", notificationClickReceiver, broadcastReceiver);
 }
 
 void generateImplementsRelationships(ref TheWorld world){
@@ -802,6 +851,24 @@ void generateImplementsRelationships(ref TheWorld world){
     Class clockService = world.getClass("ClockService");
     Class clockServiceInterface = world.getClass("ClockServiceInterface");
     world.newRealization("ClockService_ClockServiceInterface_Realization", clockService, clockServiceInterface);
+
+    Class runningService = world.getClass("RunningService");
+    Class runningServiceInterface = world.getClass("RunningServiceInterface");
+    world.newRealization("RunningService_RunningServiceInterface_Realization", runningService, runningServiceInterface);
+
+    Type consumer_Binder_ = world.getType("Consumer<Binder>");
+    world.newRealization("RunningService_Consumer_Binder__Realization", runningService, consumer_Binder_);
+
+    Type consumer_Double_  = world.getType("Consumer<Double>");
+    Class distanceConsumer = world.getClass("DistanceConsumer");
+    world.newRealization("DistanceConsumer_Consumer_Double__Realization", distanceConsumer, consumer_Double_);
+
+    Type speedConsumer = world.getClass("SpeedConsumer");
+    world.newRealization("SpeedConsumer_Consumer_Double__Realization", speedConsumer, consumer_Double_);
+
+    Class clockConsumer = world.getClass("ClockConsumer");
+    Type consumer_Long_ = world.getType("Consumer<Long>");
+    world.newRealization("ClockConsumer_Consumer_Long__Realization", clockConsumer, consumer_Long_);
 
     //User interface
     //planning
@@ -855,7 +922,6 @@ void generateImplementsRelationships(ref TheWorld world){
     world.newRealization("RunningPresenter_TimeFacade_Realization", runningPresenter, timeFacade);
 
     Class binderConsumer = world.getClass("BinderConsumer");
-    Type consumer_Binder_ = world.getType("Consumer<Binder>");
     world.newRealization("BinderConsumer_Consumer_Binder__Realization", binderConsumer, consumer_Binder_);
 
     Class stopwatchStateConsumer = world.getClass("StopwatchStateConsumer");
@@ -1239,63 +1305,115 @@ void addPlayerServiceMembers(ref TheWorld world, ref MemberVariable[] protectedM
 void addRunningServiceMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class runningService = world.getClass("RunningService");
 
-    MemberFunction showNotification = runningService.newMemberFunction("showNotification");
+    MemberVariable runningServiceBinder = runningService.newMemberVariable("runningServiceBinder");
+    runningServiceBinder.type = world.getType("RunningServiceBinder");
+    protectedMemberVariables ~= runningServiceBinder;
+
+    MemberVariable notificationShowing = runningService.newMemberVariable("notificationShowing");
+    notificationShowing.type = world.getType("Bool");
+    protectedMemberVariables ~= notificationShowing;
+
+    MemberVariable currentDistance = runningService.newMemberVariable("currentDistance");
+    currentDistance.type = world.getType("Double");
+    protectedMemberVariables ~= currentDistance;
+
+    MemberVariable currentSpeed = runningService.newMemberVariable("currentSpeed");
+    currentSpeed.type = world.getType("Double");
+    protectedMemberVariables ~= currentSpeed;
+
+    MemberVariable currentTime = runningService.newMemberVariable("currentTime");
+    currentTime.type = world.getType("Long");
+    protectedMemberVariables ~= currentTime;
+
+    MemberVariable distanceSubject = runningService.newMemberVariable("distanceSubject");
+    distanceSubject.type = world.getType("Subject");
+    protectedMemberVariables ~= distanceSubject;
+
+    MemberVariable speedSubject = runningService.newMemberVariable("speedSubject");
+    speedSubject.type = world.getType("Subject");
+    protectedMemberVariables ~= speedSubject;
+
+    MemberVariable clockSubject = runningService.newMemberVariable("clockSubject");
+    clockSubject.type = world.getType("Subject");
+    protectedMemberVariables ~= clockSubject;
+
+    MemberVariable notificationBuilder = runningService.newMemberVariable("notificationBuilder");
+    notificationBuilder.type = world.getType("Notification.Builder");
+    protectedMemberVariables ~= notificationBuilder;
+
+    MemberVariable notificationManager = runningService.newMemberVariable("notificationManager");
+    notificationManager.type = world.getType("NotificationManager");
+    protectedMemberVariables ~= notificationManager;
+
+    MemberVariable distanceDisposable = runningService.newMemberVariable("distanceDisposable");
+    distanceDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= distanceDisposable;
+
+    MemberVariable speedDisposable = runningService.newMemberVariable("speedDisposable");
+    speedDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= speedDisposable;
+
+    MemberVariable clockDisposable = runningService.newMemberVariable("clockDisposable");
+    clockDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= clockDisposable;
+
+    MemberVariable clockServiceInterface = runningService.newMemberVariable("clockServiceInterface");
+    clockServiceInterface.type = world.getType("ClockServiceInterface");
+    protectedMemberVariables ~= clockServiceInterface;
+
+    MemberVariable playerService = runningService.newMemberVariable("playerService");
+    playerService.type = world.getType("PlayerService");
+    protectedMemberVariables ~= playerService;
+
+    MemberVariable notificationClickReceiver = runningService.newMemberVariable("notificationClickReceiver");
+    notificationClickReceiver.type = world.getType("NotificationClickReceiver");
+    protectedMemberVariables ~= notificationClickReceiver;
+
+    MemberVariable actions = runningService.newMemberVariable("actions");
+    actions.type = world.getType("Notification.Action[]");
+    protectedMemberVariables ~= actions;
+
+
+}
+
+void addRunningServiceInterfaceMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class runningServiceInterface = world.getClass("RunningServiceInterface");
+
+    MemberFunction showNotification = runningServiceInterface.newMemberFunction("showNotification");
     showNotification.returnType = world.getType("Void");
 
-    MemberFunction cancelNotification = runningService.newMemberFunction("cancelNotification");
+    MemberFunction cancelNotification = runningServiceInterface.newMemberFunction("cancelNotification");
     cancelNotification.returnType = world.getType("Void");
 
-    MemberFunction speedObservable = runningService.newMemberFunction("speedObservable");
+    MemberFunction speedObservable = runningServiceInterface.newMemberFunction("speedObservable");
     speedObservable.returnType = world.getType("Observable<Double>");
 
-    MemberFunction distanceObservable = runningService.newMemberFunction("distanceObservable");
+    MemberFunction distanceObservable = runningServiceInterface.newMemberFunction("distanceObservable");
     distanceObservable.returnType = world.getType("Observable<Double>");
 
-    MemberFunction startClock = runningService.newMemberFunction("startClock");
+    MemberFunction startClock = runningServiceInterface.newMemberFunction("startClock");
     startClock.returnType = world.getType("Void");
 
-    MemberFunction stopClock = runningService.newMemberFunction("stopClock");
+    MemberFunction stopClock = runningServiceInterface.newMemberFunction("stopClock");
     stopClock.returnType = world.getType("Void");
 
-    MemberFunction clockObservable = runningService.newMemberFunction("clockObservable");
+    MemberFunction clockObservable = runningServiceInterface.newMemberFunction("clockObservable");
     clockObservable.returnType = world.getType("Observable<Long>");
 
-    MemberFunction playSong = runningService.newMemberFunction("playSong");
+    MemberFunction playSong = runningServiceInterface.newMemberFunction("playSong");
     playSong.addParameter("uri", world.getType("String"));
     playSong.returnType = world.getType("Void");
 
-    MemberFunction enqueueSong = runningService.newMemberFunction("enqueueSong");
+    MemberFunction enqueueSong = runningServiceInterface.newMemberFunction("enqueueSong");
     enqueueSong.addParameter("uri", world.getType("String"));
     enqueueSong.returnType = world.getType("Void");
 
-    MemberFunction pause = runningService.newMemberFunction("pause");
+    MemberFunction pause = runningServiceInterface.newMemberFunction("pause");
     pause.returnType = world.getType("Void");
 
-    MemberFunction resume = runningService.newMemberFunction("resume");
+    MemberFunction resume = runningServiceInterface.newMemberFunction("resume");
     resume.returnType = world.getType("Void");
 
-
-    /*
- @Override
-    public void playSong(String uri) {
-        this.playerService.playSong(uri);
-    }
-
-    @Override
-    public void enqueueSong(String uri) {
-        this.playerService.enqueueSong(uri);
-    }
-
-    @Override
-    public void pause() {
-        this.playerService.pause();
-    }
-
-    @Override
-    public void resume() {
-        this.playerService.resume();
-    }
-    */
 }
 
 
@@ -1997,9 +2115,9 @@ void addRunningPresenterMembers(ref TheWorld world, ref MemberVariable[] protect
     runningContractView.type = world.getType("RunningContractView");
     protectedMemberVariables ~= runningContractView;
 
-    MemberVariable runningService = runningPresenter.newMemberVariable("runningService");
-    runningService.type = world.getType("RunningService");
-    protectedMemberVariables ~= runningService;
+    MemberVariable runningServiceInterface = runningPresenter.newMemberVariable("runningServiceInterface");
+    runningServiceInterface.type = world.getType("RunningServiceInterface");
+    protectedMemberVariables ~= runningServiceInterface;
 
     MemberVariable distanceSubject = runningPresenter.newMemberVariable("distanceSubject");
     distanceSubject.type = world.getType("Subject<Double>");
