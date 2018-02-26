@@ -207,6 +207,9 @@ void appModel(){
             Class playerSongEventConsumer = world.newClass("PlayerSongEventConsumer", runningService);
             generatedClasses ~= playerSongEventConsumer;
 
+            Class songMetadataConsumer = world.newClass("SongMetadataConsumer", runningService);
+            generatedClasses ~= songMetadataConsumer;
+
             Class runningServiceBinder = world.newClass("RunningServiceBinder", runningService);
             generatedClasses ~= runningServiceBinder;
 
@@ -233,6 +236,9 @@ void appModel(){
 
         Class playerSongEventBean = world.newClass("PlayerSongEventBean", service_smtrain);
         generatedClasses ~= playerSongEventBean;
+
+        Class songMetadataBean = world.newClass("SongMetadataBean", service_smtrain);
+        generatedClasses ~= songMetadataBean;
 
         Enum songTimingEvent = world.newEnum("SongTimingEvent", service_smtrain);
         songTimingEvent.addEnumConstant("SONG_STARTED");
@@ -358,6 +364,9 @@ void appModel(){
             Class mediaMetadataFacade = world.newClass("MediaMetadataFacade", facade_UserInterface);
             generatedInterfaces ~= mediaMetadataFacade;
 
+            Class stopwatchStatFacade = world.newClass("StopwatchStateFacade", facade_UserInterface);
+            generatedInterfaces ~= stopwatchStatFacade;
+
             Class timeFacade = world.newClass("TimeFacade", facade_UserInterface);
             generatedInterfaces ~= timeFacade;
 
@@ -443,9 +452,6 @@ void appModel(){
 
                     Class binderConsumer = world.newClass("BinderConsumer", runningPresenter);
                     generatedClasses ~= binderConsumer;
-
-                    Class stopwatchStateConsumer = world.newClass("StopwatchStateConsumer", runningPresenter);
-                    generatedClasses ~= stopwatchStateConsumer;
 
                 Class stopWatchPresenter = world.newClass("StopWatchPresenter", running_Presenter_UserInteface);
                 generatedClasses ~= stopWatchPresenter;
@@ -719,6 +725,7 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
     addLocationServiceBinderMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addPlayerServiceMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addPlayerSongEventBeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addSongMetadatabeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addSpotifyPlayerServiceMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addRunningServiceInterfaceMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addSongServiceBeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
@@ -766,6 +773,7 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
     addLapFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addMediaMetadataFacade(world, protectedMemberVariables, abstractMemberFunctions);
     addPlaylistDataFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addStopwatchStateFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addTimeFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
 
 
@@ -791,7 +799,7 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
     addPlaylistPresenterMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addRunningPresenterMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addStopWatchPresenterMembers(world, protectedMemberVariables, abstractMemberFunctions);
-        addStopWatchPresenter_StateMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addStopWatchPresenter_StateMembers(world, protectedMemberVariables, abstractMemberFunctions);
 
     //start
     addStartingDisplayPresenterMembers(world, protectedMemberVariables, abstractMemberFunctions);
@@ -829,8 +837,14 @@ void addExternalTypes(TheWorld world){
     Type observable_PlayerSongEventBean_ = world.newType("Observable<PlayerSongEventBean>");
     observable_PlayerSongEventBean_.typeToLanguage["Java"] = "Observable<PlayerSongEventBean>";
 
+    Type observable_SongTimingEvent_ = world.newType("Observable<SongTimingEvent>");
+    observable_SongTimingEvent_.typeToLanguage["Java"] = "Observable<SongTimingEvent>";
+
     Type observable_URL_ = world.newType("Observable<URL>");
     observable_URL_.typeToLanguage["Java"] = "Observable<URL>";
+
+    Type observable_SongMetadataBean_ = world.newType("Observable<SongMetadataBean>");
+    observable_SongMetadataBean_.typeToLanguage["Java"] = "Observable<SongMetadataBean>";
 
     Type subject_Double_ = world.newType("Subject<Double>");
     subject_Double_.typeToLanguage["Java"] = "Subject<Double>";
@@ -846,6 +860,15 @@ void addExternalTypes(TheWorld world){
 
     Type subject_LapBean_ = world.newType("Subject<LapBean>");
     subject_LapBean_.typeToLanguage["Java"] = "Subject<LapBean>";
+
+    Type subject_URL_ = world.newType("Subject<URL>");
+    subject_URL_.typeToLanguage["Java"] = "Subject<URL>";
+
+    Type subject_SongTimingEvent_ = world.newType("Subject<SongTimingEvent>");
+    subject_SongTimingEvent_.typeToLanguage["Java"] = "Subject<SongTimingEvent>";
+
+    Type subject_String_ = world.newType("Subject<String>");
+    subject_String_.typeToLanguage["Java"] = "Subject<String>";
 
     Type notificationBuilder = world.newType("Notification.Builder");
     notificationBuilder.typeToLanguage["Java"] = "Notification.Builder";
@@ -891,6 +914,9 @@ void addExternalTypes(TheWorld world){
 
     Type consumer_layerSongEventBean_ = world.newType("Consumer<PlayerSongEventBean>");
     consumer_layerSongEventBean_.typeToLanguage["Java"] = "Consumer<PlayerSongEventBean>";
+
+    Type consumer_SongMetadataBean_ = world.newType("Consumer<SongMetadataBean>");
+    consumer_SongMetadataBean_.typeToLanguage["Java"] = "Consumer<SongMetadataBean>";
 
     Type list_ExternalUrlBean_ = world.newType("List<ExternalUrlBean>");
     list_ExternalUrlBean_.typeToLanguage["Java"] = "List<ExternalUrlBean>";
@@ -994,9 +1020,6 @@ void addExternalTypes(TheWorld world){
     Type context = world.newType("Context");
     context.typeToLanguage["Java"] = "Context";
 
-    Type queue_String_ = world.newType("Queue<String>");
-    queue_String_.typeToLanguage["Java"] = "Queue<String>";
-
 }
 
 void generateGeneralizesRelationships(ref TheWorld world){
@@ -1032,10 +1055,11 @@ void generateGeneralizesRelationships(ref TheWorld world){
 
     Class locationServiceBinder = world.getClass("LocationServiceBinder");
     world.newGeneralization("LocationServiceBinder_Binder_Generalization", locationServiceBinder, binder);
-    ////Broadcast receivers
-    //Class notificationClickReceiver = world.getClass("NotificationClickReceiver");
-    //Type broadcastReceiver = world.getClass("BroadcastReceiver");
-    //world.newGeneralization("NotificationClickReceiver_BroadcastReceiver_Generalization", notificationClickReceiver, broadcastReceiver);
+
+    //Broadcast receivers
+    Class notificationClickReceiver = world.getClass("NotificationClickReceiver");
+    Type broadcastReceiver = world.getClass("BroadcastReceiver");
+    world.newGeneralization("NotificationClickReceiver_BroadcastReceiver_Generalization", notificationClickReceiver, broadcastReceiver);
 }
 
 void generateImplementsRelationships(ref TheWorld world){
@@ -1091,6 +1115,10 @@ void generateImplementsRelationships(ref TheWorld world){
     Class playerSongEventConsumer = world.getClass("PlayerSongEventConsumer");
     Type consumer_PlayerSongEventBean_ = world.getType("Consumer<PlayerSongEventBean>");
     world.newRealization("PlayerSongEventConsumer_Consumer_PlayerSongEvent__Realization", playerSongEventConsumer, consumer_PlayerSongEventBean_);
+
+    Class songMetadataConsumer = world.getClass("SongMetadataConsumer");
+    Type consumer_SongMetadataBean_ = world.getType("Consumer<SongMetadataBean>");
+    world.newRealization("SongMetadataConsumer_Consumer_SongMetadataBean__Realization", songMetadataConsumer, consumer_SongMetadataBean_);
 
     //Spotify service
     Class spotifyPlayerService = world.getClass("SpotifyPlayerService");
@@ -1165,15 +1193,14 @@ void generateImplementsRelationships(ref TheWorld world){
     Class playlistDataFacade = world.getClass("PlaylistDataFacade");
     world.newRealization("RunningPresenter_PlaylistDataFacade_Realization", runningPresenter, playlistDataFacade);
 
+    Class stopwatchStateFacade = world.getClass("StopwatchStateFacade");
+    world.newRealization("RunningPresenter_StopwatchStateFacade_Realization", runningPresenter, stopwatchStateFacade);
+
     Class timeFacade = world.getClass("TimeFacade");
     world.newRealization("RunningPresenter_TimeFacade_Realization", runningPresenter, timeFacade);
 
     Class binderConsumer = world.getClass("BinderConsumer");
     world.newRealization("BinderConsumer_Consumer_Binder__Realization", binderConsumer, consumer_Binder_);
-
-    Class stopwatchStateConsumer = world.getClass("StopwatchStateConsumer");
-    Type consumer_StopwatchState_ = world.getType("Consumer<StopwatchState>");
-    world.newRealization("StopwatchStateConsumer_Consumer_StopwatchState__Realization", stopwatchStateConsumer, consumer_StopwatchState_);
 
     Class stopWatchPresenter = world.getClass("StopWatchPresenter");
     Class stopWatchContractPresenter = world.getClass("StopWatchContractPresenter");
@@ -1719,11 +1746,17 @@ void addPlayerServiceMembers(ref TheWorld world, ref MemberVariable[] protectedM
     MemberFunction resume = playerService.newMemberFunction("resume");
     resume.returnType = world.getType("Void");
 
+    MemberFunction getIdOfLastSong = playerService.newMemberFunction("getIdOfLastSong");
+    getIdOfLastSong.returnType = world.getType("String");
+
+    MemberFunction currentSongMetadataObservable = playerService.newMemberFunction("currentSongMetadataObservable");
+    currentSongMetadataObservable.returnType = world.getType("Observable<SongMetadataBean>");
+
+    MemberFunction songTimingEventObservable = playerService.newMemberFunction("songTiminingEventObservable");
+    songTimingEventObservable.returnType = world.getType("Observable<SongTimingEvent>");
+
     MemberFunction trackInfoObservable = playerService.newMemberFunction("playerSongEventObservable");
     trackInfoObservable.returnType = world.getType("Observable<PlayerSongEventBean>");
-
-    MemberFunction currentSongNameObservable = playerService.newMemberFunction("currentSongNameObservable");
-    currentSongNameObservable.returnType = world.getType("Observable<String>");
 
 }
 
@@ -1763,6 +1796,32 @@ void addPlayerSongEventBeanMembers(ref TheWorld world, ref MemberVariable[] prot
     abstractMemberFunctions ~= getSongEndTime;
 }
 
+void addSongMetadatabeanMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class songMetadataBean = world.getClass("SongMetadataBean");
+
+    MemberVariable songName = songMetadataBean.newMemberVariable("songName");
+    songName.type = world.getType("String");
+    protectedMemberVariables ~= songName;
+
+    addGetter(songName, abstractMemberFunctions, songMetadataBean, world);
+    addSetter(songName, abstractMemberFunctions, songMetadataBean, world);
+
+    MemberVariable albumName = songMetadataBean.newMemberVariable("albumName");
+    albumName.type = world.getType("String");
+    protectedMemberVariables ~= albumName;
+
+    addGetter(albumName, abstractMemberFunctions, songMetadataBean, world);
+    addSetter(albumName, abstractMemberFunctions, songMetadataBean, world);
+
+    MemberVariable albumCoverUrl = songMetadataBean.newMemberVariable("albumCoverUrl");
+    albumCoverUrl.type = world.getType("String");
+    protectedMemberVariables ~= albumCoverUrl;
+
+    addGetter(albumCoverUrl, abstractMemberFunctions, songMetadataBean, world);
+    addSetter(albumCoverUrl, abstractMemberFunctions, songMetadataBean, world);
+
+}
+
 void addSpotifyPlayerServiceMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class spotifyPlayerService = world.getClass("SpotifyPlayerService");
 
@@ -1774,13 +1833,13 @@ void addSpotifyPlayerServiceMembers(ref TheWorld world, ref MemberVariable[] pro
     playerSongInfoSubject.type = world.getType("Subject");
     protectedMemberVariables ~= playerSongInfoSubject;
 
-    MemberVariable currentSongNameSubject = spotifyPlayerService.newMemberVariable("currentSongNameSubject");
-    currentSongNameSubject.type = world.getType("Subject");
-    protectedMemberVariables ~= currentSongNameSubject;
+    MemberVariable currentSongMetadataSubject = spotifyPlayerService.newMemberVariable("currentSongMetadataSubject");
+    currentSongMetadataSubject.type = world.getType("Subject");
+    protectedMemberVariables ~= currentSongMetadataSubject;
 
-    MemberVariable queue = spotifyPlayerService.newMemberVariable("queue");
-    queue.type = world.getType("Queue<String>");
-    protectedMemberVariables ~= queue;
+    MemberVariable songTimingEventSubject = spotifyPlayerService.newMemberVariable("songTimingEventSubject");
+    songTimingEventSubject.type = world.getType("Subject<SongTimingEvent>");
+    protectedMemberVariables ~= songTimingEventSubject;
 
     MemberVariable songTimingDisposable = spotifyPlayerService.newMemberVariable("songTimingDisposable");
     songTimingDisposable.type = world.getType("Disposable");
@@ -1818,10 +1877,6 @@ void addRunningServiceMembers(ref TheWorld world, ref MemberVariable[] protected
     notificationShowing.type = world.getType("Bool");
     protectedMemberVariables ~= notificationShowing;
 
-    MemberVariable clockJustStarted = runningService.newMemberVariable("clockJustStarted");
-    clockJustStarted.type = world.getType("Bool");
-    protectedMemberVariables ~= clockJustStarted;
-
     MemberVariable notifiedPlay = runningService.newMemberVariable("notifiedPlay");
     notifiedPlay.type = world.getType("Bool");
     protectedMemberVariables ~= notifiedPlay;
@@ -1833,6 +1888,10 @@ void addRunningServiceMembers(ref TheWorld world, ref MemberVariable[] protected
     MemberVariable currentSpeed = runningService.newMemberVariable("currentSpeed");
     currentSpeed.type = world.getType("Double");
     protectedMemberVariables ~= currentSpeed;
+
+    MemberVariable currentSong = runningService.newMemberVariable("currentSong");
+    currentSong.type = world.getType("String");
+    protectedMemberVariables ~= currentSong;
 
     MemberVariable currentTime = runningService.newMemberVariable("currentTime");
     currentTime.type = world.getType("Long");
@@ -1878,6 +1937,14 @@ void addRunningServiceMembers(ref TheWorld world, ref MemberVariable[] protected
     averageSpeedSubject.type = world.getType("Subject");
     protectedMemberVariables ~= averageSpeedSubject;
 
+    MemberVariable songMetadataSubject = runningService.newMemberVariable("songMetadataSubject");
+    songMetadataSubject.type = world.getType("Subject");
+    protectedMemberVariables ~= songMetadataSubject;
+
+    MemberVariable clockStateSubject = runningService.newMemberVariable("clockStateSubject");
+    clockStateSubject.type = world.getType("Subject");
+    protectedMemberVariables ~= clockStateSubject;
+
     MemberVariable notificationBuilder = runningService.newMemberVariable("notificationBuilder");
     notificationBuilder.type = world.getType("Notification.Builder");
     protectedMemberVariables ~= notificationBuilder;
@@ -1905,6 +1972,10 @@ void addRunningServiceMembers(ref TheWorld world, ref MemberVariable[] protected
     MemberVariable playerEventDisposable = runningService.newMemberVariable("playerEventDisposable");
     playerEventDisposable.type = world.getType("Disposable");
     protectedMemberVariables ~= playerEventDisposable;
+
+    MemberVariable songMetadataDisposable = runningService.newMemberVariable("songMetadataDisposable");
+    songMetadataDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= songMetadataDisposable;
 
     MemberVariable clockServiceInterface = runningService.newMemberVariable("clockServiceInterface");
     clockServiceInterface.type = world.getType("ClockServiceInterface");
@@ -1967,6 +2038,12 @@ void addRunningServiceInterfaceMembers(ref TheWorld world, ref MemberVariable[] 
 
     MemberFunction intervalObservable = runningServiceInterface.newMemberFunction("intervalObservable");
     intervalObservable.returnType = world.getType("Observable<IntervalInfoBean>");
+
+    MemberFunction stopwatchStateObservable = runningServiceInterface.newMemberFunction("stopwatchStateObservable");
+    stopwatchStateObservable.returnType = world.getType("Observable<StopwatchState>");
+
+    MemberFunction songMetadataObservable = runningServiceInterface.newMemberFunction("songMetadataObservable");
+    songMetadataObservable.returnType = world.getType("Observable<SongMetadataBean>");
 
     MemberFunction startClock = runningServiceInterface.newMemberFunction("startClock");
     startClock.returnType = world.getType("Void");
@@ -2299,10 +2376,13 @@ void addNowPlayingContractPresenterMembers(ref TheWorld world, ref MemberVariabl
 void addNowPlayingContractViewMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class nowPlayingContractView = world.getClass("NowPlayingContractView");
 
-    MemberFunction updateSongMetadata = nowPlayingContractView.newMemberFunction("updateSongMetadata");
-    updateSongMetadata.returnType = world.getType("Void");
-    updateSongMetadata.addParameter("songName", world.getType("String"));
-    updateSongMetadata.addParameter("albumName", world.getType("String"));
+    MemberFunction updateSongName = nowPlayingContractView.newMemberFunction("updateSongName");
+    updateSongName.returnType = world.getType("Void");
+    updateSongName.addParameter("songName", world.getType("String"));
+
+    MemberFunction updateAlbumName = nowPlayingContractView.newMemberFunction("updateAlbumName");
+    updateAlbumName.returnType = world.getType("Void");
+    updateAlbumName.addParameter("albumName", world.getType("String"));
 }
 
 void addPlaylistContractPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2328,10 +2408,6 @@ void addStopWatchContractPresenterMembers(ref TheWorld world, ref MemberVariable
 
     MemberFunction pauseClock = stopWatchContractPresenter.newMemberFunction("pauseClock");
     pauseClock.returnType = world.getType("Void");
-
-    MemberFunction lap = stopWatchContractPresenter.newMemberFunction("lap");
-    lap.returnType = world.getType("Void");
-
 }
 
 void addStopWatchContractViewMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2423,7 +2499,22 @@ void addPlaylistDataFacadeMembers(ref TheWorld world, ref MemberVariable[] prote
 
     MemberFunction getSongsOfSelectedPlaylist = playlistDataFacade.newMemberFunction("getSongsOfSelectedPlaylist");
     getSongsOfSelectedPlaylist.returnType = world.getType("Observable<SongBean>");
+}
 
+void addStopwatchStateFacadeMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class stopwatchStateFacade = world.getClass("StopwatchStateFacade");
+
+    MemberFunction stopwatchStateObservable = stopwatchStateFacade.newMemberFunction("stopwatchStateObservable");
+    stopwatchStateObservable.returnType = world.getType("Observable<StopwatchState>");
+
+    MemberFunction startStopwatch = stopwatchStateFacade.newMemberFunction("startStopwatch");
+    startStopwatch.returnType = world.getType("Void");
+
+    MemberFunction stopStopwatch = stopwatchStateFacade.newMemberFunction("stopStopwatch");
+    stopStopwatch.returnType = world.getType("Void");
+
+    MemberFunction pauseStopwatch = stopwatchStateFacade.newMemberFunction("pauseStopwatch");
+    pauseStopwatch.returnType = world.getType("Void");
 }
 
 void addTimeFacadeMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2866,6 +2957,22 @@ void addRunningPresenterMembers(ref TheWorld world, ref MemberVariable[] protect
     lapSubject.type = world.getType("Subject<LapBean>");
     protectedMemberVariables ~= lapSubject;
 
+    MemberVariable albumNameSubject = runningPresenter.newMemberVariable("albumNameSubject");
+    albumNameSubject.type = world.getType("Subject<String>");
+    protectedMemberVariables ~= albumNameSubject;
+
+    MemberVariable songNameSubject = runningPresenter.newMemberVariable("songNameSubject");
+    songNameSubject.type = world.getType("Subject<String>");
+    protectedMemberVariables ~= songNameSubject;
+
+    MemberVariable albumCoverUrlSubject = runningPresenter.newMemberVariable("albumCoverUrlSubject");
+    albumCoverUrlSubject.type = world.getType("Subject<URL>");
+    protectedMemberVariables ~= albumCoverUrlSubject;
+
+    MemberVariable stopwatchStateSubject = runningPresenter.newMemberVariable("stopwatchStateSubject");
+    stopwatchStateSubject.type = world.getType("Subject<StopwatchState>");
+    protectedMemberVariables ~= stopwatchStateSubject;
+
     MemberVariable distanceDisposable = runningPresenter.newMemberVariable("distanceDisposable");
     distanceDisposable.type = world.getType("Disposable");
     protectedMemberVariables ~= distanceDisposable;
@@ -2881,6 +2988,10 @@ void addRunningPresenterMembers(ref TheWorld world, ref MemberVariable[] protect
     MemberVariable lapDisposable = runningPresenter.newMemberVariable("lapDisposable");
     lapDisposable.type = world.getType("Disposable");
     protectedMemberVariables ~= lapDisposable;
+
+    MemberVariable songMetadataDisposable = runningPresenter.newMemberVariable("songMetadataDisposable");
+    songMetadataDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= songMetadataDisposable;
 
     MemberVariable playlistsCase = runningPresenter.newMemberVariable("playlistsCase");
     playlistsCase.type = world.getType("PlaylistsCase");
@@ -2931,13 +3042,10 @@ void addStopWatchPresenterMembers(ref TheWorld world, ref MemberVariable[] prote
     timeMillis.type = world.getType("Long");
     protectedMemberVariables ~= timeMillis;
 
-    MemberVariable stopwatchStateSubject = stopWatchPresenter.newMemberVariable("stopwatchStateObserver");
-    stopwatchStateSubject.type = world.getType("Observer<StopwatchState>");
-    protectedMemberVariables ~= stopwatchStateSubject;
+    MemberVariable stopwatchStateFacade = stopWatchPresenter.newMemberVariable("stopwatchStateFacade");
+    stopwatchStateFacade.type = world.getType("StopwatchStateFacade");
+    protectedMemberVariables ~= stopwatchStateFacade;
 
-    MemberVariable stopwatchStateConsumer = stopWatchPresenter.newMemberVariable("stopwatchStateConsumer");
-    stopwatchStateConsumer.type = world.getType("Consumer<StopwatchState>");
-    protectedMemberVariables ~= stopwatchStateConsumer;
 }
 
 void addStopWatchPresenter_StateMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2952,8 +3060,6 @@ void addStopWatchPresenter_StateMembers(ref TheWorld world, ref MemberVariable[]
     MemberFunction pause = state.newMemberFunction("pause");
     pause.returnType = world.getType("Void");
 
-    MemberFunction lap = state.newMemberFunction("lap");
-    lap.returnType = world.getType("Void");
 
 }
 void addStartingDisplayPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
