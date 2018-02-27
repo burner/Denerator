@@ -2335,7 +2335,13 @@ void addWaitForGpsContractViewMembers(ref TheWorld world, ref MemberVariable[] p
 }
 
 void addFitnessContractPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class fitnessContractPresenter = world.getClass("FitnessContractPresenter");
 
+    MemberFunction subscribe = fitnessContractPresenter.newMemberFunction("subscribe");
+    subscribe.returnType = world.getType("Void");
+
+    MemberFunction dispose = fitnessContractPresenter.newMemberFunction("dispose");
+    dispose.returnType = world.getType("Void");
 }
 
 void addFitnessContractViewMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2364,6 +2370,12 @@ void addLapContractViewMembers(ref TheWorld world, ref MemberVariable[] protecte
     setCurrentLap.returnType = world.getType("Void");
     setCurrentLap.addParameter("index", world.getType("Int"));
     setCurrentLap.addParameter("lapBean", world.getType("LapBean"));
+
+    MemberFunction subscribe = lapContractView.newMemberFunction("subscribe");
+    subscribe.returnType = world.getType("Void");
+
+    MemberFunction dispose = lapContractView.newMemberFunction("dispose");
+    dispose.returnType = world.getType("Void");
 
 }
 
@@ -2408,6 +2420,13 @@ void addStopWatchContractPresenterMembers(ref TheWorld world, ref MemberVariable
 
     MemberFunction pauseClock = stopWatchContractPresenter.newMemberFunction("pauseClock");
     pauseClock.returnType = world.getType("Void");
+
+    MemberFunction subscribe = stopWatchContractPresenter.newMemberFunction("subscribe");
+    subscribe.returnType = world.getType("Void");
+
+    MemberFunction dispose = stopWatchContractPresenter.newMemberFunction("dispose");
+    dispose.returnType = world.getType("Void");
+
 }
 
 void addStopWatchContractViewMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2887,6 +2906,14 @@ void addFitnessPresenterMembers(ref TheWorld world, ref MemberVariable[] protect
     MemberVariable fitnessDataFacade = fitnessPresenter.newMemberVariable("fitnessDataFacade");
     fitnessDataFacade.type = world.getType("FitnessDataFacade");
     protectedMemberVariables ~= fitnessDataFacade;
+
+    MemberVariable distanceDisposable = fitnessPresenter.newMemberFunction("distanceDisposable");
+    distanceDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= distanceDisposable;
+
+    MemberVariable speedDisposable = fitnessPresenter.newMemberFunction("speedDisposable");
+    speedDisposable.type = world.getType("Disposable");
+    protecedMemberVariables ~= speedDisposable;
 }
 
 void addLapPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2915,6 +2942,14 @@ void addNowPlayingPresenterMembers(ref TheWorld world, ref MemberVariable[] prot
     MemberVariable mediaMetadataFacade = nowPlayingPresenter.newMemberVariable("mediaMetadataFacade");
     mediaMetadataFacade.type = world.getType("MediaMetadataFacade");
     protectedMemberVariables ~= mediaMetadataFacade;
+
+    MemberVariable currentSongAlbumDisposable = nowPlayingPresenter.newMemberVariable("currentSongAlbumDisposable");
+    currentSongAlbumDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= currentSongAlbumDisposable;
+
+    MemberVariable  currentSongNameDisposable = nowPlayingFragment.newMemberVariable("currentSongNameDisposable");
+    currentSongNameDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= currentSongNameDisposable;
 
 }
 
@@ -3045,6 +3080,14 @@ void addStopWatchPresenterMembers(ref TheWorld world, ref MemberVariable[] prote
     MemberVariable stopwatchStateFacade = stopWatchPresenter.newMemberVariable("stopwatchStateFacade");
     stopwatchStateFacade.type = world.getType("StopwatchStateFacade");
     protectedMemberVariables ~= stopwatchStateFacade;
+
+    MemberVariable stopwatchStateDisposable = stopWatchPresenter.newMemberVariable("stopwatchStateDisposable");
+    stopwatchStateDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= stopwatchStateDisposable;
+
+    MemberVariable timeDisposable = stopWatchPresenter.newMemberVariable("timeDisposable");
+    timeDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= timeDisposable;
 
 }
 
