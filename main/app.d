@@ -87,6 +87,11 @@ void appModel(){
     auto uol = de.newSubComponent("uol");
     auto smtrain = uol.newSubComponent("smtrain");
 
+    auto config_smtrain = smtrain.newSubComponent("config");
+
+        Class configHelper = world.newClass("ConfigHelper");
+        generatedClasses ~= configHelper;
+
     auto domain_smtrain = smtrain.newSubComponent("domain");
 
         Class mediaEntity = world.newClass("MediaEntity", domain_smtrain);
@@ -108,9 +113,28 @@ void appModel(){
             Class mediaDataSource = world.newClass("MediaDataSource", datasource_repository_smtrain);
             generatedInterfaces ~= mediaDataSource;
 
+            Class loginHandler = world.newClass("LogInHandler", datasource_repository_smtrain);
+            generatedInterfaces ~= loginHandler;
+
+            Class loginCallback = world.newClass("LoginCallback", datasource_repository_smtrain);
+            generatedInterfaces ~= loginCallback;
+
             auto spotify_datasource_repository_smtrain = datasource_repository_smtrain.newSubComponent("spotify");
 
                 auto rest_spotify_datasource_repository_smtrain = spotify_datasource_repository_smtrain.newSubComponent("rest");
+
+                    Class spotifyLogInFragment = world.newClass("SpotifyLogInFragment", rest_spotify_datasource_repository_smtrain);
+                    generatedClasses ~= spotifyLogInFragment;
+
+                    Class spotifyLogInHandler = world.newClass("SpotifyLogInHandler", rest_spotify_datasource_repository_smtrain);
+                    generatedClasses ~= spotifyLogInHandler;
+
+                        Class spotifyLogInResultReceiver = world.newClass("SpotifyLogInResultReceiver", spotifyLogInHandler);
+                        generatedClasses ~= spotifyLogInResultReceiver;
+
+                    Class spotifyMediaDataSource = world.newClass("SpotifyMediaDataSource", rest_spotify_datasource_repository_smtrain);
+                    generatedClasses ~= spotifyMediaDataSource;
+
                 auto beans_rest_spotify_datasource_repository_smtrain = rest_spotify_datasource_repository_smtrain.newSubComponent("beans");
 
                     Class albumBean = world.newClass("AlbumBean", beans_rest_spotify_datasource_repository_smtrain);
@@ -135,6 +159,37 @@ void appModel(){
 
                     Class tracksBean = world.newClass("TracksBean", beans_rest_spotify_datasource_repository_smtrain);
                     generatedClasses ~= tracksBean;
+
+            auto running_database_repository_smtrain = repository_smtrain.newSubComponent("running_database");
+
+                auto dao_running_database_repository_smtrain = running_database_repository_smtrain.newSubComponent("dao");
+
+                    Class insertionDao = world.newClass("InsertionDao", dao_running_database_repository_smtrain);
+                    notGeneratedClasses ~= insertionDao;
+
+                    Class retrievalDao = world.newClass("RetrievalDao", dao_running_database_repository_smtrain);
+                    notGeneratedClasses ~= retrievalDao;
+
+                auto entity_running_database_repository_smtrain = running_database_repository_smtrain.newSubComponent("entity");
+
+                    //TODO class location already exists
+                    //Class interval = world.newClass("Interval", entity_running_database_repository_smtrain);
+                    //notGeneratedClasses ~= interval;
+
+                    //Class location = world.newClass("Location", entity_running_database_repository_smtrain);
+                    //notGeneratedClasses ~= location;
+
+                    //Class pause = world.newClass("Pause", entity_running_database_repository_smtrain);
+                    //notGeneratedClasses ~= pause;
+
+                    //Class trainingSession = world.newClass("TrainingSession", entity_running_database_repository_smtrain);
+                    //notGeneratedClasses ~= trainingSession;
+
+            Class runningDatabase = world.newClass("RunningDatabase", running_database_repository_smtrain);
+            notGeneratedClasses ~= runningDatabase;
+
+            Class wholeTrainingSession = world.newClass("WholeTrainingSession", running_database_repository_smtrain);
+            notGeneratedClasses ~= wholeTrainingSession;
 
             auto song_recommendation = repository_smtrain.newSubComponent("song_recommendation");
 
@@ -385,6 +440,9 @@ void appModel(){
             Class lapFacade = world.newClass("LapFacade", facade_UserInterface);
             generatedInterfaces ~= lapFacade;
 
+            Class playerControlFacade = world.newClass("PlayerControlFacade", facade_UserInterface);
+            generatedInterfaces ~= playerControlFacade;
+
             Class playlistDataFacade = world.newClass("PlaylistDataFacade", facade_UserInterface);
             generatedInterfaces ~= playlistDataFacade;
 
@@ -490,6 +548,11 @@ void appModel(){
                 Class playlistPresenter = world.newClass("PlaylistPresenter", running_Presenter_UserInteface);
                 generatedClasses ~= playlistPresenter;
 
+                Enum playPauseState = world.newEnum("PlayPauseState", planning_Presenter_UserInterface);
+                playPauseState.addEnumConstant("PAUSING");
+                playPauseState.addEnumConstant("PLAYING");
+                generatedEnums ~= playPauseState;
+
                 Class runningPresenter = world.newClass("RunningPresenter", running_Presenter_UserInteface);
                 generatedClasses ~= runningPresenter;
 
@@ -587,9 +650,6 @@ void appModel(){
 
             Class reviewElementAdapter_Basic_Review_View_UserInterface = world.newClass("ReviewElementAdapter", basic_Review_View_UserInterface);
             notGeneratedClasses ~= reviewElementAdapter_Basic_Review_View_UserInterface;
-
-            Class reviewElementBean_Basic_Review_View_UserInterface = world.newClass("ReviewElementBean", basic_Review_View_UserInterface);
-            notGeneratedClasses ~= reviewElementBean_Basic_Review_View_UserInterface;
 
     auto detail_Review_View_UserInterface = review_View_UserInterface.newSubComponent("detail");
         Class detailReview_detail_Review_View_UserInterface = world.newClass("DetailReview");
@@ -693,26 +753,42 @@ void appModel(){
     java.newTypeMap["ConnectionStateCallback"] = ["com.spotify.sdk.android.player.ConnectionStateCallback"];
     java.newTypeMap["Consumer"] = ["io.reactivex.functions.Consumer"];
     java.newTypeMap["Context"] = ["android.content.Context"];
+    java.newTypeMap["DataPoint"] = ["com.jjoe64.graphview.series.DataPoint"];
     java.newTypeMap["Date"] = ["java.util.Date"];
+    java.newTypeMap["Deque"] = ["java.util.Deque"];
     java.newTypeMap["Disposable"] = ["io.reactivex.disposables.Disposable"];
     java.newTypeMap["DisposableObserver"] = ["io.reactivex.observers.DisposableObserver"];
+    java.newTypeMap["FragmentManager"] = ["android.support.v4.app.FragmentManager;"];
+    java.newTypeMap["Fragment"] = ["android.support.v4.app.Fragment"];
+    java.newTypeMap["Interval"] = ["de.uol.smtrain.repository.running_database.entity.Interval"];
+    java.newTypeMap["LatLng"] = ["com.google.android.gms.maps.model.LatLng"];
     java.newTypeMap["List"] = ["java.util.List"];
     java.newTypeMap["LocationRequest"] = ["com.google.android.gms.location.LocationRequest"];
     java.newTypeMap["Location"] = ["android.location.Location"];
+    java.newTypeMap["Location_"] = ["de.uol.smtrain.repository.running_database.entity.Location_"];
+    java.newTypeMap["Map"] = ["java.util.Map"];
     java.newTypeMap["MenuItem"] = ["android.view.MenuItem"];
     java.newTypeMap["NotificationManager"] = ["android.app.NotificationManager"];
     java.newTypeMap["Notification.Action[]"] = ["android.app.Notification"];
     java.newTypeMap["Notification.Builder"] = ["android.app.Notification"];
     java.newTypeMap["Observable"] = ["io.reactivex.Observable"];
     java.newTypeMap["Observer"] = ["io.reactivex.Observer"];
+    java.newTypeMap["PagingBean"] = ["de.uol.smtrain.repository.datasource.spotify.rest.beans.PagingBean"];
     java.newTypeMap["Pair"] = ["android.support.v4.util.Pair"];
+    java.newTypeMap["Pause"] = ["de.uol.smtrain.repository.running_database.entity.Pause"];
     java.newTypeMap["Player.NotificationCallback"] = ["com.spotify.sdk.android.player.Player"];
+    java.newTypeMap["Properties"] = ["java.util.Properties"];
     java.newTypeMap["Queue"] = ["java.util.Queue"];
+    java.newTypeMap["ResultReceiver"] = ["android.os.ResultReceiver"];
     java.newTypeMap["RxLocation"] = ["com.patloew.rxlocation.RxLocation"];
     java.newTypeMap["Subject"] = ["io.reactivex.subjects.Subject"];
     java.newTypeMap["Set"] = ["java.util.Set"];
     java.newTypeMap["Service"] = ["android.app.Service"];
+    java.newTypeMap["Single"] = ["io.reactivex.Single"];
+    java.newTypeMap["SongRecommendationRestApi"] = ["de.uol.smtrain.repository.song_recommendation.SongRecommendationRestApi"];
+    java.newTypeMap["SpotifyRestApi"] = ["de.uol.smtrain.repository.datasource.spotify.rest.SpotifyRestApi"];
     java.newTypeMap["SpotifyPlayer"] = ["com.spotify.sdk.android.player.SpotifyPlayer"];
+    java.newTypeMa0["TrainingSession"] = ["de.uol.smtrain.repository.running_database.entity.TrainingSession"];
     java.newTypeMap["URL"] = ["java.net.URL"];
     java.generate(app);
 
@@ -734,6 +810,9 @@ void addAggregations(TheWorld world){
 }
 
 void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    //config
+    addConfigHelperMembers(world, protectedMemberVariables, abstractMemberFunctions);
+
     //domain
     addMediaEntityMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addPlaylistBeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
@@ -742,6 +821,12 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
 
     //repository
     addMediaDataSourceMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addLogInHandlerMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addLoginCallbackMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addSpotifyLogInFragmentMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addSpotifyLogInHandlerMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addSpotifyMediaDataSourceMembers(world, protectedMemberVariables, abstractMemberFunctions);
+
     //Spotify
     addAlbumBeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addArtistBeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
@@ -751,6 +836,21 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
     addPlaylistTrackBeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addTrackBeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addTracksBeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
+
+
+    //running database
+    //TODO Does not work because relies on reflection --> cannot initialize abstract classes
+    //addInsertionDaoMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    //addRetrievalDaoMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    //
+    //addIntervalMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    //addLocationMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    //addPauseMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    //addTraininSessionMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    //
+    //addRunningDatabaseMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    //addWholeTrainingSessionMembers(world, protectedMemberVariables, abstractMemberFunctions);
+
     //NextSongCalcualtion
     addNextSongCalculationResponseMembers(world, protectedMemberVariables, abstractMemberFunctions);
 
@@ -824,10 +924,10 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
     addFitnessDataFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addLapFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addMediaMetadataFacade(world, protectedMemberVariables, abstractMemberFunctions);
+    addPlayerControlFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addPlaylistDataFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addStopwatchStateFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
     addTimeFacadeMembers(world, protectedMemberVariables, abstractMemberFunctions);
-
 
     //view beans
     addSelectPlaylistImageBeanMembers(world, protectedMemberVariables, abstractMemberFunctions);
@@ -903,6 +1003,9 @@ void addExternalTypes(TheWorld world){
 
     Type observable_SongMetadataBean_ = world.newType("Observable<SongMetadataBean>");
     observable_SongMetadataBean_.typeToLanguage["Java"] = "Observable<SongMetadataBean>";
+
+    Type subject_Boolean_ = world.newType("Subject<Boolean>");
+    subject_Boolean_.typeToLanguage["Java"] = "Subject<Boolean>";
 
     Type subject_Double_ = world.newType("Subject<Double>");
     subject_Double_.typeToLanguage["Java"] = "Subject<Double>";
@@ -1048,6 +1151,9 @@ void addExternalTypes(TheWorld world){
     Type observable = world.newType("Observable");
     observable.typeToLanguage["Java"] = "Observable";
 
+    Type observable_Boolean_ = world.newType("Observable<Boolean>");
+    observable_Boolean_.typeToLanguage["Java"] = "Observable<Boolean>";
+
     Type disposableObserver_Long_ = world.newType("DisposableObserver<Long>");
     disposableObserver_Long_.typeToLanguage["Java"] = "DisposableObserver<Long>";
 
@@ -1081,9 +1187,84 @@ void addExternalTypes(TheWorld world){
     Type context = world.newType("Context");
     context.typeToLanguage["Java"] = "Context";
 
+    Type resultReceiver = world.newType("ResultReceiver");
+    resultReceiver.typeToLanguage["Java"] = "ResultReceiver";
+
+    Type fragment = world.newType("Fragment");
+    fragment.typeToLanguage["Java"] = "Fragment";
+
+    Type map_String_PagingBean_PlaylistBean__ = world.newType("Map<String, PagingBean<PlaylistBean>>");
+    map_String_PagingBean_PlaylistBean__.typeToLanguage["Java"] = "Map<String, PagingBean<PlaylistBean>>";
+
+    Type properties = world.newType("Properties");
+    properties.typeToLanguage["Java"] = "Properties";
+
+    Type fragmentManager = world.newType("FragmentManager");
+    fragmentManager.typeToLanguage["Java"] = "FragmentManager";
+
+    Type spotifyRestApi = world.newType("SpotifyRestApi");
+    spotifyRestApi.typeToLanguage["Java"] = "SpotifyRestApi";
+
+    Type deque_String_ = world.newType("Deque<String>");
+    deque_String_.typeToLanguage["Java"] = "Deque<String>";
+
+    Type songRecommendationRestApi = world.newType("SongRecommendationRestApi");
+    songRecommendationRestApi.typeToLanguage["Java"] = "SongRecommendationRestApi";
+
+    Type observable_WholeTrainingSession_ = world.newType("Observable<WholeTrainingSession>");
+    observable_WholeTrainingSession_.typeToLanguage["Java"]  = "Observable<WholeTrainingSession>";
+
+    Type single_WholeTrainingSession_ = world.newType("Single<WholeTrainingSession>");
+    single_WholeTrainingSession_.typeToLanguage["Java"]  = "Single<WholeTrainingSession>";
+
+    Type location_ = world.newType("Location_");
+    location_.typeToLanguage["Java"] = "Location_";
+
+    Type list_Location__ = world.newType("List<Location_>");
+    list_Location__.typeToLanguage["Java"] = "List<Location_>";
+
+    //Type pause = world.newType("Pause");
+    //pause.typeToLanguage["Java"] = "Pause";
+
+    Type list_Pause_ = world.newType("List<Pause>");
+    list_Pause_.typeToLanguage["Java"] = "List<Pause>";
+
+    //Type interval = world.newType("Interval");
+    //interval.typeToLanguage["Java"] = "Interval";
+
+    Type list_Interval_ = world.newType("List<Interval>");
+    list_Interval_.typeToLanguage["Java"] = "List<Interval>";
+
+    Type observable_ReviewElementBean_ = world.newType("Observable<ReviewElementBean>");
+    observable_ReviewElementBean_.typeToLanguage["Java"] = "Observable<ReviewElementBean>";
+
+    Type observable_Datapoint_ = world.newType("Observable<Datapoint>");
+     observable_Datapoint_.typeToLanguage["Java"] = "Observable<Datapoint>";
+
+    Type single_List_IntervalReviewBean__ = world.newType("Single<List<IntervalReviewBean>>");
+    single_List_IntervalReviewBean__.typeToLanguage["Java"] = "Single<List<IntervalReviewBean>>";
+
+    Type observable_PlayPauseState_ = world.newType("Observable<PlayPauseState>");
+    observable_PlayPauseState_.typeToLanguage["Java"] = "Observable<PlayPauseState>";
+
+    Type list_LatLng_ = world.newType("List<LatLng>");
+    list_LatLng_.typeToLanguage["Java"] = "List<LatLng>";
+
+    Type subject_PlayPauseState_ = world.newType("Subject<PlayPauseState>");
+    subject_PlayPauseState_.typeToLanguage["Java"] = "Subject<PlayPauseState>";
 }
 
 void generateGeneralizesRelationships(ref TheWorld world){
+
+    //Repository
+    //Spotify
+    Class spotifyLogInFragment = world.getClass("SpotifyLogInFragment");
+    Type fragment = world.getType("Fragment");
+    world.newGeneralization("SpotifyLogInFragment_Fragment_Generalization", spotifyLogInFragment, fragment);
+
+    Class spotifyLogInResultReceiver = world.getClass("SpotifyLogInResultReceiver");
+    Type resultReceiver = world.getType("ResultReceiver");
+    world.newGeneralization("SpotifyLogInResultReceiver_ResultReceiver_Genralization", spotifyLogInResultReceiver, resultReceiver);
 
     //Service
     Class spotifyPlayerService = world.getClass("SpotifyPlayerService");
@@ -1124,6 +1305,19 @@ void generateGeneralizesRelationships(ref TheWorld world){
 }
 
 void generateImplementsRelationships(ref TheWorld world){
+
+    //Repository
+    //Spotify
+    Class spotifyLogInHandler = world.getClass("SpotifyLogInHandler");
+    Class sogInHandler = world.getClass("LogInHandler");
+    world.newRealization("SpotifyLogInHandler_LogInHandler_Realization", spotifyLogInHandler, sogInHandler);
+
+    Class spotifyMediaDataSource = world.getClass("SpotifyMediaDataSource");
+    Class mediaDataSource = world.getClass("MediaDataSource");
+    world.newRealization("SpotifyMediaDataSource_MediaDataSource_Realization", spotifyMediaDataSource, mediaDataSource);
+
+    Class loginCallback = world.getClass("LoginCallback");
+    world.newRealization("SpotifyMediaDataSource_LoginCallback_Realization", spotifyMediaDataSource, loginCallback);
 
     //Services
     //LocationService
@@ -1251,6 +1445,9 @@ void generateImplementsRelationships(ref TheWorld world){
     Class mediaMetadataFacade = world.getClass("MediaMetadataFacade");
     world.newRealization("RunningPresenter_MediaMetadataFacade_Realization", runningPresenter, mediaMetadataFacade);
 
+    Class playerControlFacade = world.getClass("PlayerControlFacade");
+    world.newRealization("RunningPresenter_PlayerControlFacade_Realization", runningPresenter, playerControlFacade);
+
     Class playlistDataFacade = world.getClass("PlaylistDataFacade");
     world.newRealization("RunningPresenter_PlaylistDataFacade_Realization", runningPresenter, playlistDataFacade);
 
@@ -1274,7 +1471,7 @@ void generateImplementsRelationships(ref TheWorld world){
     Class reviewContractPresenter = world.getClass("ReviewContractPresenter");
     world.newRealization("ReviewPresenter_ReviewContractPresenter_Realization", reviewPresenter, reviewContractPresenter);
 
-    Class detailReviewPresenter = world.getClass("DetailReviewContractPresenter");
+    Class detailReviewPresenter = world.getClass("DetailReviewPresenter");
     Class detailReviewContractPresenter = world.getClass("DetailReviewContractPresenter");
     world.newRealization("DetailReviewPresenter_DetailReviewContractPresenter_Realization", detailReviewPresenter, detailReviewContractPresenter);
 
@@ -1285,6 +1482,28 @@ void generateImplementsRelationships(ref TheWorld world){
 
     Type consumer_FragmentCommand_ = world.getType("Consumer<FragmentCommand>");
     world.newRealization("StartingDisplayPresenter_Consumer_Realization", startingDisplayPresenter, consumer_FragmentCommand_);
+
+}
+
+void addConfigHelperMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class configHelper = world.getClass("ConfigHelper");
+
+    MemberVariable context = configHelper.newMemberVariable("context");
+    context.type = world.getType("Context");
+    protectedMemberVariables ~= context;
+
+    MemberVariable properties = configHelper.newMemberVariable("properties");
+    properties.type  = world.getType("Properties");
+    protectedMemberVariables ~= properties;
+
+    MemberFunction getConfigValue = configHelper.newMemberFunction("getConfigValue");
+    getConfigValue.addParameter("name", world.getType("String"));
+    getConfigValue.returnType = world.getType("String");
+    abstractMemberFunctions ~= getConfigValue;
+
+    MemberFunction getConfig = configHelper.newMemberFunction("getConfig");
+    getConfig.returnType = world.getType("Properties");
+    abstractMemberFunctions ~= getConfig;
 
 }
 
@@ -1399,6 +1618,67 @@ void addMediaDataSourceMembers(ref TheWorld world, ref MemberVariable[] protecte
     getPlaylistSongs.addParameter("playlist", world.getType("String"));
     getPlaylistSongs.addParameter("user", world.getType("String"));
 }
+
+void addLogInHandlerMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class logInHandler = world.getClass("LogInHandler");
+
+    MemberFunction login = logInHandler.newMemberFunction("login");
+    login.returnType = world.getType("Void");
+    login.addParameter("loginCallback", world.getType("LoginCallback"));
+}
+
+void addLoginCallbackMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class loginCallback = world.getClass("LoginCallback");
+
+    MemberFunction onLoggedIn = loginCallback.newMemberFunction("onLoggedIn");
+    onLoggedIn.returnType = world.getType("Void");
+    onLoggedIn.addParameter("token", world.getType("String"));
+}
+
+void addSpotifyLogInFragmentMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class spotifyLogInFragment = world.getClass("SpotifyLogInFragment");
+
+    MemberVariable resultReceiver = spotifyLogInFragment.newMemberVariable("resultReceiver");
+    resultReceiver.type = world.getType("ResultReceiver");
+    protectedMemberVariables ~= resultReceiver;
+
+    MemberVariable configHelper = spotifyLogInFragment.newMemberVariable("configHelper");
+    configHelper.type = world.getType("ConfigHelper");
+    protectedMemberVariables ~= configHelper;
+}
+
+void addSpotifyLogInHandlerMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class spotifyLogInHandler = world.getClass("SpotifyLogInHandler");
+
+    MemberVariable fragmentManager = spotifyLogInHandler.newMemberVariable("fragmentManager");
+    fragmentManager.type = world.getType("FragmentManager");
+    protectedMemberVariables ~= fragmentManager;
+
+    MemberVariable loginCallback = spotifyLogInHandler.newMemberVariable("loginCallback");
+    loginCallback.type = world.getType("LoginCallback");
+    protectedMemberVariables ~= loginCallback;
+}
+
+void addSpotifyMediaDataSourceMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class spotifyMediaDataSource = world.getClass("SpotifyMediaDataSource");
+
+    MemberVariable logInHandler = spotifyMediaDataSource.newMemberVariable("logInHandler");
+    logInHandler.type = world.getType("LogInHandler");
+    protectedMemberVariables ~= logInHandler;
+
+    MemberVariable spotifyRestApi = spotifyMediaDataSource.newMemberVariable("spotifyRestApi");
+    spotifyRestApi.type = world.getType("SpotifyRestApi");
+    protectedMemberVariables ~= spotifyRestApi;
+
+    MemberVariable mediaEntity = spotifyMediaDataSource.newMemberVariable("mediaEntity");
+    mediaEntity.type = world.getType("MediaEntity");
+    protectedMemberVariables ~= mediaEntity;
+
+    MemberVariable playlistPagingBeansWithNext = spotifyMediaDataSource.newMemberVariable("playlistPagingBeansWithNext");
+    playlistPagingBeansWithNext.type = world.getType("Map<String, PagingBean<PlaylistBean>>");
+    protectedMemberVariables ~= playlistPagingBeansWithNext;
+}
+
 
 void addAlbumBeanMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class albumBean = world.getClass("AlbumBean");
@@ -1602,6 +1882,89 @@ void addTracksBeanMembers(ref TheWorld world, ref MemberVariable[] protectedMemb
     addSetter(href, abstractMemberFunctions, tracksBean, world);
     addGetter(href, abstractMemberFunctions, tracksBean, world);
 }
+    //TODO Does not work because relies on reflection --> cannot initialize abstract classes
+
+//void addInsertionDaoMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+//    Class insertionDao = world.getClass("InsertionDao");
+//
+    //
+    //MemberFunction insertInterval = insertionDao.newMemberFunction("insertInterval");
+    //insertInterval.returnType = world.getType("Void");
+    //insertInterval.addParameter("interval", world.getType("List<Interval>"));
+    //insertInterval.addLangSpecificAttribute("Java", "@Insert");
+    //
+    //MemberFunction insertIntervals = insertionDao.newMemberFunction("insertIntervals");
+    //insertIntervals.returnType = world.getType("Void");
+    //insertIntervals.addParameter("intervals, "world.getType("List<Interval>"));
+    //insertIntervals.addLangSpecificAttribute("Java", "@Insert");
+    //
+    //MemberFunction insertLocation = insertionDao.newMemberFunction("insertLocation");
+    //insertLocation.returnType = world.getType("Void");
+    //insertLocation.addParameter("location", world.getType("Location"));
+    //insertLocation.addLangSpecificAttribute("Java", "@Insert");
+    //
+    //MemberFunction inserLocations = insertionDao.newMemberFunction("inserLocations");
+    //inserLocations.returnType = world.getType("Void");
+    //inserLocations.addParameter(("locations", world.getType("List<Location>));
+    //inserLocations.addLangSpecificAttribute("Java", "@Insert");
+    //
+    //MemberFunction insertPause = insertionDao.newMemberFunction("insertPause");
+    //insertPause.returnType = world.getType("Void");
+    //insertPause.addParameter("pause", world.getType("Pause"));
+    //insertPause.addLangSpecificAttribute("Java", "@Insert");
+    //
+    //MemberFunction insertPauses = insertionDao.newMemberFunction("insertPauses");
+    //insertPauses.returnType = world.getType("Void");
+    //insertPauses.addParameter("pause, "world.getType("List<Pauses>"));
+    //insertPauses.addLangSpecificAttribute("Java", "@Insert");
+    //
+    //MemberFunction insertTrainingSession = insertionDao.newMemberFunction("insertTrainingSession");
+    //insertTrainingSession.returnType = world.getType("Void");
+    //insertTrainingSession.addParameter("trainingSession", world.getType("TrainingSession"));
+    //insertTrainingSession.addLangSpecificAttribute("Java", "@Insert");
+    //
+    //MemberFunction insertTrainingSessions = insertionDao.newMemberFunction("insertTrainingSessions");
+    //insertTrainingSessions.returnType = world.getType("Void");
+    //insertTrainingSessions.addParameter("trainingSessions", world.getType("List<TrainingSession>"));
+    //insertTrainingSessions.addLangSpecificAttribute("Java", "@Insert");
+//
+//}
+
+//void addRetrievalDaoMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+//    Class retrievalDao= world.getClass("RetrievalDao");
+//
+//}
+//
+//void addIntervalMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+//    Class interval= world.getClass("Interval");
+//
+//
+//
+//}
+//
+//void addLocationMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+//    Class location= world.getClass("Location");
+//
+//}
+//
+//void addPauseMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+//    Class pause = world.getClass("Pause");
+//
+//}
+//
+//void addTraininSessionMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+//    Class traininSession= world.getClass("TraininSession");
+//
+//}
+//
+//void addRunningDatabaseMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+//    Class runningDatabase = world.getClass("RunningDatabase");
+//
+//}
+//
+//void addWholeTrainingSessionMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+//    Class wholeTrainingSession = world.getClass("WholeTrainingSession");
+//}
 
 void addNextSongCalculationResponseMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class nextSongCalculationResponse = world.getClass("NextSongCalculationResponse");
@@ -1767,6 +2130,14 @@ void addLocationServiceInterfaceMembers(ref TheWorld world, ref MemberVariable[]
 void addLocationServiceMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class locationService = world.getClass("LocationService");
 
+    MemberVariable locationRequest = locationService.newMemberVariable("locationRequest");
+    locationRequest.type = world.getType("LocationRequest");
+    protectedMemberVariables ~= locationRequest;
+
+    MemberVariable rxLocation = locationService.newMemberVariable("rxLocation");
+    rxLocation.type = world.getType("RxLocation");
+    protectedMemberVariables ~= rxLocation;
+
     MemberVariable distanceSubject = locationService.newMemberVariable("distanceSubject");
     distanceSubject.type = world.getType("Subject");
     protectedMemberVariables ~= distanceSubject;
@@ -1807,6 +2178,9 @@ void addPlayerServiceMembers(ref TheWorld world, ref MemberVariable[] protectedM
     MemberFunction playSong = playerService.newMemberFunction("playSong");
     playSong.returnType = world.getType("Void");
     playSong.addParameter("uri", world.getType("String"));
+
+    MemberFunction playLastSong = playerService.newMemberFunction("playLastSong");
+    playLastSong.returnType = world.getType("String");
 
     MemberFunction enqueueSong = playerService.newMemberFunction("enqueueSong");
     enqueueSong.returnType = world.getType("Void");
@@ -1897,6 +2271,14 @@ void addSongMetadatabeanMembers(ref TheWorld world, ref MemberVariable[] protect
 void addSpotifyPlayerServiceMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class spotifyPlayerService = world.getClass("SpotifyPlayerService");
 
+    MemberVariable mediaEntity = spotifyPlayerService.newMemberVariable("mediaEntity");
+    mediaEntity.type = world.getType("MediaEntity");
+    protectedMemberVariables ~= mediaEntity;
+
+    MemberVariable configHelper = spotifyPlayerService.newMemberVariable("configHelper");
+    configHelper.type = world.getType("ConfigHelper");
+    protectedMemberVariables ~= configHelper;
+
     MemberVariable playerSongEventBean = spotifyPlayerService.newMemberVariable("playerSongEventBean");
     playerSongEventBean.type = world.getType("PlayerSongEventBean");
     protectedMemberVariables ~= playerSongEventBean;
@@ -1908,6 +2290,10 @@ void addSpotifyPlayerServiceMembers(ref TheWorld world, ref MemberVariable[] pro
     MemberVariable currentSongMetadataSubject = spotifyPlayerService.newMemberVariable("currentSongMetadataSubject");
     currentSongMetadataSubject.type = world.getType("Subject");
     protectedMemberVariables ~= currentSongMetadataSubject;
+
+    MemberVariable isPlayingObservable = spotifyPlayerService.newMemberVariable("isPlayingObservable");
+    isPlayingObservable.type = world.getType("Subject<Boolean>");
+    protectedMemberVariables ~= isPlayingObservable;
 
     MemberVariable songTimingEventSubject = spotifyPlayerService.newMemberVariable("songTimingEventSubject");
     songTimingEventSubject.type = world.getType("Subject<SongTimingEvent>");
@@ -1929,17 +2315,34 @@ void addSpotifyPlayerServiceMembers(ref TheWorld world, ref MemberVariable[] pro
     songUri.type = world.getType("String");
     protectedMemberVariables ~= songUri;
 
-    MemberVariable currentSongUri = spotifyPlayerService.newMemberVariable("currentSongUri");
-    currentSongUri.type = world.getType("String");
-    protectedMemberVariables ~= currentSongUri;
+    MemberVariable currentSong = spotifyPlayerService.newMemberVariable("currentSong");
+    currentSong.type = world.getType("String");
+    protectedMemberVariables ~= currentSong;
+
 
     MemberVariable spotifyPlayer = spotifyPlayerService.newMemberVariable("spotifyPlayer");
     spotifyPlayer.type = world.getType("SpotifyPlayer");
     protectedMemberVariables ~= spotifyPlayer;
+
+    MemberVariable playedSongs = spotifyPlayerService.newMemberVariable("playedSongs");
+    playedSongs.type = world.getType("Deque<String>");
+    protectedMemberVariables ~= playedSongs;
 }
 
 void addRunningServiceMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class runningService = world.getClass("RunningService");
+
+    MemberVariable songRecommendationRestApi = runningService.newMemberVariable("songRecommendationRestApi");
+    songRecommendationRestApi.type = world.getType("SongRecommendationRestApi");
+    protectedMemberVariables ~= songRecommendationRestApi;
+
+    MemberVariable configHelper = runningService.newMemberVariable("configHelper");
+    configHelper.type = world.getType("ConfigHelper");
+    protectedMemberVariables ~= configHelper;
+
+    MemberVariable persistTrainingSessionCase = runningService.newMemberVariable("persistTrainingSessionCase");
+    persistTrainingSessionCase.type = world.getType("PersistTrainingSessionCase");
+    protectedMemberVariables ~= persistTrainingSessionCase;
 
     MemberVariable runningServiceBinder = runningService.newMemberVariable("runningServiceBinder");
     runningServiceBinder.type = world.getType("RunningServiceBinder");
@@ -2016,6 +2419,14 @@ void addRunningServiceMembers(ref TheWorld world, ref MemberVariable[] protected
     MemberVariable clockStateSubject = runningService.newMemberVariable("clockStateSubject");
     clockStateSubject.type = world.getType("Subject");
     protectedMemberVariables ~= clockStateSubject;
+
+    MemberVariable songPlayedSubject = runningService.newMemberVariable("songPlayedSubject");
+    songPlayedSubject.type = world.getType("Subject<String>");
+    protectedMemberVariables ~= songPlayedSubject;
+
+    MemberVariable isMusicPlayingSubject = runningService.newMemberVariable("isMusicPlayingSubject");
+    isMusicPlayingSubject.type = world.getType("Subject<Boolean>");
+    protectedMemberVariables ~= isMusicPlayingSubject;
 
     MemberVariable notificationBuilder = runningService.newMemberVariable("notificationBuilder");
     notificationBuilder.type = world.getType("Notification.Builder");
@@ -2117,6 +2528,12 @@ void addRunningServiceInterfaceMembers(ref TheWorld world, ref MemberVariable[] 
     MemberFunction songMetadataObservable = runningServiceInterface.newMemberFunction("songMetadataObservable");
     songMetadataObservable.returnType = world.getType("Observable<SongMetadataBean>");
 
+    MemberFunction playedSongObservable = runningServiceInterface.newMemberFunction("playedSongObservable");
+    playedSongObservable.returnType = world.getType("Observable<String>");
+
+    MemberFunction isPlayingObservable = runningServiceInterface.newMemberFunction("isPlayingObservable");
+    isPlayingObservable.returnType = world.getType("Observable<Boolean>");
+
     MemberFunction startClock = runningServiceInterface.newMemberFunction("startClock");
     startClock.returnType = world.getType("Void");
 
@@ -2144,6 +2561,12 @@ void addRunningServiceInterfaceMembers(ref TheWorld world, ref MemberVariable[] 
     playSong.addParameter("uri", world.getType("String"));
     playSong.returnType = world.getType("Void");
 
+    MemberFunction playNext = runningServiceInterface.newMemberFunction("playNext");
+    playNext.returnType = world.getType("Void");
+
+    MemberFunction playLast = runningServiceInterface.newMemberFunction("playLast");
+    playLast.returnType = world.getType("Void");
+
     MemberFunction enqueueSong = runningServiceInterface.newMemberFunction("enqueueSong");
     enqueueSong.addParameter("uri", world.getType("String"));
     enqueueSong.returnType = world.getType("Void");
@@ -2153,7 +2576,6 @@ void addRunningServiceInterfaceMembers(ref TheWorld world, ref MemberVariable[] 
 
     MemberFunction resume = runningServiceInterface.newMemberFunction("resume");
     resume.returnType = world.getType("Void");
-
 }
 
 void addSongServiceBeanMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2301,7 +2723,7 @@ void addPlaylistCaseMembers(ref TheWorld world, ref MemberVariable[] protectedMe
 }
 
 void addRetrieveTrainingDataCaseMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
-    Class retrieveTrainingDataCase = world.getClass("dRetrieveTrainingDataCase");
+    Class retrieveTrainingDataCase = world.getClass("RetrieveTrainingDataCase");
 
     MemberFunction getTrainingSessions = retrieveTrainingDataCase.newMemberFunction("getTrainingSessions");
     getTrainingSessions.returnType = world.getType("Observable<WholeTrainingSession>");
@@ -2335,10 +2757,10 @@ void addPersistTrainingSessionCaseMembers(ref TheWorld world, ref MemberVariable
     protectedMemberVariables ~= pauses;
 
     MemberVariable locations = persistTrainingSessionCase.newMemberVariable("locations");
-    locations.type = world.getType("List<Location>");
+    locations.type = world.getType("List<Location_>");
     protectedMemberVariables ~= locations;
 
-    MemberVariables intervals = persistTrainingSessionCase.newMemberVariable("intervals");
+    MemberVariable intervals = persistTrainingSessionCase.newMemberVariable("intervals");
     intervals.type = world.getType("List<Interval>");
     protectedMemberVariables ~= intervals;
 
@@ -2352,7 +2774,26 @@ void addPersistTrainingSessionCaseMembers(ref TheWorld world, ref MemberVariable
     trainingEndTime.type = world.getType("Long");
     protectedMemberVariables ~= trainingEndTime;
 
-    addSetter(trainingStartTime, abstractMemberFunctions, persistTrainingSessionCase, world);
+    addSetter(trainingEndTime, abstractMemberFunctions, persistTrainingSessionCase, world);
+
+    MemberFunction addPause = persistTrainingSessionCase.newMemberFunction("addPause");
+    addPause.returnType = world.getType("Void");
+    addPause.addParameter("pause", world.getType("Pause"));
+    abstractMemberFunctions ~= addPause;
+
+    MemberFunction addLocation = persistTrainingSessionCase.newMemberFunction("addLocation");
+    addLocation.returnType = world.getType("Void");
+    addLocation.addParameter("location", world.getType("Location_"));
+    abstractMemberFunctions ~= addLocation;
+
+    MemberFunction addInterval = persistTrainingSessionCase.newMemberFunction("addInterval");
+    addInterval.returnType = world.getType("Void");
+    addInterval.addParameter("interval", world.getType("Interval"));
+    abstractMemberFunctions ~= addInterval;
+
+    MemberFunction persist = persistTrainingSessionCase.newMemberFunction("persist");
+    persist.returnType = world.getType("Void");
+    abstractMemberFunctions ~= persist;
 }
 
 void addIntervalPlanningContractPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2535,10 +2976,39 @@ void addPlaylistContractPresenterMembers(ref TheWorld world, ref MemberVariable[
 
         MemberFunction getPlaylistSongs = playlistContractPresenter.newMemberFunction("getPlaylistSongs");
         getPlaylistSongs.returnType = world.getType("Observable<SongBean>");
+
+        MemberFunction playNext = playlistContractPresenter.newMemberFunction("playNext");
+        playNext.returnType = world.getType("Void");
+
+        MemberFunction togglePlayPause = playlistContractPresenter.newMemberFunction("togglePlayPause");
+        togglePlayPause.returnType = world.getType("Void");
+
+        MemberFunction playLast = playlistContractPresenter.newMemberFunction("playLast");
+        playLast.returnType = world.getType("Void");
+
+        MemberFunction playSong = playlistContractPresenter.newMemberFunction("playSong");
+        playSong.returnType = world.getType("Void");
+        playSong.addParameter("id", world.getType("String"));
+
+        MemberFunction dispose = playlistContractPresenter.newMemberFunction("dispose");
+        dispose.returnType = world.getType("Void");
+
+        MemberFunction subscribe = playlistContractPresenter.newMemberFunction("subscribe");
+        subscribe.returnType = world.getType("Void");
+
+       MemberFunction removeSongObservable = laylistContractPresenter.newMemberFunction("removeSongObservable");
+       removeSongObservable.returnType = world.getType("Observable<String>");
 }
 
 void addPlaylistContractViewMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class playlistContractView = world.getClass("PlaylistContractView");
+
+    MemberFunction notifyPlay = playlistContractView.newMemberFunction("notifyPlay");
+    notifyPlay.returnType = world.getType("Void");
+
+    MemberFunction notifyPause = playlistContractView.newMemberFunction("notifyPause");
+    notifyPause.returnType = world.getType("Void");
+
 }
 
 void addStopWatchContractPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2596,10 +3066,16 @@ void addReviewContractPresenterMembers(ref TheWorld world, ref MemberVariable[] 
     Class reviewContractPresenter = world.getClass("ReviewContractPresenter");
 
     MemberFunction processCardClick = reviewContractPresenter.newMemberFunction("processCardClick");
+    processCardClick.addParameter("cardId", world.getType("Long"));
     processCardClick.returnType = world.getType("Void");
 
     MemberFunction getReviewData = reviewContractPresenter.newMemberFunction("getReviewData");
     getReviewData.returnType = world.getType("Observable<ReviewElementBean>");
+
+    MemberFunction getReviewDataWithin = reviewContractPresenter.newMemberFunction("reviewContractPresenter");
+    reviewContractPresenter.returnType = world.getType("Observable<ReviewElementBean>");
+    getReviewDataWithin.addParameter("from", world.getType("Long"));
+    getReviewDataWithin.addParameter("to", world.getType("Long"));
 
 }
 
@@ -2608,7 +3084,19 @@ void addReviewContractViewMembers(ref TheWorld world, ref MemberVariable[] prote
 }
 
 void addDetailReviewContractPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class detailReviewContractPresenter = world.getClass("DetailReviewContractPresenter");
 
+    MemberFunction getSpeedCourse = detailReviewContractPresenter.newMemberFunction("getSpeedCourse");
+    getSpeedCourse.returnType = world.getType("Observable<DataPoint>");
+    getSpeedCourse.addParameter("id", world.getType("Long"));
+
+    MemberFunction getTrainingSession = detailReviewContractPresenter.newMemberFunction("getTrainingSession");
+    getTrainingSession.returnType = world.getType("Single<WholeTrainingSession>");
+    getTrainingSession.addParameter("id", world.getType("Long"));
+
+    MemberFunction getIntervals = detailReviewContractPresenter.newMemberFunction("getIntervals");
+    getIntervals.returnType = world.getType("Single<List<IntervalReviewBean>>");
+    getIntervals.addParameter("id", world.getType("Long"));
 }
 
 void addDetailReviewContractViewMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2675,6 +3163,33 @@ void addMediaMetadataFacade(ref TheWorld world, ref MemberVariable[] protectedMe
     currentSongAlbumCoverHrefObservable.returnType = world.getType("Observable<URL>");
 
 }
+
+void addPlayerControlFacadeMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class playerControlFacade = world.getClass("PlayerControlFacade");
+
+    MemberFunction playPauseStateObservable = playerControlFacade.newMemberFunction("playPauseStateObservable");
+    playPauseStateObservable.returnType = world.getType("Observable<PlayPauseState>");
+
+    MemberFunction songPlayedObervable = playerControlFacade.newMemberFunction("songPlayedObservable");
+    songPlayedObervable.returnType= world.getType("Observable<String>");
+
+    MemberFunction playNext = playerControlFacade.newMemberFunction("playNext");
+    playNext.returnType = world.getType("Void");
+
+    MemberFunction play = playerControlFacade.newMemberFunction("play");
+    play.returnType = world.getType("Void");
+
+    MemberFunction playSong = playerControlFacade.newMemberFunction("playSong");
+    playSong.returnType = world.getType("Void");
+    playSong.addParameter("id", world.getType("String"));
+
+    MemberFunction pause = playerControlFacade.newMemberFunction("pause");
+    pause.returnType = world.getType("Void");
+
+    MemberFunction playLast = playerControlFacade.newMemberFunction("playLast");
+    playLast.returnType = world.getType("Void");
+}
+
 
 void addPlaylistDataFacadeMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class playlistDataFacade = world.getClass("PlaylistDataFacade");
@@ -2900,7 +3415,7 @@ void addReviewElementBeanMembers(ref TheWorld world, ref MemberVariable[] protec
     addGetter(distanceKm, abstractMemberFunctions, reviewElementBean, world);
 
     MemberVariable startingTime = reviewElementBean.newMemberVariable("startingTime");
-    startingTime.type = world.getClass("Date");
+    startingTime.type = world.getType("Date");
     protectedMemberVariables ~= startingTime;
 
     addSetter(startingTime, abstractMemberFunctions, reviewElementBean, world);
@@ -2920,7 +3435,7 @@ void addReviewElementBeanMembers(ref TheWorld world, ref MemberVariable[] protec
     addSetter(averageSpeedMinKm, abstractMemberFunctions, reviewElementBean, world);
     addGetter(averageSpeedMinKm, abstractMemberFunctions, reviewElementBean, world);
 
-    MemberVariable id = reviewElementBean.newMemberVaraible("id");
+    MemberVariable id = reviewElementBean.newMemberVariable("id");
     id.type = world.getType("Long");
     protectedMemberVariables ~= id;
 
@@ -2929,7 +3444,7 @@ void addReviewElementBeanMembers(ref TheWorld world, ref MemberVariable[] protec
 
 }
 
-void addIntervalReviewBeanMembersref(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+void addIntervalReviewBeanMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class intervalReviewBean = world.getClass("IntervalReviewBean");
 
     MemberVariable intervalNumber = intervalReviewBean.newMemberVariable("intervalNumber");
@@ -2954,7 +3469,7 @@ void addIntervalReviewBeanMembersref(ref TheWorld world, ref MemberVariable[] pr
     addGetter(durationS, abstractMemberFunctions, intervalReviewBean, world);
 
     MemberVariable distanceKm = intervalReviewBean.newMemberVariable("distanceKm");
-    distanceKm.type = world.getType("distanceKm");
+    distanceKm.type = world.getType("Double");
     protectedMemberVariables ~= distanceKm;
 
     addSetter(distanceKm, abstractMemberFunctions, intervalReviewBean, world);
@@ -3126,6 +3641,7 @@ void addSelectPlaylistPresenterMembers(ref TheWorld world, ref MemberVariable[] 
     MemberVariable playlistsCase = selectPlaylistPresenter.newMemberVariable("playlistsCase");
     playlistsCase.type = world.getType("PlaylistsCase");
     protectedMemberVariables ~= playlistsCase;
+
 }
 
 void addWaitForGpsPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -3147,7 +3663,7 @@ void addWaitForGpsPresenterMembers(ref TheWorld world, ref MemberVariable[] prot
 
 void addReviewPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class reviewPresenter = world.getClass("ReviewPresenter");
-    //TODO
+
     MemberVariable reviewContractView = reviewPresenter.newMemberVariable("reviewContractView");
     reviewContractView.type = world.getType("ReviewContractView");
     protectedMemberVariables ~= reviewContractView;
@@ -3172,7 +3688,18 @@ void addDetailReviewPresenterMembers(ref TheWorld world, ref MemberVariable[] pr
     detailReviewContractView.type = world.getType("DetailReviewContractView");
     protectedMemberVariables ~= detailReviewContractView;
 
-    //TODO
+    MemberVariable context = detailReviewPresenter.newMemberVariable("context");
+    context.type = world.getType("Context");
+    protectedMemberVariables ~= context;
+
+    MemberVariable retrieveTrainingDataCase = detailReviewPresenter.newMemberVariable("retrieveTrainingDataCase");
+    retrieveTrainingDataCase.type = world.getType("RetrieveTrainingDataCase");
+    protectedMemberVariables ~= retrieveTrainingDataCase;
+
+    MemberVariable wholeTrainingSession = detailReviewPresenter.newMemberVariable("wholeTrainingSession");
+    wholeTrainingSession.type = world.getType("WholeTrainingSession");
+    protectedMemberVariables ~= wholeTrainingSession;
+
 }
 
 void addFitnessPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -3246,6 +3773,19 @@ void addPlaylistPresenterMembers(ref TheWorld world, ref MemberVariable[] protec
     MemberVariable playlistDataFacade = playlistPresenter.newMemberVariable("playlistDataFacade");
     playlistDataFacade.type = world.getType("PlaylistDataFacade");
     protectedMemberVariables ~= playlistDataFacade;
+
+    MemberVariable playerControlFacade = playlistPresenter.newMemberVariable("playerControlFacade");
+    playerControlFacade.type = world.getType("PlayerControlFacade");
+    protectedMemberVariables ~= playerControlFacade;
+
+    MemberVariable playPauseState = playlistPresenter.newMemberVariable("playPauseState");
+    playPauseState.type = world.getType("PlayPauseState");
+    protectedMemberVariables ~= playPauseState;
+
+    MemberVariable playPauseStateDisposable = playlistPresenter.newMemberVariable("playPauseStateDisposable");
+    playPauseStateDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= playPauseStateDisposable;
+
 }
 
 void addRunningPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -3314,6 +3854,10 @@ void addRunningPresenterMembers(ref TheWorld world, ref MemberVariable[] protect
     MemberVariable lapDisposable = runningPresenter.newMemberVariable("lapDisposable");
     lapDisposable.type = world.getType("Disposable");
     protectedMemberVariables ~= lapDisposable;
+
+    MemberVariable playPauseStateDisposable = runningPresenter.newMemberVariable("playPauseStateDisposable");
+    playPauseStateDisposable.type = world.getType("Disposable");
+    protectedMemberVariables ~= playPauseStateDisposable;
 
     MemberVariable songMetadataDisposable = runningPresenter.newMemberVariable("songMetadataDisposable");
     songMetadataDisposable.type = world.getType("Disposable");
@@ -3395,10 +3939,6 @@ void addStopWatchPresenterMembers(ref TheWorld world, ref MemberVariable[] prote
     MemberVariable timeDisposable = stopWatchPresenter.newMemberVariable("timeDisposable");
     timeDisposable.type = world.getType("Disposable");
     protectedMemberVariables ~= timeDisposable;
-
-    //TODO add insertion Dao
-    //TODO add methods
-
 }
 
 void addStopWatchPresenter_StateMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
