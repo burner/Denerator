@@ -500,6 +500,7 @@ class Java : Generator {
     void generateMemberVariable(Out)(Out lockingTextWriter, in MemberVariable memberVariable, in int indent = 1) {
         const(string) protection = getProtection(memberVariable);
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(memberVariable);
+        writeln("generating member variable: " ~ memberVariable.name);
         const(string) type = getTypeString(memberVariable.type);
         const(string) name = memberVariable.name;
         string[] container = [protection, languageSpecificAttributes, type, name];
@@ -511,6 +512,7 @@ class Java : Generator {
         validateMemberFunction(memberFunction);
         const(string) protection = getProtection(memberFunction);
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(memberFunction);
+        writeln("generateding member function: " ~ memberFunction.name);
         const(string) type = getTypeString(memberFunction.returnType);
         const(string) name = memberFunction.name;
         const(string) functionString = [protection, languageSpecificAttributes, type, name].filter!(str => str.length > 0).join(" ");
@@ -522,11 +524,13 @@ class Java : Generator {
         validateMemberFunctionParameter(parameter);
         const(string) name = parameter.name;
         const(string) languageSpecificAttributes = getLanguageSpecificAttributes(parameter);
+        writeln("generateding parameter: " ~ parameter.name);
         const(string) type = getTypeString(parameter.type);
         return [languageSpecificAttributes, type, name].filter!(str => str.length > 0).join(" ");
     }
 
     string getTypeString(in Type type) {
+        //writeln("Typename: " ~ type.name);
         assert(TECHNOLOGY_JAVA in type.typeToLanguage);
         string typeJavaName = type.typeToLanguage[TECHNOLOGY_JAVA];
         if(!isPrimitive(type)){
