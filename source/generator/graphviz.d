@@ -314,34 +314,35 @@ class Graphvic : Generator {
 	}
 
 	void generate(in ConnectionImpl con, Graph g) {
-		void impl(in ConnectionImpl con, string from, string to,
-				Graph g)
-		{
-			Edge edge = g.getUnique!Edge(con.name ~ from ~ to,
-				 from, to
-			);
+		void impl(in ConnectionImpl con, string from, string to, Graph g){
+		    Edge edge = null;
+		    if(!from.empty && !to.empty){
+                edge = g.getUnique!Edge(con.name ~ from ~ to, from, to);
+            }
 			if(edge is null) {
 				return;
 			} else {
 				generate(con, edge);
 			}
-		}
+        }
 		// class to class is a special case because these edges might be
 		// required to be placed in multible containers or components
 		Class fromCls = cast(Class)con.from;
 		Class toCls = cast(Class)con.to;
-		if(fromCls !is null && toCls !is null) {
-			string[] fPaths = fromCls.pathsToRoot();
-			string[] tPaths = toCls.pathsToRoot();
-			ConnectedPath[] paths = connectedPaths(fPaths, tPaths);
-			foreach(it; paths) {
-				impl(con, it.from, it.to, g);
-			}
-		} else {
-			auto fromRoot = pathToRoot(con.from);
-			auto toRoot = pathToRoot(con.to);
-			impl(con, fromRoot[0], toRoot[0], g);
-		}
+        if(!hasClassParent(fromCls) && !hasClassParent(toCls)){
+            if(fromCls !is null && toCls !is null) {
+                string[] fPaths = fromCls.pathsToRoot();
+                string[] tPaths = toCls.pathsToRoot();
+                ConnectedPath[] paths = connectedPaths(fPaths, tPaths);
+                foreach(it; paths) {
+                    impl(con, it.from, it.to, g);
+                }
+            } else {
+                auto fromRoot = pathToRoot(con.from);
+                auto toRoot = pathToRoot(con.to);
+                impl(con, fromRoot[0], toRoot[0], g);
+            }
+	    }
 	}
 
 	void generate(in ConnectionImpl con, Edge e) {

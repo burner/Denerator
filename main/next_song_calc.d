@@ -30,9 +30,7 @@ void nextSongCalcModel(ref TheWorld world){
     MemberVariable[] beanMemberVariable;
 
     //Model
-    SoftwareSystem nextSongCalculationSystem = world.newSoftwareSystem("Next Song Calculation System");
-
-    Container binarySearchTreeNextSongCalculationSystem = nextSongCalculationSystem.newContainer("BinarySearchTreeNextSongCalculationSystem");
+    Container binarySearchTreeNextSongCalculationSystem = world.getSoftwareSystem("Next Song Calculation System").newContainer("BinarySearchTreeNextSongCalculationSystem");
     binarySearchTreeNextSongCalculationSystem.technology = "Java";
 
     Component de = binarySearchTreeNextSongCalculationSystem.newComponent("de");
@@ -75,8 +73,8 @@ void nextSongCalcModel(ref TheWorld world){
                 Class songRecommendationConfig = world.newClass("CongRecommendationConfig", song_recommendation);
                 notGeneratedClasses ~= songRecommendationConfig;
 
-                Class songRecommendationRestApi = world.newClass("SongRecommendationRestApi", song_recommendation);
-                notGeneratedInterfaces ~= songRecommendationRestApi;
+                Class songRecommendationRestApi_ = world.newClass("SongRecommendationRestApi_", song_recommendation);
+                notGeneratedInterfaces ~= songRecommendationRestApi_;
 
                 Class songRecommendationTargets = world.newClass("SongRecommendationTargets", song_recommendation);
                 notGeneratedClasses ~= songRecommendationTargets;

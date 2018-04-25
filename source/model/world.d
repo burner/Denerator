@@ -307,7 +307,7 @@ class TheWorld : Entity {
 		}
 
 		foreach(it; stuffThatHoldsClasses) {
-			ensure(it !is null, "Container to hold ", name, " was null");
+			ensure(it !is null, "Container, component or class to hold ", name, " was null");
 			if(name !in it.classes) {
 				it.classes[name] = ret;
 				ret.parents ~= it;

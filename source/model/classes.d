@@ -110,12 +110,6 @@ class Class : Type {
         throw new Exception(std.format.format("Inner class %s could not be found.", name));
 	}
 
-	Class addInnerClass(Class clazz){
-	    this.classes[clazz.name] = clazz;
-	    clazz.parents ~= this;
-	    return clazz;
-	}
-
 	CopyConstness!(T,MemberVariable) getMemberVariable(this T)(in string name) {
 		return this.get!MemberVariable(name);
 	}
@@ -223,9 +217,14 @@ class Class : Type {
 	string[] pathsToRoot() const {
 		string[] ret;
 		foreach(const(Entity) par; this.parents[]) {
-			ret ~= (par.pathToRoot() ~ "." ~ this.name);
+		    if (const(Class) parent = cast(Class) par){
+		        foreach(path; parent.pathsToRoot()){
+		            ret ~= path ~ "." ~ this.name;
+		        }
+		    } else{
+                ret ~= (par.pathToRoot() ~ "." ~ this.name);
+		    }
 		}
-
 		return ret;
 	}
 
@@ -473,5 +472,18 @@ string[] pathToRoot(in Entity en) {
 	} else {
 		return [en.pathToRoot()];
 	}
+}
+
+bool hasClassParent(in Entity en){
+    bool hasClassParent = false;
+    if(const(Class) c = cast(const(Class))en) {
+        foreach(const(Entity)par; c.parents){
+            if(auto parentClass = cast(const(Class))par){
+                hasClassParent = true;
+                break;
+            }
+        }
+    }
+    return hasClassParent;
 }
 

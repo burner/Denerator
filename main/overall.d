@@ -30,8 +30,9 @@ class NoTimeLogger : Logger {
 }
 
 void main() {
-    string appPath = "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\app\\masterarbeit_app\\app\\src\\main\\java";
-    string nextSongCalcPath = "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\nextsongcalc_degenerated";
+    string systemContextGraphvizPath = "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\system_context_graphviz";
+    string appJavaPath = "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\tmp";
+    string nextSongCalcJavaPath = "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\nextsongcalc_degenerated";
 
 	sharedLog = new NoTimeLogger(LogLevel.all);
 
@@ -44,12 +45,13 @@ void main() {
 	    //Basic setup
         auto world = new TheWorld("World");
         addBasicTypes(world);
-
-        //appModel(world);
-        //generateJavaApp(world, world.getContainer("App"), appPath);
-        nextSongCalcModel(world);
-        auto new_song_calculation_system = world.getSoftwareSystem("Next Song Calculation System");
-        generateJavaNextSongCalc(world, new_song_calculation_system.getContainer("BinarySearchTreeNextSongCalculationSystem"), nextSongCalcPath);
+        generateSystemContextLevelEntities(world);
+        appModel(world);
+        generateJavaApp(world, world.getSoftwareSystem("Running Application").getContainer("App"), appJavaPath);
+        //nextSongCalcModel(world);
+        //auto next_song_calculation_system = world.getSoftwareSystem("Next Song Calculation System");
+        //generateJavaNextSongCalc(world, next_song_calculation_system.getContainer("BinarySearchTreeNextSongCalculationSystem"), nextSongCalcJavaPath);
+        //generateGraphvicSystem(world, systemContextGraphvizPath);
 
 	}
 }
@@ -101,6 +103,9 @@ void generateJavaApp(ref TheWorld world, Container containerToGenerate, in strin
     java.newTypeMap["SpotifyRestApi"] = ["de.uol.smtrain.repository.datasource.spotify.rest.SpotifyRestApi"];
     java.newTypeMap["SpotifyPlayer"] = ["com.spotify.sdk.android.player.SpotifyPlayer"];
     java.newTypeMap["TrainingSession"] = ["de.uol.smtrain.repository.running_database.entity.TrainingSession"];
+    java.newTypeMap["Interval"] = ["de.uol.smtrain.repository.running_database.entity.Interval"];
+    java.newTypeMap["Location_"] = ["de.uol.smtrain.repository.running_database.entity.Location_"];
+    java.newTypeMap["Pause"] = ["de.uol.smtrain.repository.running_database.entity.Pause"];
     java.newTypeMap["URL"] = ["java.net.URL"];
     java.generate(containerToGenerate);
 }
@@ -111,4 +116,22 @@ void generateJavaNextSongCalc(ref TheWorld world, Container containerToGenerate,
     //java.newTypeMap["SongSample"] = ["de.uol.smtrain.next_song_calculation_system.repository.database.SongSample"];
     java.newTypeMap["List"] = ["java.util.List"];
     java.generate(containerToGenerate);
+}
+
+void generateGraphvicSystem(ref TheWorld world, in string path){
+    import generator.graphviz;
+    Graphvic gv = new Graphvic(world, path);
+    gv.generateSystemContext();
+}
+
+void generateSystemContextLevelEntities(ref TheWorld world){
+    Actor runner = world.newActor("Runner");
+    auto runningApplication = world.newSoftwareSystem("Running Application");
+    world.newConnection("uses", runner, runningApplication);
+    auto nextSongCalculationSystem = world.newSoftwareSystem("Next Song Calculation System");
+    world.newConnection("consumes", runningApplication, nextSongCalculationSystem);
+    auto spotify = world.newSoftwareSystem("Spotify");
+    world.newConnection("retrieves metadata and uses streaming", runningApplication, spotify);
+    world.newConnection("retrieves metadata", nextSongCalculationSystem, spotify);
+
 }

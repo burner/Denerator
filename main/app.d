@@ -74,13 +74,8 @@ void appModel(ref TheWorld world){
 
     MemberVariable[] beanMemberVariable;
 
-    //System context level
-    Actor runner = world.newActor("Runner");
-    auto runningApplication = world.newSoftwareSystem("Running Application");
-    world.newConnection("Uses", runner, runningApplication);
-
     //Container level
-    auto app = runningApplication.newContainer("App");
+    auto app = world.getSoftwareSystem("Running Application").newContainer("App");
     app.technology = "Java";
 
     //Component level
@@ -92,7 +87,7 @@ void appModel(ref TheWorld world){
 
     auto config_smtrain = smtrain.newSubComponent("config");
 
-        Class configHelper = world.newClass("ConfigHelper");
+        Class configHelper = world.newClass("ConfigHelper", config_smtrain);
         generatedClasses ~= configHelper;
 
     auto domain_smtrain = smtrain.newSubComponent("domain");
@@ -171,7 +166,7 @@ void appModel(ref TheWorld world){
                     notGeneratedClasses ~= insertionDao;
 
                     Class retrievalDao = world.newClass("RetrievalDao", dao_running_database_repository_smtrain);
-                    notGeneratedClasses ~= retrievalDao;
+                    generatedClasses ~= retrievalDao;
 
                 auto entity_running_database_repository_smtrain = running_database_repository_smtrain.newSubComponent("entity");
 
@@ -192,7 +187,7 @@ void appModel(ref TheWorld world){
             notGeneratedClasses ~= runningDatabase;
 
             Class wholeTrainingSession = world.newClass("WholeTrainingSession", running_database_repository_smtrain);
-            notGeneratedClasses ~= wholeTrainingSession;
+            generatedClasses ~= wholeTrainingSession;
 
             auto song_recommendation = repository_smtrain.newSubComponent("song_recommendation");
 
@@ -794,7 +789,7 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
     //running database
     //TODO Does not work because relies on reflection --> cannot initialize abstract classes
     //addInsertionDaoMembers(world, protectedMemberVariables, abstractMemberFunctions);
-    //addRetrievalDaoMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addRetrievalDaoMembers(world, protectedMemberVariables, abstractMemberFunctions);
     //
     //addIntervalMembers(world, protectedMemberVariables, abstractMemberFunctions);
     //addLocationMembers(world, protectedMemberVariables, abstractMemberFunctions);
@@ -802,7 +797,7 @@ void generateMembers(TheWorld world, ref MemberVariable[] protectedMemberVariabl
     //addTraininSessionMembers(world, protectedMemberVariables, abstractMemberFunctions);
     //
     //addRunningDatabaseMembers(world, protectedMemberVariables, abstractMemberFunctions);
-    //addWholeTrainingSessionMembers(world, protectedMemberVariables, abstractMemberFunctions);
+    addWholeTrainingSessionMembers(world, protectedMemberVariables, abstractMemberFunctions);
 
     //NextSongCalcualtion
     addNextSongCalculationResponseMembers(world, protectedMemberVariables, abstractMemberFunctions);
@@ -1071,6 +1066,21 @@ void addExternalTypes(TheWorld world){
     Type list_LocationBean_ = world.newType("List<LocationBean>");
     list_LocationBean_.typeToLanguage["Java"] = "List<LocationBean>";
 
+    Type list_Interval_ = world.newType("List<Interval>");
+    list_Interval_.typeToLanguage["Java"] = "List<Interval>";
+
+    Type list_Location__ = world.newType("List<Location_>");
+    list_Location__.typeToLanguage["Java"] = "List<Location_>";
+
+    Type list_pause_ = world.newType("List<Pause>");
+    list_pause_.typeToLanguage["Java"] = "List<Pause>";
+
+    Type list_Pair_Double_Double__ = world.newType("List<Pair<Double, Double>>");
+    list_Pair_Double_Double__.typeToLanguage["Java"] = "List<Pair<Double, Double>>";
+
+    Type list_Pair_Long_Long__ = world.newType("List<Pair<Long, Long>>");
+    list_Pair_Long_Long__.typeToLanguage["Java"] = "List<Pair<Long, Long>>";
+
     Type observable_SelectPlaylistImageBean_ = world.newType("Observable<SelectPlaylistImageBean>");
     observable_SelectPlaylistImageBean_.typeToLanguage["Java"] = "Observable<SelectPlaylistImageBean>";
 
@@ -1173,26 +1183,20 @@ void addExternalTypes(TheWorld world){
     Type location_ = world.newType("Location_");
     location_.typeToLanguage["Java"] = "Location_";
 
-    Type list_Location__ = world.newType("List<Location_>");
-    list_Location__.typeToLanguage["Java"] = "List<Location_>";
+    Type pause = world.newType("Pause");
+    pause.typeToLanguage["Java"] = "Pause";
 
-    //Type pause = world.newType("Pause");
-    //pause.typeToLanguage["Java"] = "Pause";
+    Type interval = world.newType("Interval");
+    interval.typeToLanguage["Java"] = "Interval";
 
-    Type list_Pause_ = world.newType("List<Pause>");
-    list_Pause_.typeToLanguage["Java"] = "List<Pause>";
-
-    //Type interval = world.newType("Interval");
-    //interval.typeToLanguage["Java"] = "Interval";
-
-    Type list_Interval_ = world.newType("List<Interval>");
-    list_Interval_.typeToLanguage["Java"] = "List<Interval>";
+    Type trainingSession = world.newType("TrainingSession");
+    trainingSession.typeToLanguage["Java"] = "TrainingSession";
 
     Type observable_ReviewElementBean_ = world.newType("Observable<ReviewElementBean>");
     observable_ReviewElementBean_.typeToLanguage["Java"] = "Observable<ReviewElementBean>";
 
-    Type observable_Datapoint_ = world.newType("Observable<Datapoint>");
-     observable_Datapoint_.typeToLanguage["Java"] = "Observable<Datapoint>";
+    Type observable_Datapoint_ = world.newType("Observable<DataPoint>");
+     observable_Datapoint_.typeToLanguage["Java"] = "Observable<DataPoint>";
 
     Type single_List_IntervalReviewBean__ = world.newType("Single<List<IntervalReviewBean>>");
     single_List_IntervalReviewBean__.typeToLanguage["Java"] = "Single<List<IntervalReviewBean>>";
@@ -1470,6 +1474,12 @@ void addMediaEntityMembers(ref TheWorld world, ref MemberVariable[] protectedMem
     addGetter(accessToken, abstractMemberFunctions, mediaEntity, world);
     addSetter(accessToken, abstractMemberFunctions, mediaEntity, world);
 
+    MemberVariable expirationTime = mediaEntity.newMemberVariable("expirationTime");
+    expirationTime.type = world.getType("Long");
+    protectedMemberVariables ~= expirationTime;
+
+    addGetter(expirationTime, abstractMemberFunctions, mediaEntity, world);
+    addSetter(expirationTime, abstractMemberFunctions, mediaEntity, world);
 }
 
 void addPlanningEntityMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -1586,6 +1596,7 @@ void addLoginCallbackMembers(ref TheWorld world, ref MemberVariable[] protectedM
     MemberFunction onLoggedIn = loginCallback.newMemberFunction("onLoggedIn");
     onLoggedIn.returnType = world.getType("Void");
     onLoggedIn.addParameter("token", world.getType("String"));
+    onLoggedIn.addParameter("expiresThen", world.getType("Long"));
 }
 
 void addSpotifyLogInFragmentMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -1883,10 +1894,14 @@ void addTracksBeanMembers(ref TheWorld world, ref MemberVariable[] protectedMemb
 //
 //}
 
-//void addRetrievalDaoMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
-//    Class retrievalDao= world.getClass("RetrievalDao");
-//
-//}
+void addRetrievalDaoMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class retrievalDao= world.getClass("RetrievalDao");
+
+    MemberFunction getWholeTrainingSession = retrievalDao.newMemberFunction("getWholeTrainingSession");
+    getWholeTrainingSession.returnType = world.getType("Single<WholeTrainingSession>");
+    getWholeTrainingSession.addParameter("trainingSession", world.getType("TrainingSession"));
+    abstractMemberFunctions ~= getWholeTrainingSession;
+}
 //
 //void addIntervalMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
 //    Class interval= world.getClass("Interval");
@@ -1915,19 +1930,116 @@ void addTracksBeanMembers(ref TheWorld world, ref MemberVariable[] protectedMemb
 //
 //}
 //
-//void addWholeTrainingSessionMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
-//    Class wholeTrainingSession = world.getClass("WholeTrainingSession");
-//}
+void addWholeTrainingSessionMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
+    Class wholeTrainingSession = world.getClass("WholeTrainingSession");
+
+    MemberVariable intervals = wholeTrainingSession.newMemberVariable("intervals");
+    intervals.type = world.getType("List<Interval>");
+    protectedMemberVariables ~= intervals;
+
+    MemberVariable locations = wholeTrainingSession.newMemberVariable("locations");
+    locations.type = world.getType("List<Location_>");
+    protectedMemberVariables ~= locations;
+
+    MemberVariable pauses = wholeTrainingSession.newMemberVariable("pauses");
+    pauses.type = world.getType("List<Pause>");
+    protectedMemberVariables ~= pauses;
+
+    MemberVariable trainingSession = wholeTrainingSession.newMemberVariable("trainingSession");
+    trainingSession.type = world.getType("TrainingSession");
+    protectedMemberVariables ~= trainingSession;
+
+    MemberFunction getIntervals = wholeTrainingSession.newMemberFunction("getIntervals");
+    getIntervals.returnType = world.getType("List<Interval>");
+    abstractMemberFunctions ~= getIntervals;
+
+    MemberFunction getLocations = wholeTrainingSession.newMemberFunction("getLocations");
+    getLocations.returnType = world.getType("List<Location_>");
+    abstractMemberFunctions ~= getLocations;
+
+    MemberFunction getPauses = wholeTrainingSession.newMemberFunction("getPauses");
+    getPauses.returnType = world.getType("List<Pause>");
+    abstractMemberFunctions ~= getPauses;
+
+    MemberFunction getTrainingSession = wholeTrainingSession.newMemberFunction("getTrainingSession");
+    getTrainingSession.returnType = world.getType("TrainingSession");
+    abstractMemberFunctions ~= getTrainingSession;
+
+    MemberFunction getAverageSpeed = wholeTrainingSession.newMemberFunction("getAverageSpeed");
+    getAverageSpeed.returnType = world.getType("Double");
+    abstractMemberFunctions ~= getAverageSpeed;
+
+    MemberFunction getActiveRunningTime = wholeTrainingSession.newMemberFunction("getActiveRunningTime");
+    getActiveRunningTime.returnType = world.getType("Long");
+    abstractMemberFunctions ~= getActiveRunningTime;
+
+    MemberFunction getTrainingDuration = wholeTrainingSession.newMemberFunction("getTrainingDuration");
+    getTrainingDuration.returnType = world.getType("Long");
+    abstractMemberFunctions ~= getTrainingDuration;
+
+    MemberFunction getSpeedCourse = wholeTrainingSession.newMemberFunction("getSpeedCourse");
+    getSpeedCourse.returnType = world.getType("List<Pair<Double, Double>>");
+    abstractMemberFunctions ~= getSpeedCourse;
+
+    MemberFunction getIntervalSpeeds = wholeTrainingSession.newMemberFunction("getIntervalSpeeds");
+    getIntervalSpeeds.returnType = world.getType("List<Double>");
+    abstractMemberFunctions ~= getIntervalSpeeds;
+
+    MemberFunction getIntervalDistances = wholeTrainingSession.newMemberFunction("getIntervalDistances");
+    getIntervalDistances.returnType = world.getType("List<Double>");
+    abstractMemberFunctions ~= getIntervalDistances;
+
+    MemberFunction getIntervalDurations = wholeTrainingSession.newMemberFunction("getIntervalDurations");
+    getIntervalDurations.returnType = world.getType("List<Long>");
+    abstractMemberFunctions ~= getIntervalDurations;
+
+    MemberFunction getOverallDistanceM = wholeTrainingSession.newMemberFunction("getOverallDistanceM");
+    getOverallDistanceM.returnType = world.getType("Double");
+    abstractMemberFunctions ~= getOverallDistanceM;
+
+    MemberFunction getDistanceBetween = wholeTrainingSession.newMemberFunction("getDistanceBetween");
+    getDistanceBetween.addParameter("start", world.getType("Long"));
+    getDistanceBetween.addParameter("end", world.getType("Long"));
+    getDistanceBetween.returnType = world.getType("Double");
+    abstractMemberFunctions ~= getDistanceBetween;
+
+    MemberFunction getLocationsBetween = wholeTrainingSession.newMemberFunction("getLocationsBetween");
+    getLocationsBetween.addParameter("start", world.getType("Long"));
+    getLocationsBetween.addParameter("end", world.getType("Long"));
+    getLocationsBetween.returnType = world.getType("List<Location_>");
+    abstractMemberFunctions ~= getLocationsBetween;
+
+    MemberFunction getNoPauseTimes = wholeTrainingSession.newMemberFunction("getNoPauseTimes");
+    getNoPauseTimes.returnType = world.getType("List<Pair<Long, Long>>");
+    abstractMemberFunctions ~= getNoPauseTimes;
+
+    MemberFunction getTrainingStartUtc = wholeTrainingSession.newMemberFunction("getTrainingStartUtc");
+    getTrainingStartUtc.returnType = world.getType("Long");
+    abstractMemberFunctions ~= getTrainingStartUtc;
+
+    MemberFunction getTrainingStartDate = wholeTrainingSession.newMemberFunction("getTrainingStartDate");
+    getTrainingStartDate.returnType = world.getType("Date");
+    abstractMemberFunctions ~= getTrainingStartDate;
+
+    MemberFunction getTrainingEndUtc = wholeTrainingSession.newMemberFunction("getTrainingEndUtc");
+    getTrainingEndUtc.returnType = world.getType("Long");
+    abstractMemberFunctions ~= getTrainingEndUtc;
+
+    MemberFunction getTrainingEndDate = wholeTrainingSession.newMemberFunction("getTrainingEndDate");
+    getTrainingEndDate.returnType = world.getType("Date");
+    abstractMemberFunctions ~= getTrainingEndDate;
+
+}
 
 void addNextSongCalculationResponseMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
     Class nextSongCalculationResponse = world.getClass("NextSongCalculationResponse");
 
-    MemberVariable songId = nextSongCalculationResponse.newMemberVariable("songId");
-    songId.type = world.getType("String");
-    protectedMemberVariables ~= songId;
+    MemberVariable id = nextSongCalculationResponse.newMemberVariable("id");
+    id.type = world.getType("String");
+    protectedMemberVariables ~= id;
 
-    addSetter(songId, abstractMemberFunctions, nextSongCalculationResponse, world);
-    addGetter(songId, abstractMemberFunctions, nextSongCalculationResponse, world);
+    addSetter(id, abstractMemberFunctions, nextSongCalculationResponse, world);
+    addGetter(id, abstractMemberFunctions, nextSongCalculationResponse, world);
 }
 
 void addClockServiceInterfaceMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -2684,6 +2796,12 @@ void addRetrieveTrainingDataCaseMembers(ref TheWorld world, ref MemberVariable[]
     getTrainingSessions.addParameter("howMany", world.getType("Int"));
     abstractMemberFunctions ~= getTrainingSessions;
 
+    MemberFunction getTrainingSessions_ = retrieveTrainingDataCase.newMemberFunction("getTrainingSessions");
+    getTrainingSessions_.returnType = world.getType("Observable<WholeTrainingSession>");
+    getTrainingSessions_.addParameter("fromUtcTime", world.getType("Long"));
+    getTrainingSessions_.addParameter("toUtcTime", world.getType("Long"));
+    abstractMemberFunctions ~= getTrainingSessions_;
+
     MemberFunction getTrainingSession = retrieveTrainingDataCase.newMemberFunction("getTrainingSession");
     getTrainingSession.returnType = world.getType("Single<WholeTrainingSession>");
     getTrainingSession.addParameter("id", world.getType("Long"));
@@ -2747,6 +2865,10 @@ void addPersistTrainingSessionCaseMembers(ref TheWorld world, ref MemberVariable
     MemberFunction persist = persistTrainingSessionCase.newMemberFunction("persist");
     persist.returnType = world.getType("Void");
     abstractMemberFunctions ~= persist;
+
+    MemberFunction clear = persistTrainingSessionCase.newMemberFunction("clear");
+    clear.returnType = world.getType("Void");
+    abstractMemberFunctions ~= clear;
 }
 
 void addIntervalPlanningContractPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -3013,6 +3135,9 @@ void addRunningContractViewMembers(ref TheWorld world, ref MemberVariable[] prot
 
      MemberFunction askEndTraining = runningContractView.newMemberFunction("askEndTraining");
      askEndTraining.returnType = world.getType("Observable<StopwatchState>");
+
+     MemberFunction endTraining = runningContractView.newMemberFunction("endTraining");
+     endTraining.returnType = world.getType("Void");
 }
 
 void addReviewContractPresenterMembers(ref TheWorld world, ref MemberVariable[] protectedMemberVariables, ref MemberFunction[] abstractMemberFunctions){
@@ -3025,7 +3150,7 @@ void addReviewContractPresenterMembers(ref TheWorld world, ref MemberVariable[] 
     MemberFunction getReviewData = reviewContractPresenter.newMemberFunction("getReviewData");
     getReviewData.returnType = world.getType("Observable<ReviewElementBean>");
 
-    MemberFunction getReviewDataWithin = reviewContractPresenter.newMemberFunction("reviewContractPresenter");
+    MemberFunction getReviewDataWithin = reviewContractPresenter.newMemberFunction("getReviewDataWithin");
     getReviewDataWithin.returnType = world.getType("Observable<ReviewElementBean>");
     getReviewDataWithin.addParameter("from", world.getType("Long"));
     getReviewDataWithin.addParameter("to", world.getType("Long"));
@@ -3787,6 +3912,10 @@ void addRunningPresenterMembers(ref TheWorld world, ref MemberVariable[] protect
     MemberVariable stopwatchStateSubject = runningPresenter.newMemberVariable("stopwatchStateSubject");
     stopwatchStateSubject.type = world.getType("Subject<StopwatchState>");
     protectedMemberVariables ~= stopwatchStateSubject;
+
+    MemberVariable playPauseStateSubject = runningPresenter.newMemberVariable("playPauseStateSubject");
+    playPauseStateSubject.type = world.getType("Subject<PlayPauseState>");
+    protectedMemberVariables ~= playPauseStateSubject;
 
     MemberVariable distanceDisposable = runningPresenter.newMemberVariable("distanceDisposable");
     distanceDisposable.type = world.getType("Disposable");
