@@ -43,8 +43,39 @@ void main() {
 	version(unittest) {
 		ret = true;
 	}
-	logf("%s", ret);
-	if(!ret) fun();
+	if(!ret) fun2();
+}
+
+enum ST = "SeqTS";
+
+alias ColumnNull = Flag!"ColumnNull";
+
+void addColumn(MemberVariable mv, ColumnNull cn) {
+	import std.format : format;
+	mv.addLangSpecificAttribute(ST, format("@Column({allowNull: %s})",
+			cn == ColumnNull.yes ? "true" : "false"));
+}
+
+void fun2() {
+	import generator.seqts;
+	auto world = new TheWorld("TheWorld");
+	addBasicTypes(world);
+
+	auto system = world.newSoftwareSystem("Website");
+	auto be = system.newContainer("backend");
+	be.technology = ST;
+	auto userCom = be.newComponent("user");
+
+	Class userCls = world.newClass("User", userCom);
+	auto mv = userCls.newMemberVariable("email");
+	mv.type = world.getType("String");
+	addColumn(mv, ColumnNull.no);
+
+	auto seqtsGen = new SeqelizeTS(world, "SeqTSTest");
+	seqtsGen.generate();
+
+	Graphvic gv = new Graphvic(world, "GraphvizOutput2");
+	gv.generate();
 }
 
 void fun() {
