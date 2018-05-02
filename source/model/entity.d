@@ -26,9 +26,9 @@ public alias StringHashSet = bool[string];
 //public alias StringEntityMap(T) = HashMap!(string, T, Mallocator, stringToHash);
 public alias StringEntityMap(T) = T[string];
 
-public @property bool empty(T)(auto ref const(T[string]) aa) {
-	return aa.length == 0;
-}
+//public @property bool empty(T)(auto ref const(T[string]) aa) {
+//	return aa.length == 0;
+//}
 
 public void insert(ref bool[string] aa, string str) {
 	aa[str] = true;

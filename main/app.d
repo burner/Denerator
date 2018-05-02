@@ -155,8 +155,8 @@ void fun() {
 
 	Class userInfo = genAngularService("UserInfo", world, frontendUserCtrl);
 
-	//Graphvic gv = new Graphvic(world, "GraphvizOutput");
-	//gv.generate();
+	Graphvic gv = new Graphvic(world, "GraphvizOutput");
+	gv.generate();
 
 	//MySQL mysql = new MySQL(world, "MySQL");
 	//mysql.generate(database);
