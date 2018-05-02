@@ -1,6 +1,7 @@
 import std.stdio : writeln;
 
 import std.stdio : writeln;
+import std.ascii : toLower;
 import std.typecons;
 import std.experimental.logger;
 import containers.hashmap;
@@ -18,6 +19,8 @@ import predefined.types.basictypes;
 import predefined.ctrl.userctrl;
 
 import predefined.angular.component;
+
+import generator.seqts;
 
 class NoTimeLogger : Logger {
 	import std.stdio : writefln;
@@ -56,14 +59,23 @@ void addColumn(MemberVariable mv, ColumnNull cn) {
 			cn == ColumnNull.yes ? "true" : "false"));
 }
 
-void fun2() {
-	import generator.seqts;
-	auto world = new TheWorld("TheWorld");
-	addBasicTypes(world);
+struct ClassCom {
+	Class cls;
+	Component com;
+}
 
-	auto system = world.newSoftwareSystem("Website");
-	auto be = system.newContainer("backend");
-	be.technology = ST;
+ClassCom buildGroup(TheWorld world, Container be) {
+	auto groupCom = be.newComponent("group");
+
+	Class groupCls = world.newClass("Group", groupCom);
+	auto mv = groupCls.newMemberVariable("name");
+	mv.type = world.getType("String");
+	addColumn(mv, ColumnNull.no);
+
+	return ClassCom(groupCls, groupCom);
+}
+
+ClassCom buildUser(TheWorld world, Container be) {
 	auto userCom = be.newComponent("user");
 
 	Class userCls = world.newClass("User", userCom);
@@ -71,10 +83,40 @@ void fun2() {
 	mv.type = world.getType("String");
 	addColumn(mv, ColumnNull.no);
 
+	return ClassCom(userCls, userCom);
+}
+
+Class junctionTable(TheWorld world, Container con, Class from, Class to) {
+	Component com = con.newComponent(from.name ~ "_" ~ to.name);
+	Class junction = world.newClass(from.name ~ to.name, com);
+	world.newConnectionImpl!BelongsToMany(from.name, junction, from);
+	world.newConnectionImpl!ForeignKey(from.name ~ "_id", from, junction);
+
+	world.newConnectionImpl!BelongsToMany(to.name, junction, to);
+	world.newConnectionImpl!ForeignKey(to.name ~ "_id", to, junction);
+
+	return junction;
+}
+
+void fun2() {
+	auto world = new TheWorld("TheWorld");
+	addBasicTypes(world);
+
+	auto system = world.newSoftwareSystem("Website");
+	auto be = system.newContainer("backend");
+	be.technology = ST;
+
+	ClassCom user = buildUser(world, be);
+	ClassCom group = buildGroup(world, be);
+
+	Class userGroupJunction = junctionTable(world, be, user.cls,
+			group.cls
+		);
+
 	auto seqtsGen = new SeqelizeTS(world, "SeqTSTest");
 	seqtsGen.generate();
 
-	Graphvic gv = new Graphvic(world, "GraphvizOutput2");
+	auto gv = new GraphvicSeqTS(world, "GraphvizOutput2");
 	gv.generate();
 }
 

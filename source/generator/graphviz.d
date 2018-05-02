@@ -598,12 +598,12 @@ class Graphvic : Generator {
 		return n;
 	}
 
-	private static auto buildLabelFromDescription(in Entity en) {
+	static auto buildLabelFromDescription(in Entity en) {
 		return wrapLongString(en.description, 40)
 			.map!(a => format("<tr><td>%s</td></tr>", a)).joiner("\n");
 	}
 
-	private static void removeAll(C)(ref C c, in ref StringHashSet toKeep) {
+	static void removeAll(C)(ref C c, in ref StringHashSet toKeep) {
 		auto keys = c.keys();
 		foreach(it; keys) {
 			if(it !in toKeep) {		
