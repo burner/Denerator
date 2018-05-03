@@ -1,7 +1,7 @@
 import std.stdio : writeln;
 
 import std.stdio : writeln;
-import std.ascii : toLower;
+import std.uni : toLower;
 import std.typecons;
 import std.experimental.logger;
 import containers.hashmap;
@@ -75,6 +75,18 @@ ClassCom buildGroup(TheWorld world, Container be) {
 	return ClassCom(groupCls, groupCom);
 }
 
+ClassCom buildOrg(TheWorld world, Container be) {
+	auto orgCom = be.newComponent("org");
+
+	Class orgCls = world.newClass("Org", orgCom);
+	auto mv = orgCls.newMemberVariable("name");
+	mv.type = world.getType("String");
+	addColumn(mv, ColumnNull.no);
+
+	return ClassCom(orgCls, orgCom);
+}
+
+
 ClassCom buildUser(TheWorld world, Container be) {
 	auto userCom = be.newComponent("user");
 
@@ -86,14 +98,52 @@ ClassCom buildUser(TheWorld world, Container be) {
 	return ClassCom(userCls, userCom);
 }
 
-Class junctionTable(TheWorld world, Container con, Class from, Class to) {
-	Component com = con.newComponent(from.name ~ "_" ~ to.name);
-	Class junction = world.newClass(from.name ~ to.name, com);
-	world.newConnectionImpl!BelongsToMany(from.name, junction, from);
-	world.newConnectionImpl!ForeignKey(from.name ~ "_id", from, junction);
+ClassCom buildUserOrgChange(TheWorld world, Container be) {
+	auto com = be.newComponent("userorgchange");
 
-	world.newConnectionImpl!BelongsToMany(to.name, junction, to);
-	world.newConnectionImpl!ForeignKey(to.name ~ "_id", to, junction);
+	Class cls = world.newClass("UserOrgChange", com);
+	auto mv = cls.newMemberVariable("action");
+	mv.type = world.getType("String");
+	addColumn(mv, ColumnNull.no);
+
+	foreach(name; ["User", "Org"]) {
+		Class other = world.getClass(name);
+		world.newConnectionImpl!HasMany(
+				toLower(other.name ~ cls.name), other, cls
+			);
+		world.newConnectionImpl!ForeignKey(toLower(other.name ~ "_id"), cls, 
+				other
+			);
+	}
+
+	return ClassCom(cls, com);
+}
+
+Class junctionTable(TheWorld world, string fromName, string toName, Container con, 
+		Class from, Class to) 
+{
+	import std.format : format;
+	string name = format("junction%s%s", 
+			toLower(fromName), toLower(toName)
+		);
+	Component com = con.newComponent(name);
+	Class junction = world.newClass(format("Junction%s%s", from.name, to.name), 
+			com
+		);
+
+	logf("%s", junction.name);
+
+	string[] names = [fromName, toName];
+	foreach(idx, it; [from, to]) {
+		auto bto = world.newConnectionImpl!BelongsToMany(
+				name ~ "_" ~ names[idx], it, junction
+			);
+		auto fk = world.newConnectionImpl!ForeignKey(
+				name ~ "_" ~ it.name ~ "Id", 
+				junction, it
+			);
+		logf("bto %s, fk %s", bto.name, fk.name);
+	}
 
 	return junction;
 }
@@ -108,16 +158,28 @@ void fun2() {
 
 	ClassCom user = buildUser(world, be);
 	ClassCom group = buildGroup(world, be);
+	ClassCom org = buildOrg(world, be);
 
-	Class userGroupJunction = junctionTable(world, be, user.cls,
-			group.cls
+	logf("Groups Member Junction");
+	Class userGroupJunction = junctionTable(world, "groups", "users", 
+			be, user.cls, group.cls
 		);
+
+	world.newConnectionImpl!HasMany("groups", org.cls, group.cls);
+	world.newConnectionImpl!BelongsTo("org", group.cls, org.cls);
+
+	logf("Orgs users Junction");
+	Class userOrgJunction = junctionTable(world, "orgs", "users", be, user.cls,
+			org.cls
+		);
+
+	ClassCom userOrgChange = buildUserOrgChange(world, be);
 
 	auto seqtsGen = new SeqelizeTS(world, "SeqTSTest");
 	seqtsGen.generate();
 
-	auto gv = new GraphvicSeqTS(world, "GraphvizOutput2");
-	gv.generate();
+	//auto gv = new GraphvicSeqTS(world, "GraphvizOutput2");
+	//gv.generate();
 }
 
 void fun() {

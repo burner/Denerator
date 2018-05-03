@@ -1,5 +1,5 @@
 fast:
-	dub -debug --config=exe
+	dub -debug --config=exe --compiler=dmd
 
 all: fast
 	make -C GraphvizOutput
