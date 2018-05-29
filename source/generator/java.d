@@ -645,8 +645,8 @@ class Java : Generator {
     }
 
     void validateMemberFunctionParameter(in MemberVariable memberVariable) const{
-            if(!(TECHNOLOGY_JAVA in memberVariable.type.typeToLanguage)){
-                throw new Exception(std.format.format("The type for parameter %s was not provided", memberVariable.name));
-            }
+        if(!(TECHNOLOGY_JAVA in memberVariable.type.typeToLanguage)){
+            throw new Exception(std.format.format("The type for parameter %s was not provided", memberVariable.name));
         }
+    }
 }

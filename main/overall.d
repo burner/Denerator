@@ -107,6 +107,7 @@ void generateJavaApp(ref TheWorld world, Container containerToGenerate, in strin
     java.newTypeMap["Location_"] = ["de.uol.smtrain.repository.running_database.entity.Location_"];
     java.newTypeMap["Pause"] = ["de.uol.smtrain.repository.running_database.entity.Pause"];
     java.newTypeMap["URL"] = ["java.net.URL"];
+    java.newTypeMap["RxPermissions"] = ["com.tbruyelle.rxpermissions2.RxPermissions"];
     java.generate(containerToGenerate);
 }
 
