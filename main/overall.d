@@ -30,9 +30,7 @@ class NoTimeLogger : Logger {
 }
 
 void main() {
-    string systemContextGraphvizPath = "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\system_context_graphviz";
-    string appJavaPath = "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\tmp";
-    string nextSongCalcJavaPath = "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\nextsongcalc_degenerated";
+    string appJavaPath = "../generated/app";
 
 	sharedLog = new NoTimeLogger(LogLevel.all);
 
@@ -44,22 +42,25 @@ void main() {
 	if(!ret){
 	    //Basic setup
         auto world = new TheWorld("World");
+        Actor runner = world.newActor("Runner");
+        auto runningApplication = world.newSoftwareSystem("Running Application");
+        world.newConnection("uses", runner, runningApplication);
+        auto nextSongCalculationSystem = world.newSoftwareSystem("Next Song Calculation System");
+        world.newConnection("consumes", runningApplication, nextSongCalculationSystem);
+        auto spotify = world.newSoftwareSystem("Spotify");
+        world.newConnection("retrieves metadata and uses streaming", runningApplication, spotify);
+        world.newConnection("retrieves metadata", nextSongCalculationSystem, spotify);
         addBasicTypes(world);
         generateSystemContextLevelEntities(world);
         appModel(world);
         generateJavaApp(world, world.getSoftwareSystem("Running Application").getContainer("App"), appJavaPath);
-        //nextSongCalcModel(world);
-        //auto next_song_calculation_system = world.getSoftwareSystem("Next Song Calculation System");
-        //generateJavaNextSongCalc(world, next_song_calculation_system.getContainer("BinarySearchTreeNextSongCalculationSystem"), nextSongCalcJavaPath);
-        //generateGraphvicSystem(world, systemContextGraphvizPath);
 
 	}
 }
 
 void generateJavaApp(ref TheWorld world, Container containerToGenerate, in string path){
     import generator.java;
-    Java java = new Java(world, "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\app\\masterarbeit_app\\app\\src\\main\\java");
-    //Java java = new Java(world, "C:\\Users\\0step\\Documents\\Uni_Oldenburg\\Maste_Semester_IV\\Masterarbeit\\app\\generated");
+    Java java = new Java(world, path);
     //Types that are not provided by the genereted classes themselves
     java.newTypeMap["Binder"] = ["android.os.Binder"];
     java.newTypeMap["Bitmap"] = ["android.graphics.Bitmap"];
@@ -134,5 +135,4 @@ void generateSystemContextLevelEntities(ref TheWorld world){
     auto spotify = world.newSoftwareSystem("Spotify");
     world.newConnection("retrieves metadata and uses streaming", runningApplication, spotify);
     world.newConnection("retrieves metadata", nextSongCalculationSystem, spotify);
-
 }
