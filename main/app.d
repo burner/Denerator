@@ -480,8 +480,6 @@ void appModel(ref TheWorld world){
                 Class songBean_Model_UserInterface = world.newClass("SongBean", model_UserInterface);
                 generatedClasses ~= songBean_Model_UserInterface;
 
-
-
         //presenters
         //planning presenters
         auto presenter_UserInteface = userInterface.newSubComponent("presenter");
@@ -4052,10 +4050,6 @@ void addStopWatchPresenterMembers(ref TheWorld world, ref MemberVariable[] prote
     MemberVariable timeFacade = stopWatchPresenter.newMemberVariable("timeFacade");
     timeFacade.type = world.getType("TimeFacade");
     protectedMemberVariables ~= timeFacade;
-
-    MemberVariable timeMillis = stopWatchPresenter.newMemberVariable("timeMillis");
-    timeMillis.type = world.getType("Long");
-    protectedMemberVariables ~= timeMillis;
 
     MemberVariable stopwatchStateFacade = stopWatchPresenter.newMemberVariable("stopwatchStateFacade");
     stopwatchStateFacade.type = world.getType("StopwatchStateFacade");
