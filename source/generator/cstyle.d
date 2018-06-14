@@ -27,8 +27,8 @@ abstract class CStyle : Generator {
 	this(in TheWorld world, in string outputDir) {
 		super(world);
 		this.outputDir = outputDir;
-		this.outDirPath.insertBack(outputDir);
-		this.outDirPath.insertBack("source");
+		this.outDirPath.insertBack(outputDir); //inserts the output dir at the end of outputDirPath
+		this.outDirPath.insertBack("source"); //inserts "source" at the end of outputDirPath
 		logf("%s [%(%s %)]", getcwd(), this.outDirPath[]);
 		enforce(Generator.createFolder(outputDir));
 	}
@@ -116,6 +116,9 @@ abstract class CStyle : Generator {
 		}
 	}
 
+    /**
+     * Ensures that the type has a typeToLanguage attribute and writes this attribute to ltw if it has.
+     */
 	void generateType(Out)(ref Out ltw, in Type type, in int indent = 0) {
 		ensure(type !is null, "Type is null");
 		if(auto cls = cast(const(Class))type) {
@@ -129,6 +132,9 @@ abstract class CStyle : Generator {
 		}
 	}
 
+    /**
+     * Generates the protection for an entity like public, protected, etc. Does not generate anything else.
+     */
 	void generateProtectedEntity(Out)(Out ltw, in ProtectedEntity pe,
 		   	in int indent = 0) 
 	{
