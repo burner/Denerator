@@ -13,6 +13,7 @@ class Component : ProtectedEntity {
 	import exceptionhandling;
 
 	StringEntityMap!(Class) classes;
+	StringEntityMap!(Enum) enums;
 	Component[string] subComponents;
 	
 	this(in string name, in Entity parent) {
@@ -24,12 +25,18 @@ class Component : ProtectedEntity {
 
 		foreach(const(string) name, const(Class) value; old.classes) {
 			auto cls = world.getClass(name);
-			expect(cls !is null, "While copying ", this.name, "class ", name,
+			ensure(cls !is null, "While copying ", this.name, "class ", name,
 				"could not be found as type in TheWorld"
 			);
-
 			cls.parents ~= this;
 			this.classes[name] = cls;
+		}
+
+		foreach(const(string) name, const(Enum) value; old.enums){
+		    auto en = world.getEnum(name);
+            ensure(en !is null, "While copying ", this.name, " enum ", name, " could not be found as type in TheWorld.");
+            en.parents ~= this;
+            this.enums[name] = en;
 		}
 
 		foreach(string key, const(Component) value; old.subComponents) {
@@ -62,7 +69,7 @@ class Component : ProtectedEntity {
 
 	SearchResult holdsEntity(const Entity needle) const {
 		const Entity tmp = holdsEntityImpl(needle, this.classes,
-				this.subComponents);
+				this.subComponents, this.enums);
 		if(tmp !is null) {
 			return SearchResult(tmp, [super.name]);
 		} else {
@@ -97,6 +104,14 @@ class Component : ProtectedEntity {
 		foreach(it; this.classes.keys()) {
 			this.classes.remove(it);
 		}
+
+		foreach(const(string)enumName, Enum enumInstance; this.enums){
+            enumInstance.removeParent(this);
+        }
+
+        foreach(it; this.enums.keys()){
+            this.enums.remove(it);
+        }
 	}
 	
 	override const(Entity) get(string[] path) const {
@@ -125,6 +140,12 @@ class Component : ProtectedEntity {
 					return cls.get(path);
 				}
 			}
+
+			foreach(const(string) name, const(Enum) en; this.enums){
+                if(name == fr){
+                    return en.get(path);
+                }
+            }
 
 			if(this.subComponents.length == 0 && this.classes.empty) {
 				return this;

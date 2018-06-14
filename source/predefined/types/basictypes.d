@@ -19,6 +19,7 @@ void addBasicTypes(TheWorld world) {
 		&cdateType, &ctimeType, 
 		&boolType];
 
+    //Make the types available within the world
 	foreach(it; types) {
 		it(world);
 	}
@@ -26,7 +27,7 @@ void addBasicTypes(TheWorld world) {
 	foreach(it; constTypes) {
 		auto t = it(world);
 		foreach(l; ["D", "C", "C++", "Vibe.d", "Typescript", "Angular",
-				"MySQL"])
+				"MySQL", "Java"])
 		{
 			t.protection[l] = "const";
 		}
@@ -43,6 +44,7 @@ Type voidType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "void";
 	lng.typeToLanguage["SeqTS"] = "void";
 	lng.typeToLanguage["MySQL"] = "INTEGER";
+	lng.typeToLanguage["Java"] = "void";
 	return lng;
 }
 
@@ -56,6 +58,7 @@ Type floatType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "FLOAT";
+    lng.typeToLanguage["Java"] = "float";
 	return lng;
 }
 
@@ -69,6 +72,7 @@ Type doubleType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "DOUBLE";
+	lng.typeToLanguage["Java"] = "double";
 	return lng;
 }
 
@@ -82,6 +86,7 @@ Type longType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "BIGINT";
+	lng.typeToLanguage["Java"] = "long";
 	return lng;
 }
 
@@ -95,6 +100,7 @@ Type intType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "INT";
+	lng.typeToLanguage["Java"] = "int";
 	return lng;
 }
 
@@ -108,6 +114,7 @@ Type shortType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "SMALLINT";
+	lng.typeToLanguage["Java"] = "short";
 	return lng;
 }
 
@@ -121,6 +128,7 @@ Type byteType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "TINYINT";
+	lng.typeToLanguage["Java"] = "byte";
 	return lng;
 }
 
@@ -134,6 +142,7 @@ Type ulongType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "BIGINT UNSIGNED";
+	//TODO jave has no ulong type
 	return lng;
 }
 
@@ -147,6 +156,7 @@ Type uintType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "INT UNSIGNED";
+	//TODO jave has no uint type
 	return lng;
 }
 
@@ -160,6 +170,7 @@ Type ushortType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "SMALLINT UNSIGNED";
+	//TODO jave has no ushort type
 	return lng;
 }
 
@@ -173,6 +184,7 @@ Type ubyteType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "TINYINT UNSIGNED";
+	//TODO jave has no ubyte type
 	return lng;
 }
 
@@ -186,6 +198,7 @@ Type boolType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "boolean";
 	lng.typeToLanguage["SeqTS"] = "boolean";
 	lng.typeToLanguage["MySQL"] = "BIT(1)";
+    lng.typeToLanguage["Java"] = "boolean";
 	return lng;
 }
 
@@ -199,6 +212,7 @@ Type stringType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "string";
 	lng.typeToLanguage["SeqTS"] = "string";
 	lng.typeToLanguage["MySQL"] = "TEXT";
+	lng.typeToLanguage["Java"] = "String";
 	return lng;
 }
 
@@ -210,8 +224,8 @@ Type dateType(TheWorld world) {
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
 	lng.typeToLanguage["MySQL"] = "Date";
-	lng.typeToLanguage["SeqTS"] = "Date";
-	return lng;
+	lng.typeToLanguage["Java"] = "Date";
+	lng.typeToLanguage["SeqTS"] = "Date";	return lng;
 }
 
 Type timeType(TheWorld world) {
@@ -223,6 +237,7 @@ Type timeType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "Date";
 	lng.typeToLanguage["SetTS"] = "Date";
 	lng.typeToLanguage["MySQL"] = "TIME";
+	//TODO java does not have this kind of type ???
 	return lng;
 }
 
@@ -235,6 +250,8 @@ Type dateTimeType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "Date";
 	lng.typeToLanguage["SeqTS"] = "Date";
 	lng.typeToLanguage["MySQL"] = "DATETIME";
+	lng.typeToLanguage["Java"] = "DateTime";
+    //TODO determine if this type is the correct one
 	return lng;
 }
 
@@ -247,6 +264,8 @@ Type cfloatType(TheWorld world) {
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["MySQL"] = "FLOAT";
+	//TODO detemine if this type is the correct one for a constant type
+	lng.typeToLanguage["Java"] = "float";
 	return lng;
 }
 
@@ -259,6 +278,8 @@ Type cdoubleType(TheWorld world) {
 	lng.typeToLanguage["Typescript"] = "number";
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["MySQL"] = "DOUBLE";
+	//TODO detemine if this type is the correct one for a constant type
+	lng.typeToLanguage["Java"] = "double";
 	return lng;
 }
 
@@ -272,6 +293,8 @@ Type clongType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "BIGINT";
+	//TODO detemine if this type is the correct one for a constant type
+	lng.typeToLanguage["Java"] = "long";
 	return lng;
 }
 
@@ -285,6 +308,8 @@ Type cintType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "INT";
+	//TODO detemine if this type is the correct one for a constant type
+	lng.typeToLanguage["Java"] = "int";
 	return lng;
 }
 
@@ -298,7 +323,10 @@ Type cshortType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "SMALLINT";
+	//TODO detemine if this type is the correct one for a constant type
+	lng.typeToLanguage["Java"] = "short";
 	return lng;
+
 }
 
 Type cbyteType(TheWorld world) {
@@ -311,6 +339,8 @@ Type cbyteType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "TINYINT";
+	//TODO detemine if this type is the correct one for a constant type
+	lng.typeToLanguage["Java"] = "byte";
 	return lng;
 }
 
@@ -324,6 +354,8 @@ Type culongType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "BIGINT UNSIGNED";
+	//TODO detemine if this type is the correct one for a constant, unsigned type
+	lng.typeToLanguage["Java"] = "long";
 	return lng;
 }
 
@@ -337,6 +369,8 @@ Type cuintType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "INT UNSIGNED";
+	//TODO detemine if this type is the correct one for a constant, unsigned type
+	lng.typeToLanguage["Java"] = "int";
 	return lng;
 }
 
@@ -350,6 +384,8 @@ Type cushortType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "SMALLINT UNSIGNED";
+	//TODO detemine if this type is the correct one for a constant, unsigned type
+	lng.typeToLanguage["Java"] = "short";
 	return lng;
 }
 
@@ -363,6 +399,8 @@ Type cubyteType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "number";
 	lng.typeToLanguage["SeqTS"] = "number";
 	lng.typeToLanguage["MySQL"] = "TINYINT UNSIGNED";
+	//TODO detemine if this type is the correct one for a constant, unsigned type
+	lng.typeToLanguage["Java"] = "byte";
 	return lng;
 }
 
@@ -376,6 +414,8 @@ Type cboolType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "boolean";
 	lng.typeToLanguage["SeqTS"] = "boolean";
 	lng.typeToLanguage["MySQL"] = "BIT(1)";
+	//TODO detemine if this type is the correct one for a constant type
+	lng.typeToLanguage["Java"] = "boolean";
 	return lng;
 }
 
@@ -389,6 +429,8 @@ Type cstringType(TheWorld world) {
 	lng.typeToLanguage["Angular"] = "string";
 	lng.typeToLanguage["SeqTS"] = "string";
 	lng.typeToLanguage["MySQL"] = "TEXT";
+	//TODO detemine if this type is the correct one for a constant type
+	lng.typeToLanguage["Java"] = "String";
 	return lng;
 }
 
@@ -400,6 +442,8 @@ Type cdateType(TheWorld world) {
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
 	lng.typeToLanguage["MySQL"] = "Date";
+	//TODO detemine if this type is the correct one for a constant type
+	lng.typeToLanguage["Java"] = "Date";
 	return lng;
 }
 
@@ -411,6 +455,7 @@ Type ctimeType(TheWorld world) {
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
 	lng.typeToLanguage["MySQL"] = "TIME";
+	//TODO for java
 	return lng;
 }
 
@@ -422,6 +467,7 @@ Type cdateTimeType(TheWorld world) {
 	lng.typeToLanguage["Typescript"] = "Date";
 	lng.typeToLanguage["Angular"] = "Date";
 	lng.typeToLanguage["MySQL"] = "DATETIME";
+	//TODO for java
 	return lng;
 }
 
@@ -433,5 +479,6 @@ Type passwordHashType(TheWorld world) {
 	lng.typeToLanguage["MySQL"] = "BINARY(64)";
 	lng.typeToLanguage["SeqTS"] = "string";
 	lng.typeToLanguage["Angular"] = "string";
+	//TODO for java
 	return lng;
 }

@@ -83,6 +83,7 @@ class Entity {
 
 	string pathToRoot() const pure {
 		import std.array : empty;
+		//shouldn't this result in (missingName).containerName1.containerName2. ... .ClassName?
 		if(this.parent is null) {
 			return "";
 		} else {

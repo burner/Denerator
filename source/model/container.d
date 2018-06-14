@@ -12,6 +12,7 @@ class Container : Entity {
 	string technology;
 	StringEntityMap!(Component) components;
 	StringEntityMap!(Class) classes;
+	StringEntityMap!(Enum) enums;
 
 	this(in string name, in Entity parent) {
 		super(name, parent);
@@ -36,6 +37,13 @@ class Container : Entity {
 			this.classes[name] = nCls;
 		}
 
+		foreach(const(string) name, const(Enum) en; old.enums){
+		    assert(en.name == name);
+		    auto newEnum = world.getEnum(name);
+		    ensure(en !is null, "While copying ", this.name, " enum " , name, " could not be found.");
+		    newEnum.parents ~= this;
+		    this.enums[name] = newEnum;
+		}
 		assert(!this.name.empty);
 	}
 
@@ -59,7 +67,7 @@ class Container : Entity {
 	}
 
 	SearchResult holdsEntity(const Entity needle) const {
-		const(Entity) tmp = holdsEntityImpl(needle, this.components, this.classes);
+		const(Entity) tmp = holdsEntityImpl(needle, this.components, this.classes, this.enums);
 		if(tmp !is null) {
 			return SearchResult(tmp, [super.name]);
 		} else {
@@ -83,6 +91,10 @@ class Container : Entity {
 		return cast(Entity)this.getImpl(path);
 	}
 
+    /**
+     * Searches for the entity specified by the path down the path tree recursively.
+     * @param path The path for the entity to be found
+     */
 	const(Entity) getImpl(string[] path) const {
 		if(path.empty) {
 			return this;
@@ -101,7 +113,11 @@ class Container : Entity {
 					return cls.get(path);
 				}
 			}
-
+            foreach(const(string) name, const(Enum) en; this.enums){
+                if(name == fr){
+                    return en.get(path);
+                }
+            }
 			if(this.components.empty && this.classes.empty) {
 				return this;
 			} else {
@@ -110,6 +126,12 @@ class Container : Entity {
 		}
 	}
 
+    /**
+     * Recursively drops all children of this container.
+     * Therefore this container is removed from the classes as a parent and the reference from this container to the classes is deleted.
+     * Also the references to all components contained by this container are deleted.
+     * On these components the drop method is called.
+     */
 	void drop() {
 		import std.experimental.logger;
 
@@ -127,6 +149,14 @@ class Container : Entity {
 
 		foreach(it; this.classes.keys()) {
 			this.classes.remove(it);
+		}
+
+        foreach(const(string)enumName, Enum enumInstance; this.enums){
+            enumInstance.removeParent(this);
+        }
+
+		foreach(it; this.enums.keys()){
+		    this.enums.remove(it);
 		}
 	}
 
