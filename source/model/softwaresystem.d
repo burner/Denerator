@@ -2,6 +2,7 @@ module model.softwaresystem;
 
 //import model.entity : Entity;
 import model.entity;
+import std.traits : CopyConstness;
 
 private const(Entity) holdsEntitySingleImpl(T)(const Entity needle, ref T arg) {
 	foreach(key; arg.keys()) {
@@ -34,7 +35,7 @@ class SoftwareSystem : Entity {
 
 	CopyConstness!(T,Container) getContainer(this T)(in string name) {
 		if(name in this.containers) {
-			return cast(CopyConstness!(T,Container))this.containters[name];
+			return cast(CopyConstness!(T,Container))this.containers[name];
 		} else {
 			throw new Exception("Container \"" ~ name ~ "\" does not exists");
 		}

@@ -3,14 +3,18 @@ module duplicator;
 import std.experimental.logger;
 import model;
 
-// Does only duplicate Nodes, no edges
+//only duplicates Nodes, no edges
 TheWorld duplicateNodes(in TheWorld old) {
+    //For every entity and supclasses thereof instantiate new ones and add them to the new world
 	auto ret = new TheWorld(old);
 
 	foreach(const(string) name, Type type; ret.typeContainerMapping) {
+	    //not null check is performed
 		if(Class cls = cast(Class)type) {
+		    //gets the class from the world
 			const(Class) oldCls = cast(const Class)old.typeContainerMapping[name];
 			if(oldCls) {
+			    //adds the old class with members to the new world
 				cls.realCCtor(oldCls, ret);
 			}
 		}

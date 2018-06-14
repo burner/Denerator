@@ -25,6 +25,13 @@ class VibeD : CStyle {
 		super.generate("D");
 	}
 
+    /**
+     * Translates the given aggregation to D-Code:
+     * Therefore a new module is introduced, which contains a struct named after the aggregation.
+     * This struct contains a unique identifier number as well as the aggregation source entity and sink entity.
+     * Two constructors are generated: One taking the source and sink entity as parameters and one also initializing
+     * the unique identifier.
+     */
 	override void generateAggregation(LTW ltw, in Aggregation agg) {
 		this.generateModuleDecl(ltw, agg);
 		this.generateImport(ltw, cast(const(Class))agg.from);
@@ -48,6 +55,9 @@ class VibeD : CStyle {
 		format(ltw, 0, "}\n");
 	}
 
+    /**
+     *
+     */
 	void generateImports(LTW ltw, in Class cls) {
 		ensure(cls !is null, "Cannot generate imports for null Class");
 		EntityHashSet!(Class) allreadyImported;
@@ -69,16 +79,24 @@ class VibeD : CStyle {
 		}
 	}
 
+    /**
+     * Generates the import statement for importing cls.
+     */
 	void generateImport(LTW ltw, in Class cls) {
 		import std.string : indexOf;
+		//name is the fully qualified name of the class (with the SoftwareSystem / HardwareSystem cut off.
 		auto name = holdsContainerNameTrim(cls.pathsToRoot());
 		auto dot = name.indexOf('.');
+		//Cut off the container
 		if(dot != -1) {
 			name = name[dot+1 .. $];
 		}
 		format(ltw, 0, "import %s;\n", toLower(name));
 	}
 
+    /**
+     * Generates the module declaration of an entity.
+     */
 	void generateModuleDecl(LTW ltw, in Entity en) {
 		format(ltw, 0, "module ");
 
@@ -86,8 +104,8 @@ class VibeD : CStyle {
 		if(this.outDirPath.length > 0) {
 			foreach(it; this.outDirPath[2 .. $]) {
 				format(ltw, 0, "%s", first(
-						(){ return format("%s", toLower(it)); },
-						(){ return format(".%s", toLower(it)); }
+						(){ return format("%s", toLower(it)); }, // The function to be called the first time within the forEachLoop
+						(){ return format(".%s", toLower(it)); } // The function to be called any subsequent time
 					)
 				);
 			}
@@ -105,6 +123,9 @@ class VibeD : CStyle {
 		);
 	}
 
+    /**
+     *
+     */
 	void generateClassImpl(LTW ltw, in Class cls) {
 		import std.range : isInputRange;
 
@@ -115,13 +136,16 @@ class VibeD : CStyle {
 
 		generateProtectedEntity(ltw, cast(ProtectedEntity)cls);
 		logf("%s %s", cls.containerType.get("D", "class"), cls.name);
+		//.containerType.get looks up key; if it exists returns corresponding value else evaluates and returns defVal
 		format(ltw, 0, "%s %s", cls.containerType.get("D", "class"), 
 			cls.name
 		);
 
 		First first;
+		//AliasSeq Creates a sequence of zero or more aliases
 		foreach(EdgeType; AliasSeq!(const(Generalization), const(Realization)))
 		{
+            //generate implements and extends
 			foreach(con; entityRangeFrom!(EdgeType)(&this.world.connections, cls)) {
 				assert(con.from is cls);
 				format(ltw, 0, "%s", first(
@@ -154,6 +178,7 @@ class VibeD : CStyle {
 			format(ltw, 0, " %s;\n", mv.name);
 		}
 
+        //Compositions are created: This means that the containing entity (from) gets an attribute of that type which is not protected.
 		foreach(con; entityRangeFrom!(const(Composition))(&this.world.connections, cls)) 
 		{
 			assert(con.from is cls);
@@ -394,14 +419,22 @@ class VibeD : CStyle {
 		return mv.fromType.typeToLanguage["D"].length + mv.name.length + 2;
 	}
 
-
+    /**
+     *  Checks for every given path if this.curCon.name is contained within that path.
+     *  If so the container is trimmed off that path and the path returned.
+     */
 	string holdsContainerNameTrim(string[] paths) {
 		import std.string : indexOf;
 
 		foreach(string str; paths) {
+		    //returns the index of the first occurrence of this.curCon.name in str.
+		    //if this.curCon.name is part of path
 			if(str.indexOf(this.curCon.name) != -1) {
+			    //find the first dot
 				auto dot = str.indexOf('.');
+				//if dot found
 				if(dot != -1) {
+				    //cut off the container (!?)
 					return str[dot + 1 .. $];
 				}
 			}

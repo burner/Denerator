@@ -19,8 +19,16 @@ class Class : Type {
 	import model.type : Type;
 	import std.format : format;
 
+    //inner classes: Map(string) -> Class
+    StringEntityMap!(Class) classes;
+
 	Member[] members;
+
+	//Technology as key, type as value e.g. containerType["Java"] = "interface"
 	StringEntityMap!(string) containerType;
+
+    //like abstract final etc in java
+	string[][string] languageSpecificAttributes;
 
 	Entity[] parents;
 
@@ -39,6 +47,11 @@ class Class : Type {
 		//assert(false);
 	}
 
+    /**
+     * For copying classes containing all of its members of an old world to a new world.
+     * @param old The class within the old world to copy
+     * @param newWorld The new world that the new class is inserted to.
+     */
 	void realCCtor(in Class old, TheWorld newWorld) {
 		foreach(const(Member) value; old.members) {
 			if(auto mf = cast(const MemberFunction)value) {
@@ -88,6 +101,15 @@ class Class : Type {
 		return this.newImpl!MemberFunction(name);
 	}
 
+	CopyConstness!(T,Class) getMemberClass(this T)(in string name) const{
+        foreach(key, value; this.classes){
+            if(key == name){
+                return value;
+            }
+        }
+        throw new Exception(std.format.format("Inner class %s could not be found.", name));
+	}
+
 	CopyConstness!(T,MemberVariable) getMemberVariable(this T)(in string name) {
 		return this.get!MemberVariable(name);
 	}
@@ -96,21 +118,29 @@ class Class : Type {
 		return this.get!MemberFunction(name);
 	}
 
+    /**
+     * Adds a new member to this.members and returns it.
+     */
 	S newImpl(S)(in string name) {
 		import std.array : back;
-		foreach(mem; this.members) {
-			if(name == mem.name) {
-				throw new Exception(format("%s with name \"%s\" already present",
-					S.stringof, name));
-			}
-		}
-
+	    //removed following lines because they prevent method overloading.
+		//foreach(mem; this.members) {
+		//	if(name == mem.name) {
+		//		throw new Exception(format("%s with name \"%s\" already present",
+		//			S.stringof, name));
+		//	}
+		//}
 		this.members ~= new S(name, this);
 		return cast(S)this.members.back();
 	}
 
+    /**
+     * Gets a member of this.members.
+     */
 	CopyConstness!(T,S) getImpl(S,this T)(in string name) {
+	    // why is the class not returned?
 		foreach(mem; this.members) {
+		    //what happens here?
 			if(name == mem.name && (cast(typeof(return))mem) !is null) {
 				return cast(typeof(return))mem;
 			}
@@ -119,6 +149,10 @@ class Class : Type {
 			S.stringof, name));
 	}
 
+    /**
+     * Determines if this class or its parents (specified by their names) are present within store.
+     * If so, the name of the entity is returned. Else an empty string is returned.
+     */
 	override string areYouIn(ref in StringHashSet store) const {
 		if(this.name in store) {
 			return this.name;
@@ -147,7 +181,6 @@ class Class : Type {
 					return tmp;
 				}
 			}
-
 			return null;
 		}
 	}
@@ -172,7 +205,7 @@ class Class : Type {
 					return mem.get(path);
 				}
 			}
-
+            //TODO add support for inner classes / enums
 			return this;
 		}
 	}
@@ -184,15 +217,24 @@ class Class : Type {
 	string[] pathsToRoot() const {
 		string[] ret;
 		foreach(const(Entity) par; this.parents[]) {
-			ret ~= (par.pathToRoot() ~ "." ~ this.name);
+		    if (const(Class) parent = cast(Class) par){
+		        foreach(path; parent.pathsToRoot()){
+		            ret ~= path ~ "." ~ this.name;
+		        }
+		    } else{
+                ret ~= (par.pathToRoot() ~ "." ~ this.name);
+		    }
 		}
-
 		return ret;
 	}
 
 	override string typeToLang(string lang) const {
 		return this.name;
-	}	
+	}
+
+	override string toString() const {
+    		return this.name;
+    	}
 
 	void toString(in int indent) const {
 		import std.stdio : writefln;
@@ -205,8 +247,10 @@ class Class : Type {
 	}
 }
 
+
 class Member : ProtectedEntity {
 	string[][string] langSpecificAttributes;
+
 	this(in string name, in Entity parent) {
 		super(name, parent);
 	}
@@ -246,6 +290,124 @@ class MemberVariable : Member {
 			this.type = world.getType(old.type.name);
 		}
 	}
+}
+
+class Enum : Type{
+    import std.algorithm : remove;
+    import std.array : empty, front;
+
+    EnumConstant[] enumConstants;
+    Constructor constructor;
+    Entity[] parents;
+    DoNotGenerate doNotGenerate;
+
+    this(in const(string) name){
+        super(name, null);
+    }
+
+    EnumConstant addEnumConstant(string name){
+        import std.algorithm;
+        import std.format;
+        if(this.enumConstants.canFind!(enumConst => enumConst.name == name)){
+            throw new Exception(format("EnumConstant %s has already been defined. ", name));
+        } else {
+            auto enumConstant = new EnumConstant(name, this);
+            this.enumConstants ~= enumConstant;
+            return enumConstant;
+        }
+    }
+
+    Constructor setConstructor(){
+        this.constructor = new Constructor(this.name, this);
+        return this.constructor;
+    }
+
+    //TODO refactor this as a mixin
+    void removeParent(Entity parent){
+        import std.algorithm.mutation : remove;
+        import std.algorithm.searching : countUntil;
+        import std.experimental.logger;
+
+        int getParentIndex(Entity par) {
+            foreach(int idx, it; this.parents) {
+                if(it is par) {
+                    return idx;
+                }
+            }
+            return -1;
+        }
+
+        auto idx = getParentIndex(parent);
+
+        if(idx != -1) {
+            this.parents = remove(this.parents, idx);
+        } else {
+            logf("!%s %s %s", this.name, parent.name, this.parents);
+        }
+    }
+
+    override const(Entity) get(string[] path) const {
+    		return this.getImpl(path);
+    	}
+
+    override Entity get(string[] path) {
+    		return cast(Entity)this.getImpl(path);
+    	}
+
+    const(Entity) getImpl(string[] path) const {
+        return this;
+    }
+}
+
+/**
+ * Defines a constant within an enum: E.g. in Java programming language this could be:
+ *  enum Planet{
+ *      MARS(12.38, 10.0) //EnumConstant
+ *      ...
+ *  }
+ */
+class EnumConstant : Entity{
+    string[] values;
+
+    this(in string name, in Entity parent){
+        super(name, parent);
+    }
+
+    void setValues(string[] values){
+        this.values = values;
+    }
+}
+
+/**
+ * Defines a constructor for an enum.
+ */
+class Constructor : Member{
+    MemberVariable[] parameters;
+
+    this(in string name, in Entity parent) {
+        super(name, parent);
+    }
+
+    /**
+     * Adds a parameter to this.parameters. Therefore it generates a new MemberVariable and sets its name, parent and type.
+     * For further modifications of the parameter a reference to the generated parameter is returned.
+     * @param name The name of the parameter
+     * @param type The type of the parameter
+     * @throws Exception if a parameter with the same name is already present
+     * @return The newly created parameter
+     */
+    MemberVariable addParameter(string name, Type type){
+        import std.algorithm;
+        import std.format;
+        if(this.parameters.canFind!(par => par.name == name)){
+            throw new Exception(format("%s is already present in parameters", name));
+        } else{
+            MemberVariable parameter = new MemberVariable(name, this);
+            parameter.type = type;
+            this.parameters ~= parameter;
+            return parameter;
+        }
+    }
 }
 
 unittest {
@@ -311,3 +473,17 @@ string[] pathToRoot(in Entity en) {
 		return [en.pathToRoot()];
 	}
 }
+
+bool hasClassParent(in Entity en){
+    bool hasClassParent = false;
+    if(const(Class) c = cast(const(Class))en) {
+        foreach(const(Entity)par; c.parents){
+            if(auto parentClass = cast(const(Class))par){
+                hasClassParent = true;
+                break;
+            }
+        }
+    }
+    return hasClassParent;
+}
+
